@@ -1,0 +1,6 @@
+# Build directories
+/*build*/
+/src/*build*/
+
+# Ignore qtcreator user directories
+CMakeLists.txt.user
