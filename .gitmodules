@@ -4,3 +4,6 @@
 [submodule "glfw"]
 	path = src/external/glfw
 	url = git@github.com:glfw/glfw.git
+[submodule "tinyply"]
+	path = src/external/tinyply
+	url = git@github.com:ddiakopoulos/tinyply.git
