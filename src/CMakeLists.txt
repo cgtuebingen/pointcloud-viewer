@@ -11,6 +11,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # Find external dependencies (glm, glfw)
 add_subdirectory(external)
 
+# Module containing a collection of helpers
+add_subdirectory(core_library)
 # Module responsible for rendering the points using a render system (OpenGL 4.5)
 add_subdirectory(render_system)
 # Module loading the points to the acceleration structure and discarding them, when not needed anymore

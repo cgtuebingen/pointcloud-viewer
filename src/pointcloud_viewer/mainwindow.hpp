@@ -1,11 +1,15 @@
 #include <GLFW/glfw3.h>
 
+#include <core_library/singleton.hpp>
+
 namespace pointcloud_viewer {
 namespace mainwindow {
 
-class Instance
+class Instance : public Singleton<Instance>
 {
-
+public:
+  Instance();
+  ~Instance();
 };
 
 } // namespace mainwindow
