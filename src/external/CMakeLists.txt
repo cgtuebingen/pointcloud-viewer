@@ -11,3 +11,8 @@ add_subdirectory(glfw)
 set(GLM_STATIC_LIBRARY_ENABLE ON CACHE BOOL "Use a static glm library by default")
 
 add_subdirectory(glm)
+
+######## TinyPLY ########
+
+# add_subdirectory(tinyply)
+
