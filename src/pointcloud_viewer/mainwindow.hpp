@@ -3,8 +3,16 @@
 #include <core_library/singleton.hpp>
 
 namespace pointcloud_viewer {
+
+
+/*
+Instead of singletons, a namespace with global functions is used here.
+*/
 namespace mainwindow {
 
+/*
+A class using raii to initialize/deinitialize the resources of a window.
+*/
 class Instance : public Singleton<Instance>
 {
 public:
