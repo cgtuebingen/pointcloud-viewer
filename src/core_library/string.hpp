@@ -42,6 +42,6 @@ enum class format_width_t : uint32_t
 };
 
 
-#include <core_library/string.impl>
+#include <core_library/string.inl>
 
 #endif // CORELIBRARY_STRING_HPP_

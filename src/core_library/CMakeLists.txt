@@ -3,5 +3,5 @@ add_library(core_library STATIC
   exception.hpp
   singleton.hpp
   string.hpp
-  #string.impl
+  string.inl
 )
