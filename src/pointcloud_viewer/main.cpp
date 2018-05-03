@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 
   }catch(exception_t exception)
   {
-    std::cerr << exception.message;
+    print_error(exception.message);
     return -1;
   }
 }
