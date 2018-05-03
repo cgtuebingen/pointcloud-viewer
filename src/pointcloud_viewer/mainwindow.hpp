@@ -1,3 +1,6 @@
+#ifndef POINTCLOUDVIEWER_MAINWINDOW_HPP_
+#define POINTCLOUDVIEWER_MAINWINDOW_HPP_
+
 #include <GLFW/glfw3.h>
 
 #include <core_library/singleton.hpp>
@@ -22,3 +25,5 @@ public:
 
 } // namespace mainwindow
 } // namespace pointcloud_viewer
+
+#endif // POINTCLOUDVIEWER_MAINWINDOW_HPP_

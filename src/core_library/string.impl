@@ -9,21 +9,21 @@ void format(std::ostringstream&)
 }
 
 template<typename... other_arg_t>
-void format(std::ostringstream& stream, format_precision_t precision, const other_arg_t&... args)
+void format(std::ostream& stream, format_precision_t precision, const other_arg_t&... args)
 {
-  stream.precision(streamsize(precision));
+  stream.precision(uint32_t(precision));
   format(stream, args...);
 }
 
 template<typename... other_arg_t>
-void format(std::ostringstream& stream, format_width_t width, const other_arg_t&... args)
+void format(std::ostream& stream, format_width_t width, const other_arg_t&... args)
 {
-  stream.width(streamsize(width));
+  stream.width(uint32_t(width));
   format(stream, args...);
 }
 
 template<typename arg_t, typename... other_arg_t>
-void format(std::ostringstream& stream, const arg_t& arg, const other_arg_t&... args)
+void format(std::ostream& stream, const arg_t& arg, const other_arg_t&... args)
 {
   stream << arg;
   format(stream, args...);

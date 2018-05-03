@@ -1,3 +1,6 @@
+#ifndef CORELIBRARY_STRING_HPP_
+#define CORELIBRARY_STRING_HPP_
+
 #include <string>
 #include <sstream>
 
@@ -20,15 +23,17 @@ Usage:
     format("This is the item #", format_width_t(3), item.get_index())
 */
 
-enum class format_precision_t : streamsize
+enum class format_precision_t : uint32_t
 {
   DEFAULT = 8,
 };
 
-enum class format_width_t : streamsize
+enum class format_width_t : uint32_t
 {
   DEFAULT = 0,
 };
 
 
 #include <core_library/string.impl>
+
+#endif // CORELIBRARY_STRING_HPP_
