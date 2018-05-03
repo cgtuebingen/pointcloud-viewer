@@ -1,0 +1,45 @@
+#include <core_library/string.hpp>
+
+namespace __internal__
+{
+
+template<typename arg_t>
+void format(std::ostringstream&)
+{
+}
+
+template<typename... other_arg_t>
+void format(std::ostringstream& stream, format_precision_t precision, const other_arg_t&... args)
+{
+  stream.precision(streamsize(precision));
+  format(stream, args...);
+}
+
+template<typename... other_arg_t>
+void format(std::ostringstream& stream, format_width_t width, const other_arg_t&... args)
+{
+  stream.width(streamsize(width));
+  format(stream, args...);
+}
+
+template<typename arg_t, typename... other_arg_t>
+void format(std::ostringstream& stream, const arg_t& arg, const other_arg_t&... args)
+{
+  stream << arg;
+  format(stream, args...);
+}
+
+
+} // __internal__
+
+template<typename... arg_t>
+std::string format(const arg_t&... args)
+{
+  std::ostringstream stream;
+
+  __internal__::format(stream, format_precision_t::DEFAULT);
+  __internal__::format(stream, format_width_t::DEFAULT);
+  __internal__::format(stream, args...);
+
+  return stream.str();
+}
