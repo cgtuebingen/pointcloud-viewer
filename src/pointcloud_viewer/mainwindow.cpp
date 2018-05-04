@@ -6,12 +6,19 @@
 namespace pointcloud_viewer {
 namespace mainwindow {
 
-GLFWwindow* window = nullptr;
+extern GLFWwindow* glfw_window;
+
+void throw_glfw_error(int error, const char* description);
 
 Instance::Instance()
 {
-  window = glfwCreateWindow(640, 480, "Pointcloud Viewer", nullptr, nullptr);
-  if(!window)
+  if(glfwInit() != GLFW_TRUE)
+    throw exception_t{"Couldn't initialize glfw"};
+
+  glfwSetErrorCallback(throw_glfw_error);
+
+  glfw_window = glfwCreateWindow(640, 480, "Pointcloud Viewer", nullptr, nullptr);
+  if(!glfw_window)
     throw exception_t{"Couldn't create glfw window"};
 }
 
@@ -19,7 +26,14 @@ Instance::~Instance()
 {
   glfwTerminate();
 
-  window = nullptr;
+  glfw_window = nullptr;
+}
+
+GLFWwindow* glfw_window = nullptr;
+
+void throw_glfw_error(int error, const char* description)
+{
+  print_error("glfw error(", error, "): ", description);
 }
 
 } // namespace mainwindow
