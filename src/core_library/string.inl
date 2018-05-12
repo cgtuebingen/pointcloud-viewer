@@ -9,20 +9,6 @@ inline void format(std::ostream&)
 {
 }
 
-template<typename... other_arg_t>
-void format(std::ostream& stream, format_precision_t precision, const other_arg_t&... args)
-{
-  stream.precision(uint32_t(precision));
-  format(stream, args...);
-}
-
-template<typename... other_arg_t>
-void format(std::ostream& stream, format_width_t width, const other_arg_t&... args)
-{
-  stream.width(uint32_t(width));
-  format(stream, args...);
-}
-
 template<typename arg_t, typename... other_arg_t>
 void format(std::ostream& stream, const arg_t& arg, const other_arg_t&... args)
 {
@@ -33,8 +19,6 @@ void format(std::ostream& stream, const arg_t& arg, const other_arg_t&... args)
 template<typename stream_t, typename... other_arg_t>
 stream_t& format_implementation(stream_t& stream, const other_arg_t&... args)
 {
-  __internal__::format(stream, format_precision_t::DEFAULT);
-  __internal__::format(stream, format_width_t::DEFAULT);
   __internal__::format(stream, args...);
 
   return stream;

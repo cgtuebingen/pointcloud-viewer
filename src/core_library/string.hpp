@@ -23,25 +23,6 @@ std::ostream& print(const arg_t&... args);
 template<typename... arg_t>
 std::ostream& print_error(const arg_t&... args);
 
-/*
-Modifiers to change the formating of numbers.
-
-Usage:
-
-    format("This is the item #", format_width_t(3), item.get_index())
-*/
-
-enum class format_precision_t : uint32_t
-{
-  DEFAULT = 8,
-};
-
-enum class format_width_t : uint32_t
-{
-  DEFAULT = 0,
-};
-
-
 #include <core_library/string.inl>
 
 #endif // CORELIBRARY_STRING_HPP_
