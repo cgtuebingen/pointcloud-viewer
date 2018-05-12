@@ -7,6 +7,9 @@
 
 namespace pointcloud_viewer {
 
+typedef double time_t;
+
+time_t time();
 
 /*
 Instead of singletons, a namespace with global functions is used here.

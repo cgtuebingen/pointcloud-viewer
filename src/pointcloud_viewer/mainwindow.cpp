@@ -4,6 +4,12 @@
 #include <GLFW/glfw3.h>
 
 namespace pointcloud_viewer {
+
+time_t time()
+{
+  return glfwGetTime();
+}
+
 namespace mainwindow {
 
 extern GLFWwindow* glfw_window;
