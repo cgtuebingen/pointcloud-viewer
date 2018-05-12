@@ -26,6 +26,8 @@ Instance::Instance()
     throw exception_t{"Couldn't create glfw window"};
 
   glfwMakeContextCurrent(glfw_window);
+
+  gladLoadGLLoader(GLADloadproc(glfwGetProcAddress));
 }
 
 // Constructor deinitializes glfw and destroays all windows

@@ -1,7 +1,7 @@
 #ifndef POINTCLOUDVIEWER_MAINWINDOW_HPP_
 #define POINTCLOUDVIEWER_MAINWINDOW_HPP_
 
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #include <core_library/singleton.hpp>
 

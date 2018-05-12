@@ -16,6 +16,12 @@ set(GLM_STATIC_LIBRARY_ENABLE ON CACHE BOOL "Use a static glm library by default
 
 add_subdirectory(glm)
 
+######## glad ########
+# OpenGL Loader
+
+add_library(glad STATIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c ${CMAKE_CURRENT_SOURCE_DIR}/glad/include/glad/glad.h)
+target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
+
 ######## TinyPLY ########
 
 # add_subdirectory(tinyply)

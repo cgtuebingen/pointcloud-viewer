@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 
     while(mainwindow::is_open())
     {
-//      glClear(GL_COLOR_BUFFER_BIT);
+      glClear(GL_COLOR_BUFFER_BIT);
 
       mainwindow::swap_buffers();
 
