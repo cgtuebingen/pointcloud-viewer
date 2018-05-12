@@ -16,6 +16,8 @@ extern GLFWwindow* glfw_window;
 
 void throw_glfw_error(int error, const char* description);
 
+void glfw_set_framebuffer_size_callback(GLFWwindow*, int w, int h);
+
 // Constructor initializes glfw and an opengl 4.5 window
 Instance::Instance()
 {
@@ -37,6 +39,8 @@ Instance::Instance()
   gladLoadGLLoader(GLADloadproc(glfwGetProcAddress));
 
   glfwSwapInterval(1); // enabled v-sync
+
+  glfwSetFramebufferSizeCallback(glfw_window, glfw_set_framebuffer_size_callback);
 }
 
 // Constructor deinitializes glfw and destroays all windows
@@ -68,6 +72,22 @@ void swap_buffers()
 void process_events()
 {
   glfwPollEvents();
+}
+
+glm::ivec2 framebuffer_size()
+{
+  glm::ivec2 size;
+
+  glfwGetFramebufferSize(glfw_window, &size.x, &size.y);
+
+  return size;
+}
+
+std::function<void(glm::ivec2)> on_framebuffer_size_changed = [](glm::ivec2){};
+
+void glfw_set_framebuffer_size_callback(GLFWwindow*, int w, int h)
+{
+  on_framebuffer_size_changed(glm::ivec2(w, h));
 }
 
 } // namespace mainwindow
