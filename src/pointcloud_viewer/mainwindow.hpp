@@ -23,6 +23,23 @@ public:
   ~Instance();
 };
 
+/*
+Returns true, if the window is still open.
+
+Use to determine, whether to close the window.
+*/
+bool is_open();
+
+/**
+Swap the back and front buffer
+*/
+void swap_buffers();
+
+/**
+Poll and process window events
+*/
+void process_events();
+
 } // namespace mainwindow
 } // namespace pointcloud_viewer
 

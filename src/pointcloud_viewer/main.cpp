@@ -11,6 +11,15 @@ int main(int argc, char** argv)
   {
     mainwindow::Instance mainwindow_instance;
 
+    while(mainwindow::is_open())
+    {
+//      glClear(GL_COLOR_BUFFER_BIT);
+
+      mainwindow::swap_buffers();
+
+      mainwindow::process_events();
+    }
+
   }catch(exception_t exception)
   {
     print_error(exception.message);

@@ -44,5 +44,20 @@ void throw_glfw_error(int error, const char* description)
   print_error("glfw error(", error, "): ", description);
 }
 
+bool is_open()
+{
+  return !glfwWindowShouldClose(glfw_window);
+}
+
+void swap_buffers()
+{
+  glfwSwapBuffers(glfw_window);
+}
+
+void process_events()
+{
+  glfwPollEvents();
+}
+
 } // namespace mainwindow
 } // namespace pointcloud_viewer
