@@ -1,3 +1,6 @@
+#ifndef CORELIBRARY_SINGLETON_HPP_
+#define CORELIBRARY_SINGLETON_HPP_
+
 #include <assert.h>
 
 /*
@@ -38,3 +41,5 @@ private:
     return instance;
   }
 };
+
+#endif // CORELIBRARY_SINGLETON_HPP_
