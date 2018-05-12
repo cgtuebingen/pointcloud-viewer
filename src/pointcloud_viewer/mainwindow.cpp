@@ -33,7 +33,10 @@ Instance::Instance()
 
   glfwMakeContextCurrent(glfw_window);
 
+  // initialize glad to enable using OpenGL 4.5 functions
   gladLoadGLLoader(GLADloadproc(glfwGetProcAddress));
+
+  glfwSwapInterval(1); // enabled v-sync
 }
 
 // Constructor deinitializes glfw and destroays all windows
