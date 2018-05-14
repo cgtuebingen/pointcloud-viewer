@@ -33,6 +33,11 @@ public:
   Singleton(const Singleton&) = delete;
   void operator=(const Singleton&) = delete;
 
+  static bool is_initalized()
+  {
+    return _global_instance() != nullptr;
+  }
+
 private:
   static Singleton<T>*& _global_instance()
   {

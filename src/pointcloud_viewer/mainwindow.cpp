@@ -55,21 +55,29 @@ void throw_glfw_error(int error, const char* description)
 
 bool is_open()
 {
+  assert(Instance::is_initalized());
+
   return !glfwWindowShouldClose(glfw_window);
 }
 
 void swap_buffers()
 {
+  assert(Instance::is_initalized());
+
   glfwSwapBuffers(glfw_window);
 }
 
 void process_events()
 {
+  assert(Instance::is_initalized());
+
   glfwPollEvents();
 }
 
 glm::ivec2 framebuffer_size()
 {
+  assert(Instance::is_initalized());
+
   glm::ivec2 size;
 
   glfwGetFramebufferSize(glfw_window, &size.x, &size.y);
