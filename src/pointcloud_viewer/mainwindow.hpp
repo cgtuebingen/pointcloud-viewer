@@ -9,7 +9,7 @@
 namespace pointcloud_viewer {
 
 /*
-Instead of singletons, a namespace with global functions is used here.
+Instead of singleton classes, a namespace with global functions is used here.
 */
 namespace mainwindow {
 
@@ -23,26 +23,11 @@ public:
   ~Instance();
 };
 
-/*
-Returns true, if the window is still open.
-
-Use to determine, whether to close the window.
-*/
 bool is_open();
 
-/**
-Swap the back and front buffer
-*/
 void swap_buffers();
-
-/**
-Poll and process window events
-*/
 void process_events();
 
-/**
-The size of the framebuffer of the window.
-*/
 glm::ivec2 framebuffer_size();
 
 extern std::function<void(glm::ivec2)> on_framebuffer_size_changed;

@@ -8,7 +8,11 @@
 #endif
 
 
-
+/*
+Macros to hint the compiler to realize the branches in a way, that the more
+probable case is more likely to be already loaded to instruction cache even
+before the branch was executed
+*/
 #if GCC_OR_CLANG
 
 #define LIKELY(x) __builtin_expect(bool(x), 1)
@@ -22,7 +26,17 @@
 #endif
 
 
+/*
+Disallow the class to be copied. Use inside the class, like
 
+    class Foo
+    {
+    public:
+      nocopy(Foo)
+
+      // ....
+    };
+*/
 #define nocopy(name) \
   name(const name&) = delete; \
   name& operator=(const name&) = delete; \

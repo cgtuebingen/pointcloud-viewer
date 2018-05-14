@@ -11,6 +11,9 @@ extern time_t _delta_time;
 time_t _total_time = 0.;
 time_t _delta_time = 1.f/60.f;
 
+/*
+Returns the total time passed since the beginning of the application
+*/
 time_t total_time()
 {
   assert(Instance::is_initalized());
@@ -18,6 +21,9 @@ time_t total_time()
   return _total_time;
 }
 
+/*
+Returns the time difference between two frames (in seconds)
+*/
 time_t delta_time()
 {
   assert(Instance::is_initalized());
@@ -25,6 +31,9 @@ time_t delta_time()
   return _delta_time;
 }
 
+/*
+Call once per frame to update the clock
+*/
 void update_time()
 {
   assert(Instance::is_initalized());

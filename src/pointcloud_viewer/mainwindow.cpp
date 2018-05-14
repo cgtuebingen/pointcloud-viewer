@@ -53,6 +53,11 @@ void throw_glfw_error(int error, const char* description)
   print_error("glfw error(", error, "): ", description);
 }
 
+/**
+Returns true, if the window is still open.
+
+Use to determine, whether to close the window.
+*/
 bool is_open()
 {
   assert(Instance::is_initalized());
@@ -60,6 +65,9 @@ bool is_open()
   return !glfwWindowShouldClose(glfw_window);
 }
 
+/**
+Swap the back and front buffer
+*/
 void swap_buffers()
 {
   assert(Instance::is_initalized());
@@ -67,6 +75,9 @@ void swap_buffers()
   glfwSwapBuffers(glfw_window);
 }
 
+/**
+Poll and process window events
+*/
 void process_events()
 {
   assert(Instance::is_initalized());
@@ -74,6 +85,9 @@ void process_events()
   glfwPollEvents();
 }
 
+/**
+The size of the framebuffer of the window.
+*/
 glm::ivec2 framebuffer_size()
 {
   assert(Instance::is_initalized());

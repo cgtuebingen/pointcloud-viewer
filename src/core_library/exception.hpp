@@ -3,6 +3,9 @@
 
 #include <core_library/string.hpp>
 
+/**
+Baseclass for exceptions
+*/
 struct exception_t
 {
   std::string message;
