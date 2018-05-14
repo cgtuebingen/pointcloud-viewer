@@ -1,4 +1,6 @@
 add_executable(point_cloud_viewer
+  clock.cpp
+  clock.hpp
   main.cpp
   mainwindow.cpp
   mainwindow.cpp
