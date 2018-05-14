@@ -1,8 +1,6 @@
 #ifndef POINTCLOUDVIEWER_MAINWINDOW_HPP_
 #define POINTCLOUDVIEWER_MAINWINDOW_HPP_
 
-#include <glad/glad.h>
-
 #include <glm/glm.hpp>
 #include <functional>
 

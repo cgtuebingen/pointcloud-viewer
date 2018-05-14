@@ -1,5 +1,6 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <core_library/exception.hpp>
+#include <render_system/initialization.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -35,8 +36,7 @@ Instance::Instance()
 
   glfwMakeContextCurrent(glfw_window);
 
-  // initialize glad to enable using OpenGL 4.5 functions
-  gladLoadGLLoader(GLADloadproc(glfwGetProcAddress));
+  render_system::initialize_gl(render_system::gl_proc_loader_t(glfwGetProcAddress));
 
   glfwSwapInterval(1); // enabled v-sync
 

@@ -4,4 +4,4 @@ add_executable(point_cloud_viewer
   mainwindow.cpp
 )
 
-target_link_libraries(point_cloud_viewer glfw glad glm)
+target_link_libraries(point_cloud_viewer glfw glm render_system)
