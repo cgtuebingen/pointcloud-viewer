@@ -21,4 +21,12 @@
 
 #endif
 
+
+
+#define nocopy(name) \
+  name(const name&) = delete; \
+  name& operator=(const name&) = delete; \
+
+
+
 #endif // CORELIBRARY_MACROS_HPP_
