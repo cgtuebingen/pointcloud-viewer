@@ -22,6 +22,9 @@ add_subdirectory(glm)
 add_library(glad STATIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c ${CMAKE_CURRENT_SOURCE_DIR}/glad/include/glad/glad.h)
 target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
 
+######## glhelper ########
+add_subdirectory(glhelper)
+
 ######## TinyPLY ########
 
 # add_subdirectory(tinyply)
