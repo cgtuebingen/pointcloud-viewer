@@ -5,6 +5,8 @@
 
 namespace render_system {
 
+void clear_color();
+
 PointRenderer::PointRenderer()
 {
 }
@@ -14,6 +16,11 @@ PointRenderer::~PointRenderer()
 }
 
 void PointRenderer::render_points()
+{
+  clear_color();
+}
+
+void clear_color()
 {
   glm::vec4 bg_color(glm::vec3(0.25f), 1.f);
 
