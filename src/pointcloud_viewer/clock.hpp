@@ -13,7 +13,7 @@ time_t delta_time();
 
 void update_time();
 
-class Instance : public Singleton<Instance>
+class Instance final : public Singleton<Instance>
 {
 public:
   Instance();

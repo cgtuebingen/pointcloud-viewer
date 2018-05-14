@@ -16,7 +16,7 @@ namespace mainwindow {
 /*
 A class using raii to initialize/deinitialize the resources of a window.
 */
-class Instance : public Singleton<Instance>
+class Instance final : public Singleton<Instance>
 {
 public:
   Instance();
