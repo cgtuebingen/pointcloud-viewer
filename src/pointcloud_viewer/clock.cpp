@@ -13,31 +13,43 @@ time_t _delta_time = 1.f/60.f;
 
 time_t total_time()
 {
+  assert(Instance::is_initalized());
+
   return _total_time;
 }
 
 time_t delta_time()
 {
-  return _total_time;
-}
+  assert(Instance::is_initalized());
 
-void reset_time()
-{
-  glfwSetTime(0.);
-
-  _total_time = 0.;
+  return _delta_time;
 }
 
 void update_time()
 {
+  assert(Instance::is_initalized());
+
   time_t last_time = _total_time;
   time_t new_time = time_t(glfwGetTime());
 
   _total_time = last_time;
   _delta_time = new_time-last_time;
 
-  if(UNLIKELY(_delta_time < 2.e-3f))
-    _delta_time = 2.e-3f;
+  // prevent too huge jumps, if the framerate gets too small
+  const time_t delta_time_limit = 0.2f;
+  if(UNLIKELY(_delta_time > delta_time_limit))
+    _delta_time = delta_time_limit;
+}
+
+Instance::Instance()
+{
+  glfwSetTime(0.);
+
+  _total_time = 0.;
+}
+
+Instance::~Instance()
+{
 }
 
 } // namespace clock
