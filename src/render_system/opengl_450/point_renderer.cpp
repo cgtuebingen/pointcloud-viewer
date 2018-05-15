@@ -1,4 +1,5 @@
 #include <glad/glad.h>
+#include <glhelper/gl.hpp>
 #include <glm/glm.hpp>
 
 #include <render_system/point_renderer.hpp>
@@ -24,8 +25,8 @@ void clear_color()
 {
   glm::vec4 bg_color(glm::vec3(0.25f), 1.f);
 
-  glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+  GL_CALL(glClear, GL_COLOR_BUFFER_BIT);
 }
 
 } //namespace render_system
