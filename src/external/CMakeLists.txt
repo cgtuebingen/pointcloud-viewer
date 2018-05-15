@@ -23,6 +23,9 @@ add_library(glad STATIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c ${CMAKE_CURR
 target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
 
 ######## glhelper ########
+set(GLHELPER_ADDITIONAL_LIBRARIES glad glm)
+set(GLHELPER_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/config)
+set(GLHELPER_CONFIG_FILE ${GLHELPER_CONFIG_DIR}/glhelperconfig.hpp)
 add_subdirectory(glhelper)
 
 ######## TinyPLY ########
