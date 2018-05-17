@@ -74,6 +74,7 @@ PointRenderer::Implementation::Implementation()
                                            "  color = vec4(1, 0.5, 0, 1);\n"
                                            "}\n"),
                                     "PointRenderer::Implementation::Implementation() // fragment");
+  shader_object.CreateProgram();
 
   glm::vec4* vertex = reinterpret_cast<glm::vec4*>(vertex_position_buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
   for(int i=0; i<NUM_VERTICES; ++i)
