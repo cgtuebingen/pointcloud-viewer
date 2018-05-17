@@ -45,7 +45,7 @@ void PointRenderer::render_points()
 
 // ======== PointRenderer::Implementation ======================================
 
-const int NUM_VERTICES = 1024;
+const int NUM_VERTICES = 512;
 const int POSITION_BINDING_INDEX = 0;
 
 PointRenderer::Implementation::Implementation()
@@ -111,7 +111,7 @@ void PointRenderer::Implementation::render()
   vertex_position_buffer.BindVertexBuffer(POSITION_BINDING_INDEX, 0, vertex_array_object.GetVertexStride());
 
   shader_object.Activate();
-  GL_CALL(glDrawArrays, GL_LINE_STRIP, 0, NUM_VERTICES);
+  GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);
 }
 
 } //namespace render_system
