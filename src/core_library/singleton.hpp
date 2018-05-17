@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+#include <core_library/macros.hpp>
+
 /*
 Use this class as a base class for any class, you want to have only one
 instance.
@@ -17,6 +19,8 @@ template<typename T>
 class Singleton
 {
 public:
+  nocopy(Singleton)
+
   Singleton()
   {
     assert(_global_instance() == nullptr && "There can be only one singleton instance of this type.");
@@ -29,9 +33,10 @@ public:
     _global_instance() = nullptr;
   }
 
-  // Forbid copying the
-  Singleton(const Singleton&) = delete;
-  void operator=(const Singleton&) = delete;
+  static bool is_initalized()
+  {
+    return _global_instance() != nullptr;
+  }
 
 private:
   static Singleton<T>*& _global_instance()

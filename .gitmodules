@@ -7,3 +7,6 @@
 [submodule "tinyply"]
 	path = src/external/tinyply
 	url = git@github.com:ddiakopoulos/tinyply.git
+[submodule "glhelper"]
+	path = src/external/glhelper
+	url = git@github.com:Robert42/glhelper.git

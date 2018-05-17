@@ -1,15 +1,10 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <core_library/exception.hpp>
+#include <render_system/initialization.hpp>
 
 #include <GLFW/glfw3.h>
 
 namespace pointcloud_viewer {
-
-time_t time()
-{
-  return glfwGetTime();
-}
-
 namespace mainwindow {
 
 extern GLFWwindow* glfw_window;
@@ -35,8 +30,7 @@ Instance::Instance()
 
   glfwMakeContextCurrent(glfw_window);
 
-  // initialize glad to enable using OpenGL 4.5 functions
-  gladLoadGLLoader(GLADloadproc(glfwGetProcAddress));
+  render_system::initialize_gl(render_system::gl_proc_loader_t(glfwGetProcAddress));
 
   glfwSwapInterval(1); // enabled v-sync
 
@@ -59,23 +53,45 @@ void throw_glfw_error(int error, const char* description)
   print_error("glfw error(", error, "): ", description);
 }
 
+/**
+Returns true, if the window is still open.
+
+Use to determine, whether to close the window.
+*/
 bool is_open()
 {
+  assert(Instance::is_initalized());
+
   return !glfwWindowShouldClose(glfw_window);
 }
 
+/**
+Swap the back and front buffer
+*/
 void swap_buffers()
 {
+  assert(Instance::is_initalized());
+
   glfwSwapBuffers(glfw_window);
 }
 
+/**
+Poll and process window events
+*/
 void process_events()
 {
+  assert(Instance::is_initalized());
+
   glfwPollEvents();
 }
 
+/**
+The size of the framebuffer of the window.
+*/
 glm::ivec2 framebuffer_size()
 {
+  assert(Instance::is_initalized());
+
   glm::ivec2 size;
 
   glfwGetFramebufferSize(glfw_window, &size.x, &size.y);
