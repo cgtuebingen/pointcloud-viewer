@@ -67,6 +67,7 @@ PointRenderer::Implementation::Implementation()
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::FRAGMENT,
                                     format("#version 450 core\n"
                                            "\n"
+                                           "layout(location=0)\n"
                                            "out vec4 color;\n"
                                            "\n"
                                            "void main()\n"
