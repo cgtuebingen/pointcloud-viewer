@@ -11,7 +11,9 @@
 namespace renderer {
 namespace gl450 {
 
-
+/**
+A class responsible for rendering small visualizations (grids, axis, arrows, the camera)
+*/
 class DebugMesh final
 {
 public:
