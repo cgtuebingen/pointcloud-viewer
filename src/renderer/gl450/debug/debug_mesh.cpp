@@ -42,7 +42,7 @@ gl::VertexArrayObject DebugMesh::generateVertexArrayObject()
                                 Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2)});
 }
 
-
+// TODO binding and drawing should be done by a debug mesh renderer owning the shader and vertex array object
 void DebugMesh::bind(const gl::VertexArrayObject& vertexArrayObject)
 {
   const int vertexBufferBinding = 0;
