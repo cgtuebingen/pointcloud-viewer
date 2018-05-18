@@ -19,8 +19,6 @@ Multiple of those can be used for having multiple layers of point clouds.
 class PointRenderer final
 {
 public:
-  Q_DISABLE_COPY(PointRenderer)
-
   PointRenderer();
   ~PointRenderer();
 

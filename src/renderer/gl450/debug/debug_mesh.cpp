@@ -1,4 +1,5 @@
 #include <core_library/geometry.hpp>
+#include <core_library/print.hpp>
 #include <renderer/gl450/debug/debug_mesh.hpp>
 
 #include <glm/gtc/constants.hpp>
@@ -31,40 +32,73 @@ DebugMesh::DebugMesh(DebugMesh&& debugMesh)
 }
 
 
-gl::VertexArrayObject DebugMesh::generateVertexArrayObject()
-{
-  typedef gl::VertexArrayObject::Attribute Attribute;
+// ======== Renderer ============================================================
 
-  return gl::VertexArrayObject({Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION),
-                                Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1),
-                                Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR),
-                                Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2)});
+typedef gl::VertexArrayObject::Attribute Attribute;
+
+DebugMesh::Renderer::Renderer()
+  : shader_object("debug_mesh_renderer"),
+    vertex_array_object({
+                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION),
+                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1),
+                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR),
+                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2)})
+{
+  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX,
+                                    format("#version 450 core\n"
+                                           "\n"
+                                           "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION, ")\n",
+                                           "in vec3 position;\n"
+                                           "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR, ")\n",
+                                           "in vec3 position;\n"
+                                           "\n"
+                                           "void main()\n"
+                                           "{\n"
+                                           "  gl_Position = vec4(point_coord.xyz, 1);\n"
+                                           "}\n"),
+                                    "PointRenderer::Implementation::Implementation() // vertex");
+  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::FRAGMENT,
+                                    format("#version 450 core\n"
+                                           "\n"
+                                           "layout(location=0)\n"
+                                           "out vec4 color;\n"
+                                           "\n"
+                                           "void main()\n"
+                                           "{\n"
+                                           "  color = vec4(1, 0.5, 0, 1);\n"
+                                           "}\n"),
+                                    "PointRenderer::Implementation::Implementation() // fragment");
+  shader_object.CreateProgram();
 }
 
-// TODO binding and drawing should be done by a debug mesh renderer owning the shader and vertex array object
-void DebugMesh::bind(const gl::VertexArrayObject& vertexArrayObject)
+void DebugMesh::Renderer::begin()
+{
+  vertex_array_object.Bind();
+  shader_object.Activate();
+}
+
+void DebugMesh::Renderer::render(const DebugMesh& mesh)
 {
   const int vertexBufferBinding = 0;
-  vertex_buffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertexArrayObject.GetVertexStride(vertexBufferBinding)));
+  mesh.vertex_buffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertex_array_object.GetVertexStride(vertexBufferBinding)));
+  GL_CALL(glDrawArrays, GL_LINES, 0, mesh.num_vertices);
 }
 
-
-void DebugMesh::draw()
+void DebugMesh::Renderer::end()
 {
-  GL_CALL(glDrawArrays, GL_LINES, 0, num_vertices);
+  shader_object.Deactivate();
 }
-
 
 // ======== Painter ============================================================
 
 
-DebugMesh::Painter::Painter()
+DebugMesh::Generator::Generator()
 {
   transformations.push(glm::mat4(1));
 }
 
 
-void DebugMesh::Painter::begin_strip(strip_t close)
+void DebugMesh::Generator::begin_strip(strip_t close)
 {
   this->strip_index = 0;
   if(close == CLOSE)
@@ -73,7 +107,7 @@ void DebugMesh::Painter::begin_strip(strip_t close)
     this->first_strip_vertex = std::numeric_limits<int>::max();
 }
 
-void DebugMesh::Painter::end_strip()
+void DebugMesh::Generator::end_strip()
 {
   if(this->first_strip_vertex < vertices.length())
   {
@@ -90,7 +124,7 @@ void DebugMesh::Painter::end_strip()
 }
 
 
-void DebugMesh::Painter::add_vertex(const glm::vec3& position)
+void DebugMesh::Generator::add_vertex(const glm::vec3& position)
 {
   Q_ASSERT(transformations.size() > 0);
 
@@ -114,18 +148,18 @@ void DebugMesh::Painter::add_vertex(const glm::vec3& position)
   vertices.last().position = transform_point(transformations.top(), vertices.last().position);
 }
 
-void DebugMesh::Painter::add_vertex(const glm::vec2& position, float z)
+void DebugMesh::Generator::add_vertex(const glm::vec2& position, float z)
 {
   add_vertex(glm::vec3(position, z));
 }
 
-void DebugMesh::Painter::add_vertex(float x, float y, float z)
+void DebugMesh::Generator::add_vertex(float x, float y, float z)
 {
   add_vertex(glm::vec3(x, y, z));
 }
 
 
-void DebugMesh::Painter::add_circle(float radius, int nPoints)
+void DebugMesh::Generator::add_circle(float radius, int nPoints)
 {
   begin_strip(CLOSE);
   for(int i=0; i<nPoints; ++i)
@@ -138,7 +172,7 @@ void DebugMesh::Painter::add_circle(float radius, int nPoints)
 }
 
 
-void DebugMesh::Painter::add_sphere(float radius, int nPoints)
+void DebugMesh::Generator::add_sphere(float radius, int nPoints)
 {
   add_circle(radius, nPoints);
 
@@ -152,7 +186,7 @@ void DebugMesh::Painter::add_sphere(float radius, int nPoints)
 }
 
 
-void DebugMesh::Painter::add_cylinder(float radius, float length, int nPoints)
+void DebugMesh::Generator::add_cylinder(float radius, float length, int nPoints)
 {
   push_matrix(glm::vec3(0, 0, 0.5f)*length, glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
   add_circle(radius, nPoints);
@@ -170,7 +204,7 @@ void DebugMesh::Painter::add_cylinder(float radius, float length, int nPoints)
 }
 
 
-void DebugMesh::Painter::add_rect(const glm::vec2& min, const glm::vec2& max)
+void DebugMesh::Generator::add_rect(const glm::vec2& min, const glm::vec2& max)
 {
   begin_strip(CLOSE);
   add_vertex(min.x, min.y);
@@ -181,7 +215,7 @@ void DebugMesh::Painter::add_rect(const glm::vec2& min, const glm::vec2& max)
 }
 
 
-void DebugMesh::Painter::add_cube(const glm::vec3& min, const glm::vec3& max)
+void DebugMesh::Generator::add_cube(const glm::vec3& min, const glm::vec3& max)
 {
   push_matrix(glm::vec3(0, 0, min.z));
   add_rect(xy(min), xy(max));
@@ -201,7 +235,7 @@ void DebugMesh::Painter::add_cube(const glm::vec3& min, const glm::vec3& max)
 }
 
 
-void DebugMesh::Painter::add_arrow(float length, float tipLength)
+void DebugMesh::Generator::add_arrow(float length, float tipLength)
 {
   add_vertex(0, 0, 0);
   add_vertex(0, 0, length);
@@ -213,7 +247,7 @@ void DebugMesh::Painter::add_arrow(float length, float tipLength)
   }
 }
 
-void DebugMesh::Painter::push_matrix(const glm::vec3& position, bool multiply)
+void DebugMesh::Generator::push_matrix(const glm::vec3& position, bool multiply)
 {
   glm::mat4 matrix = glm::mat4(1);
   matrix[3] = glm::vec4(position, 1);
@@ -221,12 +255,12 @@ void DebugMesh::Painter::push_matrix(const glm::vec3& position, bool multiply)
   push_matrix(matrix, multiply);
 }
 
-void DebugMesh::Painter::push_matrix(const glm::vec3& position, const glm::vec3& normal, bool multiply)
+void DebugMesh::Generator::push_matrix(const glm::vec3& position, const glm::vec3& normal, bool multiply)
 {
   push_matrix(position, normal, find_best_perpendicular(normal), multiply);
 }
 
-void DebugMesh::Painter::push_matrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply)
+void DebugMesh::Generator::push_matrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply)
 {
   glm::mat4 matrix = glm::mat4(glm::vec4(firstPointDirection, 0),
                                glm::vec4(glm::cross(normal, firstPointDirection), 0),
@@ -236,7 +270,7 @@ void DebugMesh::Painter::push_matrix(const glm::vec3& position, const glm::vec3&
   push_matrix(matrix, multiply);
 }
 
-void DebugMesh::Painter::push_matrix(const glm::mat4& matrix, bool multiply)
+void DebugMesh::Generator::push_matrix(const glm::mat4& matrix, bool multiply)
 {
   Q_ASSERT(transformations.size() > 0);
 
@@ -246,7 +280,7 @@ void DebugMesh::Painter::push_matrix(const glm::mat4& matrix, bool multiply)
     transformations.push(matrix);
 }
 
-void DebugMesh::Painter::pop_matrix()
+void DebugMesh::Generator::pop_matrix()
 {
   Q_ASSERT(transformations.size() > 0);
   transformations.pop();
@@ -256,7 +290,7 @@ void DebugMesh::Painter::pop_matrix()
 }
 
 
-DebugMesh DebugMesh::Painter::to_mesh() const
+DebugMesh DebugMesh::Generator::to_mesh() const
 {
   return DebugMesh(vertices.data(), vertices.length());
 }

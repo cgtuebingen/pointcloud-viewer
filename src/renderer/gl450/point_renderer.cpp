@@ -74,6 +74,7 @@ void PointRenderer::render_points()
 
   shader_object.Activate();
   GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);
+  shader_object.Deactivate();
 }
 
 } //namespace gl450

@@ -5,6 +5,7 @@
 
 #include <glhelper/buffer.hpp>
 #include <glhelper/vertexarrayobject.hpp>
+#include <glhelper/shaderobject.hpp>
 
 #include <QStack>
 
@@ -18,21 +19,16 @@ class DebugMesh final
 {
 public:
   struct vertex_t;
-  class Painter;
+  class Renderer;
+  class Generator;
 
   DebugMesh(const vertex_t* vertices, int num_vertices);
   ~DebugMesh();
   DebugMesh(DebugMesh&&debugMesh);
 
-
   DebugMesh& operator=(DebugMesh&&) = delete;
   DebugMesh(const DebugMesh&) = delete;
   DebugMesh& operator=(const DebugMesh&) = delete;
-
-  static gl::VertexArrayObject generateVertexArrayObject();
-
-  void bind(const gl::VertexArrayObject& vertexArrayObject);
-  void draw();
 
 private:
   gl::Buffer vertex_buffer;
@@ -49,7 +45,25 @@ struct DebugMesh::vertex_t final
 };
 
 
-class DebugMesh::Painter final
+class DebugMesh::Renderer final
+{
+public:
+  Renderer();
+
+  Renderer(Renderer&& point_renderer);
+  Renderer& operator=(Renderer&& point_renderer);
+
+  void begin();
+  void render(const DebugMesh& mesh);
+  void end();
+
+private:
+  gl::ShaderObject shader_object;
+  gl::VertexArrayObject vertex_array_object;
+};
+
+
+class DebugMesh::Generator final
 {
 public:
   enum strip_t
@@ -65,7 +79,7 @@ public:
     float parameter2 = 0.f;
   };
 
-  Painter();
+  Generator();
 
   current_attribute_t next_attribute;
 
