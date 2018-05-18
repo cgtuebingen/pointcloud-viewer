@@ -1,8 +1,9 @@
+#include <core_library/print.hpp>
+
 #include <glhelper/buffer.hpp>
 #include <glhelper/vertexarrayobject.hpp>
 #include <glhelper/shaderobject.hpp>
 
-#include <core_library/string.hpp>
 #include <render_system/point_renderer.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -12,8 +13,6 @@ namespace render_system {
 class PointRenderer::Implementation final
 {
 public:
-  nocopy(Implementation)
-
   Implementation();
   ~Implementation();
 
@@ -108,7 +107,7 @@ void PointRenderer::Implementation::clear_color()
 void PointRenderer::Implementation::render()
 {
   vertex_array_object.Bind();
-  vertex_position_buffer.BindVertexBuffer(POSITION_BINDING_INDEX, 0, vertex_array_object.GetVertexStride());
+  vertex_position_buffer.BindVertexBuffer(POSITION_BINDING_INDEX, 0, static_cast<GLsizei>(vertex_array_object.GetVertexStride()));
 
   shader_object.Activate();
   GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);

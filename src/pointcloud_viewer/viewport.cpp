@@ -28,7 +28,8 @@ void Viewport::initializeGL()
 
 void Viewport::resizeGL(int w, int h)
 {
-
+  Q_UNUSED(w);
+  Q_UNUSED(h);
 }
 
 void Viewport::paintGL()

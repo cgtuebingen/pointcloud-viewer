@@ -1,12 +1,8 @@
-#include <core_library/macros.hpp>
-
 namespace render_system {
 
 class PointRenderer final
 {
 public:
-  nocopy(PointRenderer)
-
   PointRenderer();
   ~PointRenderer();
 

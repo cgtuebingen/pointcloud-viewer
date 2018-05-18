@@ -1,8 +1,9 @@
+find_package(Qt5Widgets 5.5 REQUIRED)
+
 add_library(core_library STATIC
-  dummy.cpp
-  exception.hpp
-  macros.hpp
-  singleton.hpp
-  string.hpp
-  string.inl
+  print.cpp
+  print.hpp
+  print.inl
 )
+
+target_link_libraries(core_library PUBLIC Qt5::Core)
