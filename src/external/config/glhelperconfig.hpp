@@ -16,7 +16,7 @@
 //#define TEXTURE2D_FROMFILE_STBI
 
 // Activates output of shader compile logs to log.
-//#define SHADER_COMPILE_LOGS
+#define SHADER_COMPILE_LOGS
 
 
 
@@ -34,7 +34,12 @@
 // Logging
 #define GLHELPER_LOG_ERROR(message)		do { std::cerr << "Error: " << message << " (" << __FILE__ << ", (" << __LINE__ << ")" << std::endl; } while(false)
 #define GLHELPER_LOG_WARNING(message)	do { std::cerr << "Warning: " << message << " (" << __FILE__ << ", (" << __LINE__ << ")" << std::endl; } while(false)
+
+#if 0
 #define GLHELPER_LOG_INFO(message)		do { std::clog << "Info: " << message << " (" << __FILE__ << ", (" << __LINE__ << ")" << std::endl; } while(false)
+#else
+#define GLHELPER_LOG_INFO(message)		do { } while(false)
+#endif
 
 
 
