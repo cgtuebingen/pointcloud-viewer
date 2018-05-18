@@ -15,10 +15,10 @@ namespace gl450 {
 class DebugMesh final
 {
 public:
-  struct Vertex;
+  struct vertex_t;
   class Painter;
 
-  DebugMesh(const Vertex* vertices, int numVertices);
+  DebugMesh(const vertex_t* vertices, int num_vertices);
   ~DebugMesh();
   DebugMesh(DebugMesh&&debugMesh);
 
@@ -33,12 +33,12 @@ public:
   void draw();
 
 private:
-  gl::Buffer vertexBuffer;
-  int numVertices;
+  gl::Buffer vertex_buffer;
+  int num_vertices;
 };
 
 
-struct DebugMesh::Vertex final
+struct DebugMesh::vertex_t final
 {
   glm::vec3 position;
   float parameter1;
@@ -59,34 +59,34 @@ public:
 
   Painter();
 
-  QVector<DebugMesh::Vertex> vertices;
+  QVector<vertex_t> vertices;
 
-  void beginStrip(bool close);
-  void endStrip();
+  void begin_strip(bool close);
+  void end_strip();
 
-  void addVertex(const glm::vec3& position);
-  void addVertex(const glm::vec2& position, float z=0);
-  void addVertex(float x, float y, float z=0);
+  void add_vertex(const glm::vec3& position);
+  void add_vertex(const glm::vec2& position, float z=0);
+  void add_vertex(float x, float y, float z=0);
 
-  void addCircle(float radius, int nPoints);
-  void addSphere(float radius, int nPoints);
-  void addCylinder(float radius, float length, int nPoints);
-  void addRect(const glm::vec2& min, const glm::vec2& max);
-  void addCube(const glm::vec3& min, const glm::vec3& max);
-  void addArrow(float length, float tipLength);
+  void add_circle(float radius, int nPoints);
+  void add_sphere(float radius, int nPoints);
+  void add_cylinder(float radius, float length, int nPoints);
+  void add_rect(const glm::vec2& min, const glm::vec2& max);
+  void add_cube(const glm::vec3& min, const glm::vec3& max);
+  void add_arrow(float length, float tipLength);
 
-  void pushMatrix(const glm::vec3& position, bool multiply = true);
-  void pushMatrix(const glm::vec3& position, const glm::vec3& normal, bool multiply = true);
-  void pushMatrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply = true);
-  void pushMatrix(const glm::mat4& matrix=glm::mat4(1), bool multiply = true);
-  void popMatrix();
+  void push_matrix(const glm::vec3& position, bool multiply = true);
+  void push_matrix(const glm::vec3& position, const glm::vec3& normal, bool multiply = true);
+  void push_matrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply = true);
+  void push_matrix(const glm::mat4& matrix=glm::mat4(1), bool multiply = true);
+  void pop_matrix();
 
-  DebugMesh toMesh() const;
+  DebugMesh to_mesh() const;
 
 private:
   QStack<glm::mat4> transformations;
-  int stripIndex = -1;
-  int firstStripVertex;
+  int strip_index = -1;
+  int first_strip_vertex;
 };
 
 

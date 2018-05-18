@@ -13,9 +13,9 @@ namespace renderer {
 namespace gl450 {
 
 
-DebugMesh::DebugMesh(const Vertex* vertices, int numVertices)
-  : vertexBuffer(int(sizeof(Vertex))*numVertices, gl::Buffer::UsageFlag::IMMUTABLE, vertices),
-    numVertices(numVertices)
+DebugMesh::DebugMesh(const vertex_t* vertices, int num_vertices)
+  : vertex_buffer(int(sizeof(vertex_t))*num_vertices, gl::Buffer::UsageFlag::IMMUTABLE, vertices),
+    num_vertices(num_vertices)
 {
 }
 
@@ -25,10 +25,10 @@ DebugMesh::~DebugMesh()
 
 
 DebugMesh::DebugMesh(DebugMesh&& debugMesh)
-  : vertexBuffer(std::move(debugMesh.vertexBuffer)),
-    numVertices(debugMesh.numVertices)
+  : vertex_buffer(std::move(debugMesh.vertex_buffer)),
+    num_vertices(debugMesh.num_vertices)
 {
-  debugMesh.numVertices = 0;
+  debugMesh.num_vertices = 0;
 }
 
 
@@ -46,13 +46,13 @@ gl::VertexArrayObject DebugMesh::generateVertexArrayObject()
 void DebugMesh::bind(const gl::VertexArrayObject& vertexArrayObject)
 {
   const int vertexBufferBinding = 0;
-  vertexBuffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertexArrayObject.GetVertexStride(vertexBufferBinding)));
+  vertex_buffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertexArrayObject.GetVertexStride(vertexBufferBinding)));
 }
 
 
 void DebugMesh::draw()
 {
-  GL_CALL(glDrawArrays, GL_LINES, 0, numVertices);
+  GL_CALL(glDrawArrays, GL_LINES, 0, num_vertices);
 }
 
 
@@ -65,44 +65,44 @@ DebugMesh::Painter::Painter()
 }
 
 
-void DebugMesh::Painter::beginStrip(bool close)
+void DebugMesh::Painter::begin_strip(bool close)
 {
-  this->stripIndex = 0;
+  this->strip_index = 0;
   if(close)
-    this->firstStripVertex = vertices.length();
+    this->first_strip_vertex = vertices.length();
   else
-    this->firstStripVertex = std::numeric_limits<int>::max();
+    this->first_strip_vertex = std::numeric_limits<int>::max();
 }
 
-void DebugMesh::Painter::endStrip()
+void DebugMesh::Painter::end_strip()
 {
-  if(this->firstStripVertex < vertices.length())
+  if(this->first_strip_vertex < vertices.length())
   {
-    pushMatrix(glm::mat4(1), false);
+    push_matrix(glm::mat4(1), false);
 
     // duplicating, because passing a reference to a value within the array vertices, which might be modified with vertices.resize within addVertex is dangerous
-    glm::vec3 startPosition = vertices[this->firstStripVertex].position;
+    glm::vec3 startPosition = vertices[this->first_strip_vertex].position;
 
-    addVertex(startPosition);
-    popMatrix();
+    add_vertex(startPosition);
+    pop_matrix();
   }
 
-  this->stripIndex = -1;
+  this->strip_index = -1;
 }
 
 
-void DebugMesh::Painter::addVertex(const glm::vec3& position)
+void DebugMesh::Painter::add_vertex(const glm::vec3& position)
 {
   Q_ASSERT(transformations.size() > 0);
 
-  if(stripIndex >= 0)
+  if(strip_index >= 0)
   {
-    if(vertices.length() > 0 && stripIndex > 1)
+    if(vertices.length() > 0 && strip_index > 1)
     {
-      Vertex v = vertices.last();
+      vertex_t v = vertices.last();
       vertices.append(v);
     }
-    stripIndex  = (stripIndex+1);
+    strip_index  = (strip_index+1);
   }
 
   vertices.resize(vertices.length()+1);
@@ -115,129 +115,129 @@ void DebugMesh::Painter::addVertex(const glm::vec3& position)
   vertices.last().position = transform_point(transformations.top(), vertices.last().position);
 }
 
-void DebugMesh::Painter::addVertex(const glm::vec2& position, float z)
+void DebugMesh::Painter::add_vertex(const glm::vec2& position, float z)
 {
-  addVertex(glm::vec3(position, z));
+  add_vertex(glm::vec3(position, z));
 }
 
-void DebugMesh::Painter::addVertex(float x, float y, float z)
+void DebugMesh::Painter::add_vertex(float x, float y, float z)
 {
-  addVertex(glm::vec3(x, y, z));
+  add_vertex(glm::vec3(x, y, z));
 }
 
 
-void DebugMesh::Painter::addCircle(float radius, int nPoints)
+void DebugMesh::Painter::add_circle(float radius, int nPoints)
 {
-  beginStrip(true);
+  begin_strip(true);
   for(int i=0; i<nPoints; ++i)
   {
     float angle = i * glm::two_pi<float>() / nPoints;
 
-    addVertex(glm::vec2(glm::cos(angle), glm::sin(angle)) * radius);
+    add_vertex(glm::vec2(glm::cos(angle), glm::sin(angle)) * radius);
   }
-  endStrip();
+  end_strip();
 }
 
 
-void DebugMesh::Painter::addSphere(float radius, int nPoints)
+void DebugMesh::Painter::add_sphere(float radius, int nPoints)
 {
-  addCircle(radius, nPoints);
+  add_circle(radius, nPoints);
 
-  pushMatrix(glm::vec3(0), glm::vec3(1, 0, 0));
-  addCircle(radius, nPoints);
-  popMatrix();
+  push_matrix(glm::vec3(0), glm::vec3(1, 0, 0));
+  add_circle(radius, nPoints);
+  pop_matrix();
 
-  pushMatrix(glm::vec3(0), glm::vec3(0, 1, 0));
-  addCircle(radius, nPoints);
-  popMatrix();
+  push_matrix(glm::vec3(0), glm::vec3(0, 1, 0));
+  add_circle(radius, nPoints);
+  pop_matrix();
 }
 
 
-void DebugMesh::Painter::addCylinder(float radius, float length, int nPoints)
+void DebugMesh::Painter::add_cylinder(float radius, float length, int nPoints)
 {
-  pushMatrix(glm::vec3(0, 0, 0.5f)*length, glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
-  addCircle(radius, nPoints);
-  popMatrix();
+  push_matrix(glm::vec3(0, 0, 0.5f)*length, glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
+  add_circle(radius, nPoints);
+  pop_matrix();
 
-  pushMatrix(-glm::vec3(0, 0, 0.5f)*length, glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
-  addCircle(radius, nPoints);
-  popMatrix();
+  push_matrix(-glm::vec3(0, 0, 0.5f)*length, glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
+  add_circle(radius, nPoints);
+  pop_matrix();
 
   for(const glm::vec3& side : {glm::vec3(1, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(0,-1, 0), glm::vec3(0, 1, 0)})
   {
-    addVertex(side*radius + glm::vec3(0, 0, .5f)*length);
-    addVertex(side*radius + glm::vec3(0, 0,-.5f)*length);
+    add_vertex(side*radius + glm::vec3(0, 0, .5f)*length);
+    add_vertex(side*radius + glm::vec3(0, 0,-.5f)*length);
   }
 }
 
 
-void DebugMesh::Painter::addRect(const glm::vec2& min, const glm::vec2& max)
+void DebugMesh::Painter::add_rect(const glm::vec2& min, const glm::vec2& max)
 {
-  beginStrip(true);
-  addVertex(min.x, min.y);
-  addVertex(min.x, max.y);
-  addVertex(max.x, max.y);
-  addVertex(max.x, min.y);
-  endStrip();
+  begin_strip(true);
+  add_vertex(min.x, min.y);
+  add_vertex(min.x, max.y);
+  add_vertex(max.x, max.y);
+  add_vertex(max.x, min.y);
+  end_strip();
 }
 
 
-void DebugMesh::Painter::addCube(const glm::vec3& min, const glm::vec3& max)
+void DebugMesh::Painter::add_cube(const glm::vec3& min, const glm::vec3& max)
 {
-  pushMatrix(glm::vec3(0, 0, min.z));
-  addRect(min.xy(), max.xy());
-  popMatrix();
+  push_matrix(glm::vec3(0, 0, min.z));
+  add_rect(min.xy(), max.xy());
+  pop_matrix();
 
-  pushMatrix(glm::vec3(0, 0, max.z));
-  addRect(min.xy(), max.xy());
-  popMatrix();
+  push_matrix(glm::vec3(0, 0, max.z));
+  add_rect(min.xy(), max.xy());
+  pop_matrix();
 
   for(const glm::vec2& corner_id : {glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 0), glm::vec2(1, 1)})
   {
     glm::vec2 corner = corner_id*max.xy() + (1.f-corner_id)*min.xy();
 
-    addVertex(corner.xy(), min.z);
-    addVertex(corner.xy(), max.z);
+    add_vertex(corner.xy(), min.z);
+    add_vertex(corner.xy(), max.z);
   }
 }
 
 
-void DebugMesh::Painter::addArrow(float length, float tipLength)
+void DebugMesh::Painter::add_arrow(float length, float tipLength)
 {
-  addVertex(0, 0, 0);
-  addVertex(0, 0, length);
+  add_vertex(0, 0, 0);
+  add_vertex(0, 0, length);
 
   for(const glm::vec2& dir : {glm::vec2(-1, -1), glm::vec2(-1, 1), glm::vec2(1, -1), glm::vec2(1, 1)})
   {
-    addVertex(0, 0, length);
-    addVertex(dir*tipLength, length-tipLength);
+    add_vertex(0, 0, length);
+    add_vertex(dir*tipLength, length-tipLength);
   }
 }
 
-void DebugMesh::Painter::pushMatrix(const glm::vec3& position, bool multiply)
+void DebugMesh::Painter::push_matrix(const glm::vec3& position, bool multiply)
 {
   glm::mat4 matrix = glm::mat4(1);
   matrix[3] = glm::vec4(position, 1);
 
-  pushMatrix(matrix, multiply);
+  push_matrix(matrix, multiply);
 }
 
-void DebugMesh::Painter::pushMatrix(const glm::vec3& position, const glm::vec3& normal, bool multiply)
+void DebugMesh::Painter::push_matrix(const glm::vec3& position, const glm::vec3& normal, bool multiply)
 {
-  pushMatrix(position, normal, find_best_perpendicular(normal), multiply);
+  push_matrix(position, normal, find_best_perpendicular(normal), multiply);
 }
 
-void DebugMesh::Painter::pushMatrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply)
+void DebugMesh::Painter::push_matrix(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& firstPointDirection, bool multiply)
 {
   glm::mat4 matrix = glm::mat4(glm::vec4(firstPointDirection, 0),
                                glm::vec4(glm::cross(normal, firstPointDirection), 0),
                                glm::vec4(normal, 0),
                                glm::vec4(position, 1));
 
-  pushMatrix(matrix, multiply);
+  push_matrix(matrix, multiply);
 }
 
-void DebugMesh::Painter::pushMatrix(const glm::mat4& matrix, bool multiply)
+void DebugMesh::Painter::push_matrix(const glm::mat4& matrix, bool multiply)
 {
   Q_ASSERT(transformations.size() > 0);
 
@@ -247,7 +247,7 @@ void DebugMesh::Painter::pushMatrix(const glm::mat4& matrix, bool multiply)
     transformations.push(matrix);
 }
 
-void DebugMesh::Painter::popMatrix()
+void DebugMesh::Painter::pop_matrix()
 {
   Q_ASSERT(transformations.size() > 0);
   transformations.pop();
@@ -257,7 +257,7 @@ void DebugMesh::Painter::popMatrix()
 }
 
 
-DebugMesh DebugMesh::Painter::toMesh() const
+DebugMesh DebugMesh::Painter::to_mesh() const
 {
   return DebugMesh(vertices.data(), vertices.length());
 }
