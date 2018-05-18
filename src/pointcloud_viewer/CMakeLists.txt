@@ -4,6 +4,8 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_executable(point_cloud_viewer
+  camera.cpp
+  camera.hpp
   main.cpp
   mainwindow.cpp
   mainwindow.hpp
