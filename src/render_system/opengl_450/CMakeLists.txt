@@ -1,5 +1,4 @@
 add_library(opengl_450 STATIC
-     initialization.cpp
      point_renderer.cpp
 )
 

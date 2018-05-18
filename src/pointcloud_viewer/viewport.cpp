@@ -16,4 +16,22 @@ Viewport::Viewport()
 
 Viewport::~Viewport()
 {
+  delete point_renderer;
+}
+
+void Viewport::initializeGL()
+{
+  gladLoadGL();
+
+  point_renderer = new render_system::PointRenderer();
+}
+
+void Viewport::resizeGL(int w, int h)
+{
+
+}
+
+void Viewport::paintGL()
+{
+  point_renderer->render_points();
 }
