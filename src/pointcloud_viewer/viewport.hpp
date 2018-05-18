@@ -2,8 +2,10 @@
 #define POINTCLOUDVIEWER_VIEWPORT_HPP_
 
 #include <renderer/gl450/declarations.hpp>
+#include <pointcloud_viewer/declarations.hpp>
 
 #include <QOpenGLWidget>
+
 
 class Viewport final : public QOpenGLWidget
 {
@@ -19,8 +21,6 @@ protected:
 
 private:
   typedef render_system::gl450::PointRenderer PointRenderer;
-
-  class Visualization;
 
   PointRenderer* point_renderer = nullptr;
 
