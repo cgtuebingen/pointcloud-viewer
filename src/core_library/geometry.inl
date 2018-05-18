@@ -36,7 +36,7 @@ inline glm::vec3 transform_point(const glm::mat4& t, const glm::vec3& point)
 
   vector = t * vector;
 
-  return glm::vec3(vector/*.xyz*/) / vector.w;
+  return xyz(vector) / vector.w;
 }
 
 inline glm::vec3 transform_point(const glm::mat4x3& t, const glm::vec3& point)
@@ -52,7 +52,7 @@ inline glm::vec3 transform_direction(const glm::mat4& t, const glm::vec3& relati
 
   vector = t * vector;
 
-  return glm::vec3(vector/*.xyz*/);
+  return xyz(vector);
 }
 
 inline glm::vec3 transform_direction(const glm::mat4x3& t, const glm::vec3& relative)
@@ -60,4 +60,30 @@ inline glm::vec3 transform_direction(const glm::mat4x3& t, const glm::vec3& rela
   glm::vec4 vector(relative, 0);
 
   return t * vector;
+}
+
+
+inline glm::vec2 xy(glm::vec2 xy)
+{
+  return glm::vec2(xy);
+}
+
+inline glm::vec2 xy(glm::vec3 xyz)
+{
+  return glm::vec2(xyz);
+}
+
+inline glm::vec2 xy(glm::vec4 xyzw)
+{
+  return glm::vec2(xyzw);
+}
+
+inline glm::vec3 xyz(glm::vec3 xyz)
+{
+  return glm::vec3(xyz);
+}
+
+inline glm::vec3 xyz(glm::vec4 xyzw)
+{
+  return glm::vec3(xyzw);
 }

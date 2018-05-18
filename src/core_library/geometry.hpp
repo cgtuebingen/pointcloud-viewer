@@ -17,6 +17,11 @@ glm::vec3 transform_point(const glm::mat4x3& t, const glm::vec3& point);
 glm::vec3 transform_direction(const glm::mat4& t, const glm::vec3& relative);
 glm::vec3 transform_direction(const glm::mat4x3& t, const glm::vec3& relative);
 
+glm::vec2 xy(glm::vec2 xy);
+glm::vec2 xy(glm::vec3 xyz);
+glm::vec2 xy(glm::vec4 xyzw);
+glm::vec3 xyz(glm::vec3 xyz);
+glm::vec3 xyz(glm::vec4 xyzw);
 
 #endif // CORELIBRARY_GEOMETRY_HPP_
 

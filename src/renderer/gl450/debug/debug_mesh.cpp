@@ -1,4 +1,3 @@
-#define GLM_FORCE_SWIZZLE
 #include <core_library/geometry.hpp>
 #include <renderer/gl450/debug/debug_mesh.hpp>
 
@@ -65,10 +64,10 @@ DebugMesh::Painter::Painter()
 }
 
 
-void DebugMesh::Painter::begin_strip(bool close)
+void DebugMesh::Painter::begin_strip(strip_t close)
 {
   this->strip_index = 0;
-  if(close)
+  if(close == CLOSE)
     this->first_strip_vertex = vertices.length();
   else
     this->first_strip_vertex = std::numeric_limits<int>::max();
@@ -108,9 +107,9 @@ void DebugMesh::Painter::add_vertex(const glm::vec3& position)
   vertices.resize(vertices.length()+1);
 
   vertices.last().position = position;
-  vertices.last().color = nextAttribute.color;
-  vertices.last().parameter1 = nextAttribute.parameter1;
-  vertices.last().parameter2 = nextAttribute.parameter2;
+  vertices.last().color = next_attribute.color;
+  vertices.last().parameter1 = next_attribute.parameter1;
+  vertices.last().parameter2 = next_attribute.parameter2;
 
   vertices.last().position = transform_point(transformations.top(), vertices.last().position);
 }
@@ -128,7 +127,7 @@ void DebugMesh::Painter::add_vertex(float x, float y, float z)
 
 void DebugMesh::Painter::add_circle(float radius, int nPoints)
 {
-  begin_strip(true);
+  begin_strip(CLOSE);
   for(int i=0; i<nPoints; ++i)
   {
     float angle = i * glm::two_pi<float>() / nPoints;
@@ -173,7 +172,7 @@ void DebugMesh::Painter::add_cylinder(float radius, float length, int nPoints)
 
 void DebugMesh::Painter::add_rect(const glm::vec2& min, const glm::vec2& max)
 {
-  begin_strip(true);
+  begin_strip(CLOSE);
   add_vertex(min.x, min.y);
   add_vertex(min.x, max.y);
   add_vertex(max.x, max.y);
@@ -185,19 +184,19 @@ void DebugMesh::Painter::add_rect(const glm::vec2& min, const glm::vec2& max)
 void DebugMesh::Painter::add_cube(const glm::vec3& min, const glm::vec3& max)
 {
   push_matrix(glm::vec3(0, 0, min.z));
-  add_rect(min.xy(), max.xy());
+  add_rect(xy(min), xy(max));
   pop_matrix();
 
   push_matrix(glm::vec3(0, 0, max.z));
-  add_rect(min.xy(), max.xy());
+  add_rect(xy(min), xy(max));
   pop_matrix();
 
   for(const glm::vec2& corner_id : {glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 0), glm::vec2(1, 1)})
   {
-    glm::vec2 corner = corner_id*max.xy() + (1.f-corner_id)*min.xy();
+    glm::vec2 corner = corner_id*xy(max) + (1.f-corner_id)*xy(min);
 
-    add_vertex(corner.xy(), min.z);
-    add_vertex(corner.xy(), max.z);
+    add_vertex(xy(corner), min.z);
+    add_vertex(xy(corner), max.z);
   }
 }
 

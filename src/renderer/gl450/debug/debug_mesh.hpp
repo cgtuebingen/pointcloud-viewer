@@ -50,18 +50,26 @@ struct DebugMesh::vertex_t final
 class DebugMesh::Painter final
 {
 public:
-  struct CurrentAttribute
+  enum strip_t
+  {
+    CLOSE,
+    OPEN,
+  };
+
+  struct current_attribute_t
   {
     glm::vec3 color = glm::vec3(1, 0.5, 0);
     float parameter1 = 0.f;
     float parameter2 = 0.f;
-  }nextAttribute;
+  };
 
   Painter();
 
+  current_attribute_t next_attribute;
+
   QVector<vertex_t> vertices;
 
-  void begin_strip(bool close);
+  void begin_strip(strip_t close);
   void end_strip();
 
   void add_vertex(const glm::vec3& position);
