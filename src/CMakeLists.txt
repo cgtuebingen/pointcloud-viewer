@@ -14,7 +14,7 @@ add_subdirectory(external)
 # Module containing a collection of utilities/tools/helpers
 add_subdirectory(core_library)
 # Module responsible for rendering the points using a render system (OpenGL 4.5)
-add_subdirectory(render_system)
+add_subdirectory(renderer)
 # Module loading the points to the acceleration structure and discarding them, when not needed anymore
 add_subdirectory(streaming_system)
 # The application putting everything together in a gui

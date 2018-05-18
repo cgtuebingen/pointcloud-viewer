@@ -1,8 +1,7 @@
 #ifndef POINTCLOUDVIEWER_VIEWPORT_HPP_
 #define POINTCLOUDVIEWER_VIEWPORT_HPP_
 
-#include <glad/glad.h>
-#include <render_system/point_renderer.hpp>
+#include <renderer/gl450/declarations.hpp>
 
 #include <QOpenGLWidget>
 
@@ -18,8 +17,10 @@ protected:
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
-public:
-  render_system::PointRenderer* point_renderer = nullptr;
+private:
+  typedef render_system::gl450::PointRenderer PointRenderer;
+
+  PointRenderer* point_renderer = nullptr;
 };
 
 #endif // POINTCLOUDVIEWER_VIEWPORT_HPP_

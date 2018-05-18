@@ -1,52 +1,15 @@
+#include <renderer/gl450/point_renderer.hpp>
+
+#include <glm/gtc/constants.hpp>
 #include <core_library/print.hpp>
 
-#include <glhelper/buffer.hpp>
-#include <glhelper/vertexarrayobject.hpp>
-#include <glhelper/shaderobject.hpp>
-
-#include <render_system/point_renderer.hpp>
-#include <glm/gtc/constants.hpp>
-
 namespace render_system {
-
-
-class PointRenderer::Implementation final
-{
-public:
-  Implementation();
-  ~Implementation();
-
-  void render_points();
-
-private:
-  gl::ShaderObject shader_object;
-  gl::Buffer vertex_position_buffer;
-  gl::VertexArrayObject vertex_array_object;
-
-  void render();
-};
-
-PointRenderer::PointRenderer()
-{
-  implementation = new Implementation;
-}
-
-PointRenderer::~PointRenderer()
-{
-  delete implementation;
-}
-
-void PointRenderer::render_points()
-{
-  implementation->render_points();
-}
-
-// ======== PointRenderer::Implementation ======================================
+namespace gl450 {
 
 const int NUM_VERTICES = 512;
 const int POSITION_BINDING_INDEX = 0;
 
-PointRenderer::Implementation::Implementation()
+PointRenderer::PointRenderer()
   : shader_object("point_renderer"),
     vertex_position_buffer(NUM_VERTICES * sizeof(glm::vec4), gl::Buffer::UsageFlag::MAP_WRITE, nullptr),
     vertex_array_object({gl::VertexArrayObject::Attribute(gl::VertexArrayObject::Attribute::Type::FLOAT, 4, POSITION_BINDING_INDEX)})
@@ -85,16 +48,26 @@ PointRenderer::Implementation::Implementation()
   vertex = nullptr;
 }
 
-PointRenderer::Implementation::~Implementation()
+PointRenderer::~PointRenderer()
 {
 }
 
-void PointRenderer::Implementation::render_points()
+PointRenderer::PointRenderer(PointRenderer&& point_renderer)
+  : shader_object(std::move(point_renderer.shader_object)),
+    vertex_position_buffer(std::move(point_renderer.vertex_position_buffer)),
+    vertex_array_object(std::move(point_renderer.vertex_array_object))
 {
-  render();
 }
 
-void PointRenderer::Implementation::render()
+PointRenderer& PointRenderer::operator=(PointRenderer&& point_renderer)
+{
+  shader_object = std::move(point_renderer.shader_object);
+  vertex_position_buffer = std::move(point_renderer.vertex_position_buffer);
+  vertex_array_object = std::move(point_renderer.vertex_array_object);
+  return *this;
+}
+
+void PointRenderer::render_points()
 {
   vertex_array_object.Bind();
   vertex_position_buffer.BindVertexBuffer(POSITION_BINDING_INDEX, 0, static_cast<GLsizei>(vertex_array_object.GetVertexStride()));
@@ -103,4 +76,5 @@ void PointRenderer::Implementation::render()
   GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);
 }
 
+} //namespace gl450
 } //namespace render_system

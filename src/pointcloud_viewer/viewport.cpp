@@ -1,6 +1,6 @@
 #include <pointcloud_viewer/viewport.hpp>
 
-#include <glhelper/gl.hpp>
+#include <renderer/gl450/point_renderer.hpp>
 
 Viewport::Viewport()
 {
@@ -25,7 +25,7 @@ void Viewport::initializeGL()
 {
   gladLoadGL();
 
-  point_renderer = new render_system::PointRenderer();
+  point_renderer = new PointRenderer();
 
   glm::vec4 bg_color(glm::vec3(0.25f), 1.f);
 
