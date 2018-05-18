@@ -1,14 +1,20 @@
-#include <glrt/renderer/debugging/debug-mesh.h>
-#include <glrt/toolkit/geometry.h>
-#include <glrt/glsl/layout-constants.h>
+#define GLM_FORCE_SWIZZLE
+#include <core_library/geometry.hpp>
+#include <renderer/gl450/debug/debug_mesh.hpp>
 
-namespace glrt {
+#include <glm/gtc/constants.hpp>
+
+const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION = 0;
+const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1 = 1;
+const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR = 2;
+const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2 = 3;
+
 namespace renderer {
-namespace debugging {
+namespace gl450 {
 
 
 DebugMesh::DebugMesh(const Vertex* vertices, int numVertices)
-  : vertexBuffer(sizeof(Vertex)*numVertices, gl::Buffer::UsageFlag::IMMUTABLE, vertices),
+  : vertexBuffer(int(sizeof(Vertex))*numVertices, gl::Buffer::UsageFlag::IMMUTABLE, vertices),
     numVertices(numVertices)
 {
 }
@@ -30,24 +36,17 @@ gl::VertexArrayObject DebugMesh::generateVertexArrayObject()
 {
   typedef gl::VertexArrayObject::Attribute Attribute;
 
-  Q_ASSERT(DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION == 0);
-  Q_ASSERT(DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1 == 1);
-  Q_ASSERT(DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR == 2);
-  Q_ASSERT(DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2 == 3);
-
-  const int vertexBufferBinding = 0;
-
-  return std::move(gl::VertexArrayObject({Attribute(Attribute::Type::FLOAT, 3, vertexBufferBinding),
-                                          Attribute(Attribute::Type::FLOAT, 1, vertexBufferBinding),
-                                          Attribute(Attribute::Type::FLOAT, 3, vertexBufferBinding),
-                                          Attribute(Attribute::Type::FLOAT, 1, vertexBufferBinding)}));
+  return gl::VertexArrayObject({Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION),
+                                Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1),
+                                Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR),
+                                Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2)});
 }
 
 
 void DebugMesh::bind(const gl::VertexArrayObject& vertexArrayObject)
 {
   const int vertexBufferBinding = 0;
-  vertexBuffer.BindVertexBuffer(vertexBufferBinding, 0, vertexArrayObject.GetVertexStride(vertexBufferBinding));
+  vertexBuffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertexArrayObject.GetVertexStride(vertexBufferBinding)));
 }
 
 
@@ -264,8 +263,7 @@ DebugMesh DebugMesh::Painter::toMesh() const
 }
 
 
-} // namespace debugging
+} // namespace gl450
 } // namespace renderer
-} // namespace glrt
 
 

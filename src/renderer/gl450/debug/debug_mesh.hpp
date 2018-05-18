@@ -1,16 +1,15 @@
-#ifndef GLRT_RENDERER_DEBUGGING_DEBUGMESH_H
-#define GLRT_RENDERER_DEBUGGING_DEBUGMESH_H
+#ifndef RENDERSYSTEM_GL450_DEBUG_DEBUGMESH_H
+#define RENDERSYSTEM_GL450_DEBUG_DEBUGMESH_H
 
-#include <glrt/dependencies.h>
+#include <renderer/gl450/declarations.hpp>
 
 #include <glhelper/buffer.hpp>
 #include <glhelper/vertexarrayobject.hpp>
 
 #include <QStack>
 
-namespace glrt {
 namespace renderer {
-namespace debugging {
+namespace gl450 {
 
 
 class DebugMesh final
@@ -91,9 +90,8 @@ private:
 };
 
 
-} // namespace debugging
+} // namespace gl450
 } // namespace renderer
-} // namespace glrt
 
-#endif // GLRT_RENDERER_DEBUGGING_DEBUGMESH_H
+#endif // RENDERSYSTEM_GL450_DEBUG_DEBUGMESH_H
 
