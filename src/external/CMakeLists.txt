@@ -1,9 +1,7 @@
 ######## GLM ########
 # Used for math
-
-set(GLM_STATIC_LIBRARY_ENABLE ON CACHE BOOL "Use a static glm library by default")
-
-add_subdirectory(glm)
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/glm)
 
 ######## glad ########
 # OpenGL Loader

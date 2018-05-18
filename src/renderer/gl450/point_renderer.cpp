@@ -3,7 +3,7 @@
 #include <glm/gtc/constants.hpp>
 #include <core_library/print.hpp>
 
-namespace render_system {
+namespace renderer {
 namespace gl450 {
 
 const int NUM_VERTICES = 512;
@@ -74,7 +74,8 @@ void PointRenderer::render_points()
 
   shader_object.Activate();
   GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);
+  shader_object.Deactivate();
 }
 
 } //namespace gl450
-} //namespace render_system
+} //namespace renderer

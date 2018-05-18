@@ -1,6 +1,6 @@
 #include <pointcloud_viewer/viewport.hpp>
-
-#include <renderer/gl450/point_renderer.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
+#include <core_library/color_palette.hpp>
 
 Viewport::Viewport()
 {
@@ -19,6 +19,7 @@ Viewport::Viewport()
 Viewport::~Viewport()
 {
   delete point_renderer;
+  delete visualization;
 }
 
 void Viewport::initializeGL()
@@ -26,9 +27,9 @@ void Viewport::initializeGL()
   gladLoadGL();
 
   point_renderer = new PointRenderer();
+  visualization = new Visualization();
 
-  glm::vec4 bg_color(glm::vec3(0.25f), 1.f);
-
+  glm::vec4 bg_color = color_palette::grey[0];
   GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 }
 
@@ -41,5 +42,6 @@ void Viewport::resizeGL(int w, int h)
 void Viewport::paintGL()
 {
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  visualization->render();
   point_renderer->render_points();
 }

@@ -9,7 +9,7 @@
 
 #include <QtGlobal>
 
-namespace render_system {
+namespace renderer {
 namespace gl450 {
 
 /**
@@ -19,8 +19,6 @@ Multiple of those can be used for having multiple layers of point clouds.
 class PointRenderer final
 {
 public:
-  Q_DISABLE_COPY(PointRenderer)
-
   PointRenderer();
   ~PointRenderer();
 
@@ -36,6 +34,6 @@ private:
 };
 
 } //namespace gl450
-} //namespace render_system
+} //namespace renderer
 
 #endif // RENDERSYSTEM_GL450_POINT_RENDERER_HPP_

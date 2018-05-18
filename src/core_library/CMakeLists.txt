@@ -1,9 +1,12 @@
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_library(core_library STATIC
-  print.cpp
+  color_palette.cpp
+  color_palette.hpp
+  geometry.hpp
+  geometry.inl
   print.hpp
   print.inl
 )
 
-target_link_libraries(core_library PUBLIC Qt5::Core)
+target_link_libraries(core_library PUBLIC Qt5::Gui glm)

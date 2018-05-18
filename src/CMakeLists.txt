@@ -5,7 +5,7 @@ project(pointcloud_viewer)
 # use c++14
 set(CMAKE_CXX_STANDARD 14)
 
-# allow for example `#include <render_system/instance.hpp>`
+# allow for example `#include <renderer/declarations.hpp>`
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Find external dependencies (glm, glfw)
