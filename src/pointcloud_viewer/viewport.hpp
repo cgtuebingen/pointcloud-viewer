@@ -20,7 +20,7 @@ protected:
   void paintGL() override;
 
 private:
-  typedef render_system::gl450::PointRenderer PointRenderer;
+  typedef renderer::gl450::PointRenderer PointRenderer;
 
   PointRenderer* point_renderer = nullptr;
 

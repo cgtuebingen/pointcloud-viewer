@@ -18,8 +18,8 @@ public:
   void render();
 
 private:
-  typedef render_system::gl450::DebugMeshRenderer DebugMeshRenderer;
-  typedef render_system::gl450::DebugMesh DebugMesh;
+  typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;
+  typedef renderer::gl450::DebugMesh DebugMesh;
 
   DebugMeshRenderer debug_mesh_renderer;
 

@@ -9,7 +9,7 @@
 
 #include <QStack>
 
-namespace render_system {
+namespace renderer {
 namespace gl450 {
 
 /**
@@ -118,7 +118,7 @@ private:
 
 
 } // namespace gl450
-} // namespace render_system
+} // namespace renderer
 
 #endif // RENDERSYSTEM_GL450_DEBUG_DEBUGMESH_H
 

@@ -12,7 +12,7 @@ const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2 = 3;
 
 const int DEBUG_MESH_VERTEX_BUFFER_BINDING = 0;
 
-namespace render_system {
+namespace renderer {
 namespace gl450 {
 
 
@@ -339,6 +339,6 @@ DebugMesh DebugMesh::Generator::to_mesh() const
 
 
 } // namespace gl450
-} // namespace render_system
+} // namespace renderer
 
 

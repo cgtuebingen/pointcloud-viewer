@@ -6,7 +6,7 @@
 
 #include <QtGlobal>
 
-namespace render_system {
+namespace renderer {
 namespace gl450 {
 
 class DebugMesh;
@@ -15,6 +15,6 @@ class DebugMeshRenderer;
 class PointRenderer;
 
 } //namespace gl450
-} //namespace render_system
+} //namespace renderer
 
 #endif // RENDERSYSTEM_GL450_DECLARATIONS_HPP_
