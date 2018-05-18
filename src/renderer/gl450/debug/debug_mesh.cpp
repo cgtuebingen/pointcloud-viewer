@@ -1,5 +1,6 @@
 #include <core_library/geometry.hpp>
 #include <core_library/print.hpp>
+#include <core_library/color_palette.hpp>
 #include <renderer/gl450/debug/debug_mesh.hpp>
 
 #include <glm/gtc/constants.hpp>
@@ -37,20 +38,22 @@ DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
 {
   Generator generator;
 
-  if(axis.x)
+  const int brightness = 1;
+  const glm::vec3 colors[] = {color_palette::red[brightness],
+                             color_palette::green[brightness],
+                             color_palette::blue[brightness]};
+
+  for(int dim=0; dim<3; ++dim)
   {
-    generator.next_attribute.color = glm::vec3(1, 0, 0);
-    generator.add_arrow(glm::vec3(0), glm::vec3(length, 0, 0), tip_length);
-  }
-  if(axis.y)
-  {
-    generator.next_attribute.color = glm::vec3(0, 1, 0);
-    generator.add_arrow(glm::vec3(0), glm::vec3(0, length, 0), tip_length);
-  }
-  if(axis.z)
-  {
-    generator.next_attribute.color = glm::vec3(0, 0, 1);
-    generator.add_arrow(glm::vec3(0), glm::vec3(0, 0, length), tip_length);
+    if(axis[dim])
+    {
+      glm::vec3 target(0);
+
+      target[dim] = length;
+
+      generator.next_attribute.color = colors[dim];
+      generator.add_arrow(glm::vec3(0), target, tip_length);
+    }
   }
 
   return generator.to_mesh();
