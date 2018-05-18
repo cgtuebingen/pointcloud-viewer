@@ -49,7 +49,7 @@ DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
   }
   if(axis.z)
   {
-    generator.next_attribute.color = glm::vec3(0, 0, 0);
+    generator.next_attribute.color = glm::vec3(0, 0, 1);
     generator.add_arrow(glm::vec3(0), glm::vec3(0, 0, length), tip_length);
   }
 
