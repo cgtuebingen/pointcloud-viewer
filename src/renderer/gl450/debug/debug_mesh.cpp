@@ -9,6 +9,8 @@ const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1 = 1;
 const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR = 2;
 const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2 = 3;
 
+const int DEBUG_MESH_VERTEX_BUFFER_BINDING = 0;
+
 namespace render_system {
 namespace gl450 {
 
@@ -62,33 +64,38 @@ typedef gl::VertexArrayObject::Attribute Attribute;
 DebugMeshRenderer::DebugMeshRenderer()
   : shader_object("debug_mesh_renderer"),
     vertex_array_object({
-                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION),
-                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1),
-                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR),
-                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2)})
+                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_BUFFER_BINDING),
+                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_BUFFER_BINDING),
+                        Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_BUFFER_BINDING),
+                        Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_BUFFER_BINDING)})
 {
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX,
                                     format("#version 450 core\n"
                                            "\n"
                                            "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION, ")\n",
-                                           "in vec3 position;\n"
+                                           "in vec3 vertex_position;\n"
                                            "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR, ")\n",
-                                           "in vec3 position;\n"
+                                           "in vec3 vertex_color;\n"
+                                           "\n"
+                                           "out vec3 color;\n"
                                            "\n"
                                            "void main()\n"
                                            "{\n"
-                                           "  gl_Position = vec4(point_coord.xyz, 1);\n"
+                                           "  gl_Position = vec4(vertex_position.xyz, 1);\n"
+                                           "  color = vertex_color;\n"
                                            "}\n"),
                                     "PointRenderer::Implementation::Implementation() // vertex");
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::FRAGMENT,
                                     format("#version 450 core\n"
                                            "\n"
+                                           "in vec3 color;\n"
+                                           "\n"
                                            "layout(location=0)\n"
-                                           "out vec4 color;\n"
+                                           "out vec4 fragment_color;\n"
                                            "\n"
                                            "void main()\n"
                                            "{\n"
-                                           "  color = vec4(1, 0.5, 0, 1);\n"
+                                           "  fragment_color = vec4(color, 1);\n"
                                            "}\n"),
                                     "PointRenderer::Implementation::Implementation() // fragment");
   shader_object.CreateProgram();
@@ -102,8 +109,7 @@ void DebugMeshRenderer::begin()
 
 void DebugMeshRenderer::render(const DebugMesh& mesh)
 {
-  const int vertexBufferBinding = 0;
-  mesh.vertex_buffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertex_array_object.GetVertexStride(vertexBufferBinding)));
+  mesh.vertex_buffer.BindVertexBuffer(DEBUG_MESH_VERTEX_BUFFER_BINDING, 0, GLsizei(vertex_array_object.GetVertexStride(DEBUG_MESH_VERTEX_BUFFER_BINDING)));
   GL_CALL(glDrawArrays, GL_LINES, 0, mesh.num_vertices);
 }
 
