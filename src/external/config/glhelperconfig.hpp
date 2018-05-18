@@ -16,7 +16,7 @@
 //#define TEXTURE2D_FROMFILE_STBI
 
 // Activates output of shader compile logs to log.
-#define SHADER_COMPILE_LOGS
+//#define SHADER_COMPILE_LOGS
 
 
 

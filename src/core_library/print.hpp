@@ -1,5 +1,5 @@
-#ifndef CORELIBRARY_STRING_HPP_
-#define CORELIBRARY_STRING_HPP_
+#ifndef CORELIBRARY_PRINT_HPP_
+#define CORELIBRARY_PRINT_HPP_
 
 #include <string>
 #include <sstream>
@@ -23,6 +23,6 @@ std::ostream& print(const arg_t&... args);
 template<typename... arg_t>
 std::ostream& print_error(const arg_t&... args);
 
-#include <core_library/string.inl>
+#include <core_library/print.inl>
 
-#endif // CORELIBRARY_STRING_HPP_
+#endif // CORELIBRARY_PRINT_HPP_
