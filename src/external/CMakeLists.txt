@@ -1,14 +1,5 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
-######## GLFW ########
-# application window and input management
-
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Don't build the GLFW examples by default")
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "Don't build the GLFW tests by default")
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "Don't build the GLFW docs by default")
-
-add_subdirectory(glfw)
-
 ######## GLM ########
 # Used for math
 
