@@ -24,6 +24,7 @@ private:
   DebugMeshRenderer debug_mesh_renderer;
 
   DebugMesh world_axis;
+  DebugMesh world_grid;
 };
 
 #endif // POINTCLOUDVIEWER_VISUALIZATIONS_HPP_

@@ -30,7 +30,8 @@ public:
   DebugMesh(const DebugMesh&) = delete;
   DebugMesh& operator=(const DebugMesh&) = delete;
 
-  static DebugMesh axis(glm::bvec3 axis = glm::bvec3(true), float length=1.f, float tip_length=0.1);
+  static DebugMesh axis(glm::bvec3 axis = glm::bvec3(true), float length=1.f, float tip_length=0.1f);
+  static DebugMesh grid(int repetition_per_side, float cell_size, glm::vec3 color, glm::vec3 origin=glm::vec3(0), glm::vec3 axis_1 = glm::vec3(1,0,0), glm::vec3 axis_2 = glm::vec3(0,1,0));
 
 private:
   gl::Buffer vertex_buffer;

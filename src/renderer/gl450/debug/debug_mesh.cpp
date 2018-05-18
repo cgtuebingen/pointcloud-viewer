@@ -59,6 +59,27 @@ DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
   return generator.to_mesh();
 }
 
+DebugMesh DebugMesh::grid(int repetition_per_side, float cell_size, glm::vec3 color, glm::vec3 origin, glm::vec3 axis_1, glm::vec3 axis_2)
+{
+  Generator generator;
+  generator.next_attribute.color = color;
+
+  glm::vec3 half_axis_1 = axis_1 * (cell_size * repetition_per_side);
+  glm::vec3 half_axis_2 = axis_2 * (cell_size * repetition_per_side);
+
+  for(int i=-repetition_per_side; i<=repetition_per_side; ++i)
+  {
+    const float offset = cell_size * i;
+
+    generator.add_vertex(origin+axis_1*offset+half_axis_2);
+    generator.add_vertex(origin+axis_1*offset-half_axis_2);
+    generator.add_vertex(origin+axis_2*offset+half_axis_1);
+    generator.add_vertex(origin+axis_2*offset-half_axis_1);
+  }
+
+  return generator.to_mesh();
+}
+
 
 // ======== Renderer ============================================================
 
