@@ -23,7 +23,6 @@ private:
   gl::Buffer vertex_position_buffer;
   gl::VertexArrayObject vertex_array_object;
 
-  void clear_color();
   void render();
 };
 
@@ -92,16 +91,7 @@ PointRenderer::Implementation::~Implementation()
 
 void PointRenderer::Implementation::render_points()
 {
-  clear_color();
   render();
-}
-
-void PointRenderer::Implementation::clear_color()
-{
-  glm::vec4 bg_color(glm::vec3(0.25f), 1.f);
-
-  GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-  GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
 void PointRenderer::Implementation::render()
