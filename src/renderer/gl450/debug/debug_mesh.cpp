@@ -9,7 +9,7 @@ const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER1 = 1;
 const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR = 2;
 const int DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_PARAMETER2 = 3;
 
-namespace renderer {
+namespace render_system {
 namespace gl450 {
 
 
@@ -31,12 +31,35 @@ DebugMesh::DebugMesh(DebugMesh&& debugMesh)
   debugMesh.num_vertices = 0;
 }
 
+DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
+{
+  Generator generator;
+
+  if(axis.x)
+  {
+    generator.next_attribute.color = glm::vec3(1, 0, 0);
+    generator.add_arrow(glm::vec3(0), glm::vec3(length, 0, 0), tip_length);
+  }
+  if(axis.y)
+  {
+    generator.next_attribute.color = glm::vec3(0, 1, 0);
+    generator.add_arrow(glm::vec3(0), glm::vec3(0, length, 0), tip_length);
+  }
+  if(axis.z)
+  {
+    generator.next_attribute.color = glm::vec3(0, 0, 0);
+    generator.add_arrow(glm::vec3(0), glm::vec3(0, 0, length), tip_length);
+  }
+
+  return generator.to_mesh();
+}
+
 
 // ======== Renderer ============================================================
 
 typedef gl::VertexArrayObject::Attribute Attribute;
 
-DebugMesh::Renderer::Renderer()
+DebugMeshRenderer::DebugMeshRenderer()
   : shader_object("debug_mesh_renderer"),
     vertex_array_object({
                         Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION),
@@ -71,20 +94,20 @@ DebugMesh::Renderer::Renderer()
   shader_object.CreateProgram();
 }
 
-void DebugMesh::Renderer::begin()
+void DebugMeshRenderer::begin()
 {
   vertex_array_object.Bind();
   shader_object.Activate();
 }
 
-void DebugMesh::Renderer::render(const DebugMesh& mesh)
+void DebugMeshRenderer::render(const DebugMesh& mesh)
 {
   const int vertexBufferBinding = 0;
   mesh.vertex_buffer.BindVertexBuffer(vertexBufferBinding, 0, GLsizei(vertex_array_object.GetVertexStride(vertexBufferBinding)));
   GL_CALL(glDrawArrays, GL_LINES, 0, mesh.num_vertices);
 }
 
-void DebugMesh::Renderer::end()
+void DebugMeshRenderer::end()
 {
   shader_object.Deactivate();
 }
@@ -235,7 +258,7 @@ void DebugMesh::Generator::add_cube(const glm::vec3& min, const glm::vec3& max)
 }
 
 
-void DebugMesh::Generator::add_arrow(float length, float tipLength)
+void DebugMesh::Generator::add_arrow(float length, float tip_length)
 {
   add_vertex(0, 0, 0);
   add_vertex(0, 0, length);
@@ -243,8 +266,18 @@ void DebugMesh::Generator::add_arrow(float length, float tipLength)
   for(const glm::vec2& dir : {glm::vec2(-1, -1), glm::vec2(-1, 1), glm::vec2(1, -1), glm::vec2(1, 1)})
   {
     add_vertex(0, 0, length);
-    add_vertex(dir*tipLength, length-tipLength);
+    add_vertex(dir*tip_length, length-tip_length);
   }
+}
+
+void DebugMesh::Generator::add_arrow(glm::vec3 origin, glm::vec3 tip, float tip_length)
+{
+  push_matrix(origin, glm::normalize(tip-origin));
+
+  float arrow_length = glm::length(tip-origin);
+  add_arrow(arrow_length, tip_length);
+
+  pop_matrix();
 }
 
 void DebugMesh::Generator::push_matrix(const glm::vec3& position, bool multiply)
@@ -297,6 +330,6 @@ DebugMesh DebugMesh::Generator::to_mesh() const
 
 
 } // namespace gl450
-} // namespace renderer
+} // namespace render_system
 
 

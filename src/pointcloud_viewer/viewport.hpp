@@ -20,7 +20,11 @@ protected:
 private:
   typedef render_system::gl450::PointRenderer PointRenderer;
 
+  class Visualization;
+
   PointRenderer* point_renderer = nullptr;
+
+  Visualization* visualization;
 };
 
 #endif // POINTCLOUDVIEWER_VIEWPORT_HPP_

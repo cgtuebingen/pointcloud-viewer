@@ -9,7 +9,7 @@
 
 #include <QStack>
 
-namespace renderer {
+namespace render_system {
 namespace gl450 {
 
 /**
@@ -18,8 +18,8 @@ A class responsible for rendering small visualizations (grids, axis, arrows, the
 class DebugMesh final
 {
 public:
+  friend class DebugMeshRenderer;
   struct vertex_t;
-  class Renderer;
   class Generator;
 
   DebugMesh(const vertex_t* vertices, int num_vertices);
@@ -29,6 +29,8 @@ public:
   DebugMesh& operator=(DebugMesh&&) = delete;
   DebugMesh(const DebugMesh&) = delete;
   DebugMesh& operator=(const DebugMesh&) = delete;
+
+  static DebugMesh axis(glm::bvec3 axis = glm::bvec3(true), float length=1.f, float tip_length=0.1);
 
 private:
   gl::Buffer vertex_buffer;
@@ -45,13 +47,13 @@ struct DebugMesh::vertex_t final
 };
 
 
-class DebugMesh::Renderer final
+class DebugMeshRenderer final
 {
 public:
-  Renderer();
+  DebugMeshRenderer();
 
-  Renderer(Renderer&& point_renderer);
-  Renderer& operator=(Renderer&& point_renderer);
+  DebugMeshRenderer(DebugMeshRenderer&& point_renderer);
+  DebugMeshRenderer& operator=(DebugMeshRenderer&& point_renderer);
 
   void begin();
   void render(const DebugMesh& mesh);
@@ -97,7 +99,8 @@ public:
   void add_cylinder(float radius, float length, int nPoints);
   void add_rect(const glm::vec2& min, const glm::vec2& max);
   void add_cube(const glm::vec3& min, const glm::vec3& max);
-  void add_arrow(float length, float tipLength);
+  void add_arrow(float length, float tip_length);
+  void add_arrow(glm::vec3 origin, glm::vec3 tip, float tip_length);
 
   void push_matrix(const glm::vec3& position, bool multiply = true);
   void push_matrix(const glm::vec3& position, const glm::vec3& normal, bool multiply = true);
@@ -115,7 +118,7 @@ private:
 
 
 } // namespace gl450
-} // namespace renderer
+} // namespace render_system
 
 #endif // RENDERSYSTEM_GL450_DEBUG_DEBUGMESH_H
 

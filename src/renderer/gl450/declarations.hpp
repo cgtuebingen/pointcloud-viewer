@@ -9,6 +9,9 @@
 namespace render_system {
 namespace gl450 {
 
+class DebugMesh;
+class DebugMeshRenderer;
+
 class PointRenderer;
 
 } //namespace gl450
