@@ -20,7 +20,7 @@ void locate_shaders()
 
   for(QDir candidate : candidate_dirs)
   {
-    if(candidate.exists() && candidate.exists("uniforms/global_vertex.glsl"))
+    if(candidate.exists() && candidate.exists("uniforms/global.vs.glsl"))
     {
       gl::Details::ShaderIncludeDirManager::addIncludeDirs(candidate);
       return;

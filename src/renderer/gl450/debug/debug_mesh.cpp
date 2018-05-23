@@ -95,35 +95,12 @@ DebugMeshRenderer::DebugMeshRenderer()
                         Attribute(Attribute::Type::FLOAT, 3, DEBUG_MESH_VERTEX_BUFFER_BINDING),
                         Attribute(Attribute::Type::FLOAT, 1, DEBUG_MESH_VERTEX_BUFFER_BINDING)})
 {
-  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX,
-                                    format("#version 450 core\n"
-                                           "\n"
-                                           "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION, ")\n",
-                                           "in vec3 vertex_position;\n"
-                                           "layout(location = ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR, ")\n",
-                                           "in vec3 vertex_color;\n"
-                                           "\n"
-                                           "out vec3 color;\n"
-                                           "\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "  gl_Position = vec4(vertex_position.xyz, 1);\n"
-                                           "  color = vertex_color;\n"
-                                           "}\n"),
-                                    "PointRenderer::Implementation::Implementation() // vertex");
-  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::FRAGMENT,
-                                    format("#version 450 core\n"
-                                           "\n"
-                                           "in vec3 color;\n"
-                                           "\n"
-                                           "layout(location=0)\n"
-                                           "out vec4 fragment_color;\n"
-                                           "\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "  fragment_color = vec4(color, 1);\n"
-                                           "}\n"),
-                                    "PointRenderer::Implementation::Implementation() // fragment");
+  shader_object.AddShaderFromFile(gl::ShaderObject::ShaderType::VERTEX,
+                                  "debug/debug_mesh.vs.glsl",
+                                  format("#define DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_POSITION, "\n",
+                                         "#define DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR ", DEBUG_MESH_VERTEX_ATTRIBUTE_LOCATION_COLOR, "\n"));
+  shader_object.AddShaderFromFile(gl::ShaderObject::ShaderType::FRAGMENT,
+                                  "debug/debug_mesh.fs.glsl");
   shader_object.CreateProgram();
 }
 
