@@ -1,12 +1,9 @@
-#ifndef GLRT_SCENE_COORDFRAME_H
-#define GLRT_SCENE_COORDFRAME_H
+#ifndef GEOMETRY_FRAME_HPP_
+#define GEOMETRY_FRAME_HPP_
 
-#include <glrt/dependencies.h>
-
-#include <glrt/toolkit/assimp-glm-converter.h>
-
-namespace glrt {
-namespace scene {
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <iostream>
 
 struct CoordFrame final
 {
@@ -14,20 +11,15 @@ struct CoordFrame final
   float scaleFactor;
   glm::quat orientation;
 
-  CoordFrame(const glm::ctor);
-  explicit CoordFrame(const glm::vec3& position = glm::vec3(0),
-                      const glm::quat& orientation = glm::quat::IDENTITY,
+  explicit CoordFrame(const glm::vec3& position = glm::vec3(),
+                      const glm::quat& orientation = glm::quat(),
                       float scaleFactor = 1.f);
   CoordFrame(const glm::mat4& transformation);
-  CoordFrame(const aiMatrix4x4& transformation);
 
   CoordFrame& operator *=(const CoordFrame& other);
 
   CoordFrame operator *(const CoordFrame& other) const;
   glm::vec3 operator *(const glm::vec3& point) const;
-
-  bool operator==(const CoordFrame& frame) const;
-  bool operator!=(const CoordFrame& frame) const;
 
   glm::vec3 transform_point(const glm::vec3& point) const;
   glm::vec3 transform_direction(const glm::vec3& point) const;
@@ -35,8 +27,6 @@ struct CoordFrame final
   glm::mat4x3 toMat4x3() const;
   glm::mat4 toMat4() const;
   CoordFrame inverse() const;
-
-  QString as_angelscript_fast() const;
 
   static void registerAngelScriptAPIDeclarations();
   static void registerAngelScriptAPI();
@@ -60,17 +50,8 @@ struct CoordFrame final
                        const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor);
 };
 
-QDebug operator<<(QDebug debug, const CoordFrame& coordFrame);
 std::ostream& operator<<(std::ostream& stream, const CoordFrame& coordFrame);
 
-inline uint qHash(const CoordFrame& frame, uint seed=0)
-{
-  return ::qHash(frame.position, ::qHash(frame.scaleFactor, ::qHash(frame.orientation, seed)));
-}
+#include <geometry/frame.inl>
 
-} // namespace scene
-} // namespace glrt
-
-#include "coord-frame.inl"
-
-#endif // GLRT_SCENE_COORDFRAME_H
+#endif // GEOMETRY_FRAME_HPP_

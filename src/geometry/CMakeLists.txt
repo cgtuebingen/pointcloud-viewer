@@ -1,7 +1,9 @@
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_library(geometry STATIC
-  dummy.cpp
+  frame.cpp
+  frame.hpp
+  frame.inl
   perpendicular.hpp
   perpendicular.inl
   swizzle.hpp

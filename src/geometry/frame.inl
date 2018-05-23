@@ -1,11 +1,7 @@
-#ifndef GLRT_SCENE_COORDFRAME_INL
-#define GLRT_SCENE_COORDFRAME_INL
+#include <geometry/frame.hpp>
+#include <geometry/swizzle.hpp>
 
-#include "coord-frame.h"
-
-namespace glrt {
-namespace scene {
-
+#include <glm/gtx/quaternion.hpp>
 
 inline void CoordFrame::_concatenate(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
                                      const glm::vec3& aPosition, const glm::quat& aOrientation, float aScaleFactor,
@@ -25,14 +21,14 @@ inline void CoordFrame::_coordinateFromMatrix(glm::vec3* outPosition, glm::quat*
   transform[1][3] = 0;
   transform[2][3] = 0;
   transform[3][3] = 1;
-  glm::vec3 scale(glm::length(transform[0].xyz()),
-                  glm::length(transform[1].xyz()),
-                  glm::length(transform[2].xyz()));
+  glm::vec3 scale(glm::length(xyz(transform[0])),
+                  glm::length(xyz(transform[1])),
+                  glm::length(xyz(transform[2])));
   *outScaleFactor = (scale.x + scale.y + scale.z) / 3.f;
   transform[0] /= scale.x;
   transform[1] /= scale.y;
   transform[2] /= scale.z;
-  *outPosition = transform[3].xyz();
+  *outPosition = xyz(transform[3]);
   transform[3] = glm::vec4(0);
   *outOrientation = glm::quat(transform);
 }
@@ -109,8 +105,3 @@ inline void CoordFrame::_inverse(glm::vec3* outPosition, glm::quat* outOrientati
   *outOrientation = glm::inverse(inOrientation);
   *outPosition = - *outScaleFactor * (*outOrientation * inPosition);
 }
-
-} // namespace scene
-} // namespace glrt
-
-#endif // GLRT_SCENE_COORDFRAME_INL

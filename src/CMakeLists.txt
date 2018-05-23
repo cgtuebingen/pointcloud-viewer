@@ -5,6 +5,8 @@ project(pointcloud_viewer)
 # use c++14
 set(CMAKE_CXX_STANDARD 14)
 
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
+
 # allow for example `#include <renderer/declarations.hpp>`
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
