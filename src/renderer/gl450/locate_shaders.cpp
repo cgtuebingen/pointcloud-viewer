@@ -30,7 +30,8 @@ void locate_shaders()
   print_error("Couldn't locate the shader files."
               "Please copy the shaders directory from ",
               QFileInfo(__FILE__).dir().absolutePath().toStdString(),
-              " to ./shaders");
+              " to ",
+              binaryDirectory.absolutePath().toStdString());
   std::abort();
 }
 
