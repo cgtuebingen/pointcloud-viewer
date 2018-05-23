@@ -1,21 +1,21 @@
 #include <geometry/frame.hpp>
 #include <glm/gtx/io.hpp>
 
-frame_t::frame_t(const glm::vec3& position, const glm::quat& orientation, float scaleFactor)
+frame_t::frame_t(const glm::vec3& position, const glm::quat& orientation, float scale_factor)
   : position(position),
-    scaleFactor(scaleFactor),
+    scale_factor(scale_factor),
     orientation(orientation)
 {
 }
 
 frame_t::frame_t(const glm::mat4& transformation)
 {
-  _coordinate_from_matrix(&this->position, &this->orientation, &this->scaleFactor, transformation);
+  _coordinate_from_matrix(&this->position, &this->orientation, &this->scale_factor, transformation);
 }
 
 frame_t& frame_t::operator *=(const frame_t& other)
 {
-  _concatenate(&this->position, &this->orientation, &this->scaleFactor, this->position, this->orientation, this->scaleFactor, other.position, other.orientation, other.scaleFactor);
+  _concatenate(&this->position, &this->orientation, &this->scale_factor, this->position, this->orientation, this->scale_factor, other.position, other.orientation, other.scale_factor);
   return *this;
 }
 
@@ -35,7 +35,7 @@ glm::vec3 frame_t::transform_point(const glm::vec3& point) const
 {
   glm::vec3 transformed_point;
   _transform_point(&transformed_point,
-                   this->position, this->orientation, this->scaleFactor,
+                   this->position, this->orientation, this->scale_factor,
                    point);
   return transformed_point;
 }
@@ -54,7 +54,7 @@ glm::mat4 frame_t::to_mat4() const
   glm::mat4 m;
 
   _to_mat4(reinterpret_cast<float*>(&m),
-           this->position, this->orientation, this->scaleFactor);
+           this->position, this->orientation, this->scale_factor);
   return m;
 }
 
@@ -63,26 +63,19 @@ glm::mat4x3 frame_t::to_mat_4x3() const
   glm::mat4x3 m;
 
   _to_mat4x3(reinterpret_cast<float*>(&m),
-            this->position, this->orientation, this->scaleFactor);
+            this->position, this->orientation, this->scale_factor);
   return m;
 }
 
 frame_t frame_t::inverse() const
 {
   frame_t i;
-  _inverse(&i.position, &i.orientation, &i.scaleFactor,
-           this->position, this->orientation, this->scaleFactor);
+  _inverse(&i.position, &i.orientation, &i.scale_factor,
+           this->position, this->orientation, this->scale_factor);
   return i;
 }
 
-std::ostream& operator<<(std::ostream& stream, const frame_t& coordFrame)
+std::ostream& operator<<(std::ostream& stream, const frame_t& frame)
 {
-  return stream << "CoordFrame(position: " << coordFrame.position << ", orientation: " << coordFrame.orientation << ", scale: " << coordFrame.scaleFactor << ")";
-}
-
-inline void create_CoordFrame(frame_t* coordFrame, const glm::vec3& position, const glm::quat& orientation, float scaleFactor)
-{
-  coordFrame->position = position;
-  coordFrame->orientation = orientation;
-  coordFrame->scaleFactor = scaleFactor;
+  return stream << "frame_t(position: " << frame.position << ", orientation: " << frame.orientation << ", scale: " << frame.scale_factor << ")";
 }

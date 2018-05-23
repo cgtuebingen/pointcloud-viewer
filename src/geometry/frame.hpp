@@ -8,12 +8,12 @@
 struct frame_t final
 {
   glm::vec3 position;
-  float scaleFactor;
+  float scale_factor;
   glm::quat orientation;
 
   explicit frame_t(const glm::vec3& position = glm::vec3(),
-                      const glm::quat& orientation = glm::quat(),
-                      float scaleFactor = 1.f);
+                   const glm::quat& orientation = glm::quat(),
+                   float scale_factor = 1.f);
   frame_t(const glm::mat4& transformation);
 
   frame_t& operator *=(const frame_t& other);
@@ -28,26 +28,26 @@ struct frame_t final
   glm::mat4 to_mat4() const;
   frame_t inverse() const;
 
-  static void _concatenate(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
-                           const glm::vec3& aPosition, const glm::quat& aOrientation, float aScaleFactor,
-                           const glm::vec3& bPosition, const glm::quat& bOrientation, float bScaleFactor);
-  static void _coordinate_from_matrix(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
-                                    glm::mat4 transform);
-  static void _transform_point(glm::vec3* outPoint,
-                               const glm::vec3& position, const glm::quat& orientation, float scaleFactor,
-                               const glm::vec3& inPoint);
-  static void _transform_direction(glm::vec3* outDirection,
+  static void _concatenate(glm::vec3* out_position, glm::quat* out_orientation, float* out_scale_factor,
+                           const glm::vec3& in_position_1, const glm::quat& in_orientation_1, float in_scale_factor_1,
+                           const glm::vec3& in_position_2, const glm::quat& in_orientation_2, float in_scale_factor_2);
+  static void _coordinate_from_matrix(glm::vec3* out_position, glm::quat* out_orientation, float* out_scale_factor,
+                                      glm::mat4 transform);
+  static void _transform_point(glm::vec3* out_point,
+                               const glm::vec3& position, const glm::quat& orientation, float scale_factor,
+                               const glm::vec3& in_point);
+  static void _transform_direction(glm::vec3* out_direction,
                                    const glm::quat& orientation,
-                                   const glm::vec3& inDirection);
-  static void _to_mat4x3(float* outMat,
-                        const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor);
-  static void _to_mat4(float* outMat,
-                       const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor);
-  static void _inverse(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
-                       const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor);
+                                   const glm::vec3& in_direction);
+  static void _to_mat4x3(float* out_mat,
+                         const glm::vec3& in_position, const glm::quat& in_orientation, float in_scale_factor);
+  static void _to_mat4(float* out_mat,
+                       const glm::vec3& in_position, const glm::quat& in_orientation, float in_scale_factor);
+  static void _inverse(glm::vec3* out_position, glm::quat* out_orientation, float* out_scale_factor,
+                       const glm::vec3& in_position, const glm::quat& in_orientation, float in_scale_factor);
 };
 
-std::ostream& operator<<(std::ostream& stream, const frame_t& coordFrame);
+std::ostream& operator<<(std::ostream& stream, const frame_t& frame);
 
 #include <geometry/frame.inl>
 
