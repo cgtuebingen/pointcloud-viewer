@@ -12,6 +12,6 @@ out vec3 color;
 
 void main()
 {
-  gl_Position = vec4(vertex_position.xyz, 1);
+  gl_Position = global.camera_matrix * vec4(vertex_position.xyz, 1);
   color = vertex_color;
 }

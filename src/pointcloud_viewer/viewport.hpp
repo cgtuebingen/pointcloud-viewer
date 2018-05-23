@@ -24,10 +24,10 @@ protected:
 
 private:
   typedef renderer::gl450::PointRenderer PointRenderer;
-
-  float aspect_ratio = 1.f;
+  typedef renderer::gl450::GlobalUniform GlobalUniform;
 
   PointRenderer* point_renderer = nullptr;
+  GlobalUniform* global_uniform = nullptr;
 
   Visualization* visualization;
 };
