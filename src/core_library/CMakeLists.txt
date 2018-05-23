@@ -3,8 +3,6 @@ find_package(Qt5Widgets 5.5 REQUIRED)
 add_library(core_library STATIC
   color_palette.cpp
   color_palette.hpp
-  geometry.hpp
-  geometry.inl
   print.hpp
   print.inl
 )

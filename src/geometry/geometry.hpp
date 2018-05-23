@@ -20,7 +20,7 @@ glm::vec2 xy(glm::vec4 xyzw);
 glm::vec3 xyz(glm::vec3 xyz);
 glm::vec3 xyz(glm::vec4 xyzw);
 
-#include <core_library/geometry.inl>
+#include <geometry/geometry.inl>
 
 #endif // CORELIBRARY_GEOMETRY_HPP_
 

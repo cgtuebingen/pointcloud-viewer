@@ -1,4 +1,4 @@
-#include <core_library/geometry.hpp>
+#include <geometry/geometry.hpp>
 
 /**
 The cross product betwen two vectors always returns a third vector orthogonal to
