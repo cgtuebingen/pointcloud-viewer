@@ -4,6 +4,9 @@
 
 #include <renderer/gl450/uniforms.hpp>
 
+#include <QMouseEvent>
+#include <QKeyEvent>
+
 Viewport::Viewport()
 {
   QSurfaceFormat format;
@@ -60,4 +63,51 @@ void Viewport::paintGL()
   point_renderer->render_points();
 
   global_uniform->unbind();
+}
+
+void Viewport::mouseMoveEvent(QMouseEvent* event)
+{
+  const glm::ivec2 current_mouse_pos(event->x(), event->y());
+  glm::vec2 mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 1.f;
+
+  mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
+
+  camera.frame = navigation.navigate(camera.frame, mouse_force, key_force);
+
+  last_mouse_pos = current_mouse_pos;
+}
+
+void Viewport::mousePressEvent(QMouseEvent* event)
+{
+  if(event->button() == Qt::MiddleButton)
+  {
+    last_mouse_pos = glm::ivec2(event->x(), event->y());
+
+    if(event->modifiers() == Qt::NoModifier)
+      navigation.enableMode(Navigation::TURNTABLE_ROTATE);
+    else if(event->modifiers() == Qt::ShiftModifier)
+      navigation.enableMode(Navigation::TURNTABLE_SHIFT);
+    else if(event->modifiers() == Qt::ControlModifier)
+      navigation.enableMode(Navigation::TURNTABLE_ZOOM);
+  }
+}
+
+void Viewport::mouseReleaseEvent(QMouseEvent* event)
+{
+  if(event->button() == Qt::MiddleButton)
+  {
+    navigation.disableMode(Navigation::TURNTABLE_ROTATE);
+    navigation.disableMode(Navigation::TURNTABLE_SHIFT);
+    navigation.disableMode(Navigation::TURNTABLE_ZOOM);
+  }
+}
+
+void Viewport::keyPressEvent(QKeyEvent* event)
+{
+  // TODO update key_force
+}
+
+void Viewport::keyReleaseEvent(QKeyEvent* event)
+{
+  // TODO update key_force
 }
