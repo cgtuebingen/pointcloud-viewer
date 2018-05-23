@@ -3,7 +3,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-inline void CoordFrame::_concatenate(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
+inline void frame_t::_concatenate(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
                                      const glm::vec3& aPosition, const glm::quat& aOrientation, float aScaleFactor,
                                      const glm::vec3& bPosition, const glm::quat& bOrientation, float bScaleFactor)
 {
@@ -14,8 +14,8 @@ inline void CoordFrame::_concatenate(glm::vec3* outPosition, glm::quat* outOrien
   *outOrientation = aOrientation * bOrientation;
 }
 
-inline void CoordFrame::_coordinateFromMatrix(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
-                                              glm::mat4 transform)
+inline void frame_t::_coordinate_from_matrix(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
+                                             glm::mat4 transform)
 {
   transform[0][3] = 0;
   transform[1][3] = 0;
@@ -33,14 +33,14 @@ inline void CoordFrame::_coordinateFromMatrix(glm::vec3* outPosition, glm::quat*
   *outOrientation = glm::quat(transform);
 }
 
-inline void CoordFrame::_transform_point(glm::vec3* outPoint,
+inline void frame_t::_transform_point(glm::vec3* outPoint,
                                          const glm::vec3& position, const glm::quat& orientation, float scaleFactor,
                                          const glm::vec3& inPoint)
 {
   *outPoint = position + scaleFactor * (orientation * inPoint);
 }
 
-inline void CoordFrame::_transform_direction(glm::vec3* outDirection,
+inline void frame_t::_transform_direction(glm::vec3* outDirection,
                                              const glm::quat& orientation,
                                              const glm::vec3& inDirection)
 {
@@ -48,7 +48,7 @@ inline void CoordFrame::_transform_direction(glm::vec3* outDirection,
 }
 
 
-inline void CoordFrame::_to_mat4(float* outMat,
+inline void frame_t::_to_mat4(float* outMat,
                                  const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor)
 {
   const glm::mat3 m = glm::toMat3(inOrientation);
@@ -75,7 +75,7 @@ inline void CoordFrame::_to_mat4(float* outMat,
 }
 
 
-inline void CoordFrame::_to_mat4x3(float* outMat,
+inline void frame_t::_to_mat4x3(float* outMat,
                                   const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor)
 {
   const glm::mat3 m = glm::toMat3(inOrientation);
@@ -98,7 +98,7 @@ inline void CoordFrame::_to_mat4x3(float* outMat,
 }
 
 
-inline void CoordFrame::_inverse(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
+inline void frame_t::_inverse(glm::vec3* outPosition, glm::quat* outOrientation, float* outScaleFactor,
                                  const glm::vec3& inPosition, const glm::quat& inOrientation, float inScaleFactor)
 {
   *outScaleFactor = 1.f/inScaleFactor;
