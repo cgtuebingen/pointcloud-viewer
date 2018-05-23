@@ -3,6 +3,15 @@
 
 #include <glm/gtx/quaternion.hpp>
 
+template<typename quat_type>
+inline quat_type quat_identity()
+{
+  quat_type q;
+  q.x = q.y = q.z = typename quat_type::value_type(0.f);
+  q.w = typename quat_type::value_type(1.f);
+  return q;
+}
+
 inline void frame_t::_concatenate(glm::vec3* out_position, glm::quat* out_orientation, float* out_scale_factor,
                                   const glm::vec3& in_position_1, const glm::quat& in_orientation_1, float in_scale_factor_1,
                                   const glm::vec3& in_position_2, const glm::quat& in_orientation_2, float in_scale_factor_2)

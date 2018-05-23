@@ -5,13 +5,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <iostream>
 
-inline glm::quat quat_identity()
-{
-  glm::quat q;
-  q.x = q.y = q.z = 0.f;
-  q.w = 1.f;
-  return q;
-}
+template<typename quat_type>
+inline quat_type quat_identity();
 
 struct frame_t final
 {
@@ -21,7 +16,7 @@ struct frame_t final
 
   frame_t(){}
   explicit frame_t(const glm::vec3& position,
-                   const glm::quat& orientation = quat_identity(),
+                   const glm::quat& orientation = quat_identity<glm::quat>(),
                    float scale_factor = 1.f);
   frame_t(const glm::mat4& transformation);
 
