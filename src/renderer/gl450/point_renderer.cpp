@@ -14,28 +14,11 @@ PointRenderer::PointRenderer()
     vertex_position_buffer(NUM_VERTICES * sizeof(glm::vec4), gl::Buffer::UsageFlag::MAP_WRITE, nullptr),
     vertex_array_object({gl::VertexArrayObject::Attribute(gl::VertexArrayObject::Attribute::Type::FLOAT, 4, POSITION_BINDING_INDEX)})
 {
-  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX,
-                                    format("#version 450 core\n"
-                                           "\n"
-                                           "layout(location = ", POSITION_BINDING_INDEX, ")\n",
-                                           "in vec4 point_coord;\n"
-                                           "\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "  gl_Position = vec4(point_coord.xyz, 1);\n"
-                                           "}\n"),
-                                    "PointRenderer::Implementation::Implementation() // vertex");
-  shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::FRAGMENT,
-                                    format("#version 450 core\n"
-                                           "\n"
-                                           "layout(location=0)\n"
-                                           "out vec4 color;\n"
-                                           "\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "  color = vec4(1, 0.5, 0, 1);\n"
-                                           "}\n"),
-                                    "PointRenderer::Implementation::Implementation() // fragment");
+  shader_object.AddShaderFromFile(gl::ShaderObject::ShaderType::VERTEX,
+                                  "point_cloud.vs.glsl",
+                                  format("#define POSITION_BINDING_INDEX ", POSITION_BINDING_INDEX, "\n"));
+  shader_object.AddShaderFromFile(gl::ShaderObject::ShaderType::FRAGMENT,
+                                  "point_cloud.fs.glsl");
   shader_object.CreateProgram();
 
   glm::vec4* vertex = reinterpret_cast<glm::vec4*>(vertex_position_buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
