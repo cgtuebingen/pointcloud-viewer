@@ -3,7 +3,7 @@
 
 Visualization::Visualization()
   : world_axis(DebugMesh::axis()),
-    world_grid(DebugMesh::grid(5, 0.2f, color_palette::grey[1]))
+    world_grid(DebugMesh::grid(5, 1.f, color_palette::grey[1]))
 {
 }
 
