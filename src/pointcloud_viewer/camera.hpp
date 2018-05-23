@@ -6,7 +6,7 @@
 class Camera final
 {
 public:
-  frame_t frame = frame_t(glm::vec3(7.481132f, -6.50764f, 5.343665f),
+  frame_t frame = frame_t(glm::vec3(7.481132f, -6.50764f, 5.343665f) * 0.25f,
                           glm::quat(0.7816f, 0.481707f, 0.212922f, 0.334251f));
   float aspect = 1.f;
   float fov_y = glm::radians(90.f);
