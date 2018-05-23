@@ -3,6 +3,7 @@
 
 #include <renderer/gl450/declarations.hpp>
 #include <pointcloud_viewer/declarations.hpp>
+#include <pointcloud_viewer/camera.hpp>
 
 #include <QOpenGLWidget>
 
@@ -11,6 +12,8 @@ class Viewport final : public QOpenGLWidget
 {
   Q_OBJECT
 public:
+  Camera camera;
+
   Viewport();
   ~Viewport() override;
 
@@ -21,6 +24,8 @@ protected:
 
 private:
   typedef renderer::gl450::PointRenderer PointRenderer;
+
+  float aspect_ratio = 1.f;
 
   PointRenderer* point_renderer = nullptr;
 

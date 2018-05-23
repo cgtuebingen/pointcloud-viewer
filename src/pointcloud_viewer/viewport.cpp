@@ -35,13 +35,17 @@ void Viewport::initializeGL()
 
 void Viewport::resizeGL(int w, int h)
 {
-  Q_UNUSED(w);
-  Q_UNUSED(h);
+  camera.aspect = float(w) / float(h);
 }
 
 void Viewport::paintGL()
 {
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+  const glm::mat4 camera_matrix = camera.view_perspective_matrix();
+
+  // TODO add the camera matrix to a global uniform
+
   visualization->render();
   point_renderer->render_points();
 }
