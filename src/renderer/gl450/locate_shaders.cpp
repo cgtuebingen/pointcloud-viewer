@@ -15,8 +15,8 @@ void locate_shaders()
 
   QDir binaryDirectory = QCoreApplication::applicationDirPath();
 
-  if(QFileInfo(__FILE__).exists())
-    candidate_dirs << QFileInfo(__FILE__).dir().absoluteFilePath("shader");
+  candidate_dirs << binaryDirectory.absoluteFilePath("shader");
+  candidate_dirs << QFileInfo(__FILE__).dir().absoluteFilePath("shader");
 
   for(QDir candidate : candidate_dirs)
   {
