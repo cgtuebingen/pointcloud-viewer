@@ -5,6 +5,8 @@ MainWindow::MainWindow()
   setWindowTitle("Pointcloud Viewer");
 
   setCentralWidget(&viewport);
+
+  initMenuBar();
 }
 
 MainWindow::~MainWindow()

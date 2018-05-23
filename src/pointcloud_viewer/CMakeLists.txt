@@ -9,6 +9,7 @@ add_executable(point_cloud_viewer
   declarations.hpp
   main.cpp
   mainwindow.cpp
+  mainwindow_menubar.cpp
   mainwindow.hpp
   viewport.cpp
   viewport.hpp
