@@ -6,6 +6,7 @@
 namespace renderer {
 namespace gl450 {
 
+// Call once right after QApplication was initialized to locate the directory containing the shaders
 void locate_shaders();
 
 } //namespace gl450

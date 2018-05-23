@@ -8,6 +8,7 @@
 template<typename quat_type>
 inline quat_type quat_identity();
 
+// Class for storing a coordinate frame defined py position, uniform scale factor and rotation
 struct frame_t final
 {
   glm::vec3 position;

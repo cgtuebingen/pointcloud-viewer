@@ -19,6 +19,7 @@ enum uniform_bindings
   GLOBAL_UNIFORM = 0,
 };
 
+// Stores the global uniforms used by all shaders
 class GlobalUniform final
 {
 public:
