@@ -7,8 +7,6 @@
 #include <glhelper/vertexarrayobject.hpp>
 #include <glhelper/shaderobject.hpp>
 
-#include <QtGlobal>
-
 namespace renderer {
 namespace gl450 {
 

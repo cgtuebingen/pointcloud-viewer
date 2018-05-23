@@ -12,6 +12,7 @@ namespace gl450 {
 class DebugMesh;
 class DebugMeshRenderer;
 
+class GlobalUniform;
 class PointRenderer;
 
 } //namespace gl450

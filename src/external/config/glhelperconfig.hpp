@@ -10,6 +10,9 @@
 #include <algorithm> // for std::count in shaderobject.cpp
 #include <glm/glm.hpp>
 
+#include <QDir>
+#include <QVector>
+
 // General settings.
 
 // If activated, Texture2D has a FromFile method which uses stbi to load images and create mipmaps.
@@ -49,6 +52,37 @@ namespace gl
 {
 	namespace Details
 	{
+    class ShaderIncludeDirManager final
+    {
+    public:
+      ShaderIncludeDirManager() = delete;
+
+      static void addIncludeDirs(const QDir& dir)
+      {
+        getIncludeDirs().append(dir);
+      }
+
+      static std::string expandGlobalInclude(const std::string& include_std_string)
+      {
+        QString include_file = QString::fromStdString(include_std_string);
+
+        for(const QDir& dir : getIncludeDirs())
+        {
+          if(dir.exists(include_file))
+            return dir.absoluteFilePath(include_file).toStdString();
+        }
+
+        return std::string();
+      }
+
+    private:
+      static QVector<QDir>& getIncludeDirs()
+      {
+        static QVector<QDir> include_dirs;
+        return include_dirs;
+      }
+    };
+
     const unsigned int s_numUBOBindings = 64;	/// Arbitrary value based on observation: http://delphigl.de/glcapsviewer/gl_stats_caps_single.php?listreportsbycap=GL_MAX_COMBINED_UNIFORM_BLOCKS
     const unsigned int s_numSSBOBindings = 16; /// Arbitrary value, based on observation: http://delphigl.de/glcapsviewer/gl_stats_caps_single.php?listreportsbycap=GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS
     const unsigned int s_numAtomicCounterBindings = 8; /// Arbitrary value, based on observation: http://delphigl.de/glcapsviewer/gl_stats_caps_single.php?listreportsbycap=GL_MAX_COMBINED_ATOMIC_COUNTERS
@@ -70,8 +104,7 @@ namespace gl
   typedef glm::mat4 Mat4;
 };
 
-// A std::vector of all include paths shaders will be looked for, if an #include<...> statement was found during parsing an glsl script
-#define SHADER_EXPAND_GLOBAL_INCLUDE(x) ""
+#define SHADER_EXPAND_GLOBAL_INCLUDE(x) gl::Details::ShaderIncludeDirManager::expandGlobalInclude(x)
 
 // OpenGL header.
 
