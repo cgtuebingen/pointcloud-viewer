@@ -1,3 +1,5 @@
+find_package(Qt5Core)
+
 ######## GLM ########
 # Used for math
 add_library(glm INTERFACE)
@@ -11,7 +13,7 @@ target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
 target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 
 ######## glhelper ########
-set(GLHELPER_ADDITIONAL_LIBRARIES glad glm)
+set(GLHELPER_ADDITIONAL_LIBRARIES glad glm Qt5::Core)
 set(GLHELPER_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/config)
 set(GLHELPER_CONFIG_FILE ${GLHELPER_CONFIG_DIR}/glhelperconfig.hpp)
 add_subdirectory(glhelper)
