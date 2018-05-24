@@ -31,7 +31,6 @@ void Navigation::startFpsNavigation()
   }
 }
 
-// TODO: call stopFpsNavigation  if the widget lost the focus
 void Navigation::stopFpsNavigation()
 {
   if(mode == Navigation::FPS)
@@ -144,6 +143,13 @@ void Navigation::keyReleaseEvent(QKeyEvent* event)
   update_key_force();
 }
 
+void Navigation::focusOutEvent(QFocusEvent* event)
+{
+  Q_UNUSED(event);
+
+  stopFpsNavigation();
+}
+
 void Navigation::timerEvent(QTimerEvent* timerEvent)
 {
   if(timerEvent->timerId() != fps_timer || mode!=FPS)
@@ -184,10 +190,10 @@ void Navigation::navigate()
   {
     const glm::vec3 movement = forward * key_force.y + right * key_force.x;
 
-    view.orientation = glm::angleAxis(-mouse_force.y, right) * glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * view.orientation;
+    view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
     view.position += movement;
-    turntable_origin += movement;
+//    turntable_origin += movement;
     break;
   }
   case TURNTABLE_ROTATE:
