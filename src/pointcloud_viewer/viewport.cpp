@@ -67,14 +67,19 @@ void Viewport::paintGL()
 
 void Viewport::mouseMoveEvent(QMouseEvent* event)
 {
+  if(navigation.mode == Navigation::IDLE)
+    return;
+
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
-  glm::vec2 mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 1.f;
+  glm::vec2 mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
 
   mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
   camera.frame = navigation.navigate(camera.frame, mouse_force, key_force);
 
   last_mouse_pos = current_mouse_pos;
+
+  update();
 }
 
 void Viewport::mousePressEvent(QMouseEvent* event)
