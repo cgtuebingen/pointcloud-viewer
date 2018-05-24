@@ -8,12 +8,16 @@
 
 #include <QOpenGLWidget>
 
+/*
+The viewport is owning the opengl context and delegating the point rendering to
+the renderer.
+*/
 
 class Viewport final : public QOpenGLWidget
 {
   Q_OBJECT
 public:
-  Camera camera;
+  Navigation navigation;
 
   Viewport();
   ~Viewport() override;
@@ -33,15 +37,13 @@ private:
   typedef renderer::gl450::PointRenderer PointRenderer;
   typedef renderer::gl450::GlobalUniform GlobalUniform;
 
-  Navigation navigation;
-  glm::vec3 key_force = glm::vec3(0.f);
-  glm::ivec2 last_mouse_pos;
-
   PointRenderer* point_renderer = nullptr;
   GlobalUniform* global_uniform = nullptr;
 
   Visualization* visualization;
 };
+
+
 
 
 

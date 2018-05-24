@@ -13,5 +13,5 @@ void MainWindow::initMenuBar()
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
 
   action_view_navigation_fps->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_F));
-  // TODO: actually go to the fps navigation mode
+  connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
 }
