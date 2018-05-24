@@ -193,7 +193,7 @@ void Navigation::navigate()
     view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
     view.position += movement;
-    turntable_origin += movement;
+//    turntable_origin += movement;
     break;
   }
   case TURNTABLE_ROTATE:
