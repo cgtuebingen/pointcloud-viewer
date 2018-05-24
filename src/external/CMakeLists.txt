@@ -20,6 +20,4 @@ add_subdirectory(glhelper)
 
 ######## TinyPLY ########
 
-# add_subdirectory(tinyply)
-
-
+add_library(tinyply STATIC ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.h)
