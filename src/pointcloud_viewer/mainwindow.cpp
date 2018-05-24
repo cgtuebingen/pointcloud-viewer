@@ -7,6 +7,7 @@ MainWindow::MainWindow()
   setCentralWidget(&viewport);
 
   initMenuBar();
+  initDocks();
 }
 
 MainWindow::~MainWindow()

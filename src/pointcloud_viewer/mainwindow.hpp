@@ -17,6 +17,7 @@ private:
   Viewport viewport;
 
   void initMenuBar();
+  void initDocks();
 };
 
 

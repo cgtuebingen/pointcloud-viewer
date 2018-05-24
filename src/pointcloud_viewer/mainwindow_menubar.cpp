@@ -8,6 +8,9 @@ void MainWindow::initMenuBar()
   menuBar->setVisible(true);
   setMenuBar(menuBar);
 
+  QMenu* menu_project = menuBar->addMenu("&Project");
+  menu_project->addAction("&Add Pointcloud Layer");
+
   QMenu* menu_view = menuBar->addMenu("&View");
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
