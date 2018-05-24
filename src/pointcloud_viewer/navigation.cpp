@@ -31,7 +31,6 @@ void Navigation::startFpsNavigation()
   }
 }
 
-// TODO: call stopFpsNavigation  if the widget lost the focus
 void Navigation::stopFpsNavigation()
 {
   if(mode == Navigation::FPS)
@@ -142,6 +141,13 @@ void Navigation::keyReleaseEvent(QKeyEvent* event)
   key_direction -= direction_for_key(event);
   key_speed -= speed_for_key(event);
   update_key_force();
+}
+
+void Navigation::focusOutEvent(QFocusEvent* event)
+{
+  Q_UNUSED(event);
+
+  stopFpsNavigation();
 }
 
 void Navigation::timerEvent(QTimerEvent* timerEvent)

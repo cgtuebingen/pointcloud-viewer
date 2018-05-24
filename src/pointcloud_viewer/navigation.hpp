@@ -26,6 +26,7 @@ public slots:
   void mouseReleaseEvent(QMouseEvent* event);
   void keyPressEvent(QKeyEvent* event);
   void keyReleaseEvent(QKeyEvent* event);
+  void focusOutEvent(QFocusEvent* event);
 
 protected:
   void timerEvent(QTimerEvent* timerEvent);
