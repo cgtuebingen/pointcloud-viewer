@@ -18,7 +18,7 @@ public:
   mode_t mode = IDLE;
   glm::vec3 turntable_origin = glm::vec3(0); // TODO: use
 
-  frame_t navigate(frame_t view, glm::vec2 mouse_force, glm::vec3 key_force) const;
+  frame_t navigate(frame_t view, glm::vec2 mouse_force, glm::vec3 key_force);
 
   void enableMode(mode_t mode);
   void disableMode(mode_t mode);

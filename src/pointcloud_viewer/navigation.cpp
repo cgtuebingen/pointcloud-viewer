@@ -3,7 +3,7 @@
 
 #include <glm/gtx/io.hpp>
 
-frame_t Navigation::navigate(frame_t view, glm::vec2 mouse_force, glm::vec3 key_force) const
+frame_t Navigation::navigate(frame_t view, glm::vec2 mouse_force, glm::vec3 key_force)
 {
   if(mode == mode_t::IDLE)
     return view;
@@ -26,15 +26,20 @@ frame_t Navigation::navigate(frame_t view, glm::vec2 mouse_force, glm::vec3 key_
     // TODOturntable_origin
     break;
   case TURNTABLE_SHIFT:
-    view.position += - up * mouse_force.y + right * mouse_force.x;
+  {
+    glm::vec3 shift = up * mouse_force.y - right * mouse_force.x;
+    view.position += shift;
+    turntable_origin += shift;
     break;
+  }
   case TURNTABLE_ZOOM:
   {
     glm::vec3 previous_zoom = view.position - turntable_origin;
 
     float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(mouse_force.y));
 
-    view.position = turntable_origin + zoom_factor * previous_zoom;
+    if(zoom_factor * length(previous_zoom) > 1.e-2f)
+      view.position = turntable_origin + zoom_factor * previous_zoom;
     break;
   }
   case IDLE:
