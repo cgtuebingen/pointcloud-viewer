@@ -190,7 +190,7 @@ void Navigation::navigate()
   {
     const glm::vec3 movement = forward * key_force.y + right * key_force.x;
 
-    view.orientation = glm::angleAxis(-mouse_force.y, right) * glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * view.orientation;
+    view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
     view.position += movement;
     turntable_origin += movement;
