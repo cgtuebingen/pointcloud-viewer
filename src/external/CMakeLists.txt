@@ -4,6 +4,7 @@ find_package(Qt5Core)
 # Used for math
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/glm)
+# note: glm provides its own make files, which are not included here to avoid adding additional targets cluttering the ide with unused executable targets
 
 ######## glad ########
 # OpenGL Loader
@@ -21,3 +22,4 @@ add_subdirectory(glhelper)
 ######## TinyPLY ########
 
 add_library(tinyply STATIC ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.h)
+# note: glm provides its own make files, which are not included here to avoid adding additional targets cluttering the ide with unused executable targets
