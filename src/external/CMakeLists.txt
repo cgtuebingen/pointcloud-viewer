@@ -20,6 +20,6 @@ set(GLHELPER_CONFIG_FILE ${GLHELPER_CONFIG_DIR}/glhelperconfig.hpp)
 add_subdirectory(glhelper)
 
 ######## TinyPLY ########
-
 add_library(tinyply STATIC ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source/tinyply.h)
+target_include_directories(tinyply PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tinyply/source)
 # note: glm provides its own make files, which are not included here to avoid adding additional targets cluttering the ide with unused executable targets
