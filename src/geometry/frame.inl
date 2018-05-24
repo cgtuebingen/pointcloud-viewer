@@ -3,7 +3,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-template<typename quat_type>
+template<typename quat_type=glm::quat>
 inline quat_type quat_identity()
 {
   quat_type q;

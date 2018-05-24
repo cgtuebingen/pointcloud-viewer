@@ -5,6 +5,7 @@
 #include <renderer/gl450/uniforms.hpp>
 
 Viewport::Viewport()
+  : navigation(this)
 {
   QSurfaceFormat format;
 
@@ -41,7 +42,7 @@ void Viewport::initializeGL()
 // Called by Qt everytime the opengl window was resized
 void Viewport::resizeGL(int w, int h)
 {
-  camera.aspect = float(w) / float(h);
+  navigation.camera.aspect = float(w) / float(h);
 }
 
 // Called by Qt everytime the opengl window needs to be repainted
@@ -51,7 +52,7 @@ void Viewport::paintGL()
 
   // Update the global uniforms
   GlobalUniform::vertex_data_t global_vertex_data;
-  global_vertex_data.camera_matrix = camera.view_perspective_matrix();
+  global_vertex_data.camera_matrix = navigation.camera.view_perspective_matrix();
   global_uniform->write(global_vertex_data);
   global_uniform->bind();
 
@@ -60,4 +61,29 @@ void Viewport::paintGL()
   point_renderer->render_points();
 
   global_uniform->unbind();
+}
+
+void Viewport::mouseMoveEvent(QMouseEvent* event)
+{
+  navigation.mouseMoveEvent(event);
+}
+
+void Viewport::mousePressEvent(QMouseEvent* event)
+{
+  navigation.mousePressEvent(event);
+}
+
+void Viewport::mouseReleaseEvent(QMouseEvent* event)
+{
+  navigation.mouseReleaseEvent(event);
+}
+
+void Viewport::keyPressEvent(QKeyEvent* event)
+{
+  navigation.keyPressEvent(event);
+}
+
+void Viewport::keyReleaseEvent(QKeyEvent* event)
+{
+  navigation.keyReleaseEvent(event);
 }

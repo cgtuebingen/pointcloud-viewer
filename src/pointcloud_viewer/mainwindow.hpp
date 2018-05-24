@@ -15,6 +15,8 @@ public:
 
 private:
   Viewport viewport;
+
+  void initMenuBar();
 };
 
 

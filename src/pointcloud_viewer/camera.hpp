@@ -10,7 +10,7 @@ public:
                           glm::quat(0.7816f, 0.481707f, 0.212922f, 0.334251f));
   float aspect = 1.f;
   float fov_y = glm::radians(90.f);
-  float z_near = 1.e-2f;
+  float z_near = 1.e-3f;
   float z_far = 100.f;
 
   Camera();
