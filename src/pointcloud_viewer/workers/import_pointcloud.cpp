@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QMessageBox>
 
 struct ImportPointCloud::PointCloudFile
 {
@@ -44,7 +45,7 @@ ImportPointCloud::ImportPointCloud(MainWindow* mainWindow)
 ImportPointCloud::~ImportPointCloud()
 {
   delete point_cloud_loader;
-  delete progressDialog;
+  closeProgressDialog();
 }
 
 void ImportPointCloud::importPointCloudLayer(QString filename)
@@ -83,23 +84,30 @@ typedef long double float86_t;
 void ImportPointCloud::progress(int64_t done, int64_t workload)
 {
   if(progressDialog)
-    progressDialog->setValue(int((float86_t(done) / float86_t(workload)) * 65536 + float86_t(0.5)));
+  {
+    int value = int((float86_t(done) / float86_t(workload)) * 65536 + float86_t(0.5));
+    value = glm::clamp(0, 65536, value);
+    progressDialog->setValue(value);
+    // FIXME: why does this crash?
+  }
 }
 
-void ImportPointCloud::aborted_tasks(bool tasks_left)
+void ImportPointCloud::aborted_tasks(QString name, bool tasks_left)
 {
   Q_UNUSED(tasks_left);
   closeProgressDialog();
 }
 
-void ImportPointCloud::succeeded_task(bool tasks_left)
+void ImportPointCloud::succeeded_task(QString name, bool tasks_left)
 {
   Q_UNUSED(tasks_left);
   closeProgressDialog();
 }
 
-void ImportPointCloud::failed_task(bool tasks_left)
+void ImportPointCloud::failed_task(QString name, bool tasks_left)
 {
+  // TODO collect errors and show them after the last one ended
+
   Q_UNUSED(tasks_left);
   closeProgressDialog();
 }

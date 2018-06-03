@@ -65,9 +65,9 @@ signals:
   void begin_task(QString name, int64_t workload);
   void progress(int64_t done, int64_t workload);
 
-  void aborted_tasks(bool tasks_left);
-  void succeeded_task(bool tasks_left);
-  void failed_task(bool tasks_left);
+  void aborted_tasks(QString name, bool tasks_left);
+  void succeeded_task(QString name, bool tasks_left);
+  void failed_task(QString name, bool tasks_left);
 };
 
 template<typename data_t>
@@ -97,9 +97,9 @@ signals:
   void begin_task(QString name, int64_t workload);
   void progress(int64_t done, int64_t workload);
 
-  void aborted_tasks(bool tasks_left);
-  void failed_task(bool tasks_left);
-  void succeeded_task(bool tasks_left);
+  void aborted_tasks(QString name, bool tasks_left);
+  void failed_task(QString name, bool tasks_left);
+  void succeeded_task(QString name, bool tasks_left);
 
 protected slots:
   virtual void _receivedWork() = 0;

@@ -57,7 +57,7 @@ void WorkQueueWorkerImplementation<data_t>::_receivedWork()
 
       if(!processor.process(begin, end))
       {
-        failed_task(!queue.is_empty());
+        failed_task(name, !queue.is_empty());
         return;
       }
 
@@ -66,7 +66,7 @@ void WorkQueueWorkerImplementation<data_t>::_receivedWork()
       if(queue.aborted_jobs >= job_id)
       {
         processor.aborted(0, end);
-        aborted_tasks(!queue.is_empty());
+        aborted_tasks(name, !queue.is_empty());
         return;
       }
 
@@ -75,11 +75,11 @@ void WorkQueueWorkerImplementation<data_t>::_receivedWork()
 
     if(!processor.finished())
     {
-      failed_task(!queue.is_empty());
+      failed_task(name, !queue.is_empty());
       return;
     }
 
-    succeeded_task(!queue.is_empty());
+    succeeded_task(name, !queue.is_empty());
 
   }catch(error_t error)
   {
@@ -101,14 +101,14 @@ ThreadedWorkQueue<data_t>::ThreadedWorkQueue()
   internal::WorkQueueWorker* worker = new internal::WorkQueueWorkerImplementation<data_t>(this);
   worker->moveToThread(&thread);
 
-  connect(this, &QObject::destroyed, worker, &QObject::deleteLater);
+  connect(this, &QObject::destroyed, worker, &QObject::deleteLater, Qt::QueuedConnection);
 
-  connect(worker, &internal::WorkQueueWorker::init_task, this, &internal::WorkQueueInterface::init_task);
-  connect(worker, &internal::WorkQueueWorker::begin_task, this, &internal::WorkQueueInterface::begin_task);
-  connect(worker, &internal::WorkQueueWorker::progress, this, &internal::WorkQueueInterface::progress);
-  connect(worker, &internal::WorkQueueWorker::aborted_tasks, this, &internal::WorkQueueInterface::aborted_tasks);
-  connect(worker, &internal::WorkQueueWorker::failed_task, this, &internal::WorkQueueInterface::failed_task);
-  connect(worker, &internal::WorkQueueWorker::succeeded_task, this, &internal::WorkQueueInterface::succeeded_task);
+  connect(worker, &internal::WorkQueueWorker::init_task, this, &internal::WorkQueueInterface::init_task, Qt::QueuedConnection);
+  connect(worker, &internal::WorkQueueWorker::begin_task, this, &internal::WorkQueueInterface::begin_task, Qt::QueuedConnection);
+  connect(worker, &internal::WorkQueueWorker::progress, this, &internal::WorkQueueInterface::progress, Qt::QueuedConnection);
+  connect(worker, &internal::WorkQueueWorker::aborted_tasks, this, &internal::WorkQueueInterface::aborted_tasks, Qt::QueuedConnection);
+  connect(worker, &internal::WorkQueueWorker::failed_task, this, &internal::WorkQueueInterface::failed_task, Qt::QueuedConnection);
+  connect(worker, &internal::WorkQueueWorker::succeeded_task, this, &internal::WorkQueueInterface::succeeded_task, Qt::QueuedConnection);
 
   running_jobs = 0;
   aborted_jobs = 0;
