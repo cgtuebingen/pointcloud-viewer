@@ -20,4 +20,4 @@ add_executable(point_cloud_viewer
   visualizations.hpp
 )
 
-target_link_libraries(point_cloud_viewer Qt5::Widgets glm renderer geometry)
+target_link_libraries(point_cloud_viewer Qt5::Widgets glm renderer geometry tinyply)
