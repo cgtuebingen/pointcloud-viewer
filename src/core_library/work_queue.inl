@@ -79,7 +79,7 @@ void WorkQueueWorkerImplementation<data_t>::_receivedWork()
       return;
     }
 
-    failed_task(!queue.is_empty());
+    succeeded_task(!queue.is_empty());
 
   }catch(error_t error)
   {
