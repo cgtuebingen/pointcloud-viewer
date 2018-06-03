@@ -62,8 +62,10 @@ void ImportPointCloud::closeProgressDialog()
 
 void ImportPointCloud::init_task(QString name)
 {
-  progressDialog = new QProgressDialog("Importing Point Cloud Layer...", "&Abort", 0, 65536, mainWindow);
+  closeProgressDialog();
+  progressDialog = new QProgressDialog(QString("Importing Point Cloud Layer\n<%1>").arg(name), "&Abort", 0, 65536, mainWindow);
   progressDialog->setWindowModality(Qt::WindowModal);
+  progressDialog->setMinimumDuration(200);
   connect(progressDialog, &QProgressDialog::canceled, point_cloud_loader, &ThreadedWorkQueue<PointCloudFile>::abort);
 
   progressDialog->setValue(0);
@@ -72,31 +74,34 @@ void ImportPointCloud::init_task(QString name)
 
 void ImportPointCloud::begin_task(QString name, int64_t workload)
 {
+  Q_UNUSED(name);
+  Q_UNUSED(workload);
 }
 
 typedef long double float86_t;
 
 void ImportPointCloud::progress(int64_t done, int64_t workload)
 {
-  progressDialog->setValue(int((float86_t(done) / float86_t(workload)) * 65536 + float86_t(0.5)));
+  if(progressDialog)
+    progressDialog->setValue(int((float86_t(done) / float86_t(workload)) * 65536 + float86_t(0.5)));
 }
 
 void ImportPointCloud::aborted_tasks(bool tasks_left)
 {
-  if(!tasks_left)
-    closeProgressDialog();
+  Q_UNUSED(tasks_left);
+  closeProgressDialog();
 }
 
 void ImportPointCloud::succeeded_task(bool tasks_left)
 {
-  if(!tasks_left)
-    closeProgressDialog();
+  Q_UNUSED(tasks_left);
+  closeProgressDialog();
 }
 
 void ImportPointCloud::failed_task(bool tasks_left)
 {
-  if(!tasks_left)
-    closeProgressDialog();
+  Q_UNUSED(tasks_left);
+  closeProgressDialog();
 }
 
 // ======== task_processor_t<ImportPointCloud::PointCloudFile> ========
