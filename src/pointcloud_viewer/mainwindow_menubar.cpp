@@ -31,5 +31,5 @@ void MainWindow::importPointcloudLayer()
                                                               "PLY (*.ply)");
 
   for(QString file_to_import : files_to_import)
-    pointCloudLayer.importPointCloudLayer(file_to_import);
+    importPointCloud.importPointCloudLayer(file_to_import);
 }

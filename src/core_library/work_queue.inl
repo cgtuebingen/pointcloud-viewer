@@ -5,41 +5,6 @@
 namespace internal {
 
 /*
-The WorkQueueWorker is the object running in the seperate thread.
-
-Again, the limitation of which with template classes (signals can't be created for template classes) required me to
-split this class into two classes: WorkQueueWorker and WorkQueueWorkerImplementation.
-
-The WorkQueueWorker class has slots thought to receive signals from the main thread:
-- receivedWork: will be called whenever a new piece of work is available to be processed
-
-There are also signals meant to be sent to the main thread (those will be resent from WorkQueueInterface)
-- begin_task(QString name, int workload) whenever a task started
-  void progress(int done, int workload);
-
-  void aborted_tasks();
-  int succeeded_task();
-*/
-class WorkQueueWorker : public QObject
-{
-Q_OBJECT
-
-protected:
-  WorkQueueWorker(WorkQueueInterface* queue);
-
-signals:
-  void begin_task(QString name, int workload);
-  void progress(int done, int workload);
-
-  void aborted_tasks(bool tasks_left);
-  void failed_task(bool tasks_left);
-  void succeeded_task(bool tasks_left);
-
-protected slots:
-  virtual void _receivedWork() = 0;
-};
-
-/*
 Type dependent implementation
 */
 template<typename data_t>
@@ -59,7 +24,8 @@ private:
 
 template<typename data_t>
 WorkQueueWorkerImplementation<data_t>::WorkQueueWorkerImplementation(ThreadedWorkQueue<data_t>* queue)
-  : queue(*queue)
+  : WorkQueueWorker(queue),
+    queue(*queue)
 {
 }
 
@@ -70,22 +36,24 @@ void WorkQueueWorkerImplementation<data_t>::_receivedWork()
 
   try
   {
-    data_t data = queue.dequeue(&data);
-
-    task_processor_t<data_t> processor(data);
-
-    const int work_amount = processor.work_amount;
-    const int block_size = processor.block_size;
-    const QString name = processor.name;
+    data_t data = queue.dequeue();
 
     job_id = ++queue.running_jobs;
 
-    begin_task(processor.name, work_amount);
+    init_task(task_processor_t<data_t>::name_during_init(data));
 
-    for(int next_block=0; next_block<work_amount;)
+    task_processor_t<data_t> processor(data);
+
+    const int64_t work_amount = processor.work_amount;
+    const int64_t block_size = processor.block_size;
+    const QString name = processor.name;
+
+    begin_task(name, work_amount);
+
+    for(int64_t next_block=0; next_block<work_amount;)
     {
-      const int begin = next_block;
-      const int end = glm::min(processor.work_amount, begin + block_size);
+      const int64_t begin = next_block;
+      const int64_t end = glm::min(processor.work_amount, begin + block_size);
 
       if(!processor.process(begin, end))
       {
@@ -135,6 +103,7 @@ ThreadedWorkQueue<data_t>::ThreadedWorkQueue()
 
   connect(this, &QObject::destroyed, worker, &QObject::deleteLater);
 
+  connect(worker, &internal::WorkQueueWorker::init_task, this, &internal::WorkQueueInterface::init_task);
   connect(worker, &internal::WorkQueueWorker::begin_task, this, &internal::WorkQueueInterface::begin_task);
   connect(worker, &internal::WorkQueueWorker::progress, this, &internal::WorkQueueInterface::progress);
   connect(worker, &internal::WorkQueueWorker::aborted_tasks, this, &internal::WorkQueueInterface::aborted_tasks);
@@ -143,6 +112,8 @@ ThreadedWorkQueue<data_t>::ThreadedWorkQueue()
 
   running_jobs = 0;
   aborted_jobs = 0;
+
+  thread.start();
 }
 
 template<typename data_t>
@@ -180,6 +151,6 @@ void ThreadedWorkQueue<data_t>::abort()
 {
   QMutexLocker locker(&queue_mutex);
 
-  aborted_jobs = running_jobs;
+  aborted_jobs = running_jobs.load();
   queue.clear();
 }

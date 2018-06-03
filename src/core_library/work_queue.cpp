@@ -2,7 +2,6 @@
 
 namespace internal {
 
-
 WorkQueueWorker::WorkQueueWorker(WorkQueueInterface* queue)
 {
   connect(queue, &WorkQueueInterface::_receivedWork, this, &WorkQueueWorker::_receivedWork);

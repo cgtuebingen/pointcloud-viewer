@@ -1,10 +1,11 @@
 #include <pointcloud_viewer/point_cloud_layers.hpp>
+#include <pointcloud_viewer/mainwindow.hpp>
 
 #include <QDebug>
 
-void PointCloudLayers::importPointCloudLayer(QString filename)
+PointCloudLayers::PointCloudLayers(MainWindow* mainWindow)
+  : mainWindow(mainWindow)
 {
-  qDebug() << "importPointCloudLayer: " << filename;
 }
 
 enum Section

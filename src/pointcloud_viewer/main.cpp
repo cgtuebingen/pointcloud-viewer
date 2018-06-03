@@ -8,6 +8,8 @@
 
 int main(int argc, char** argv)
 {
+  qRegisterMetaType<int64_t>("int64_t");
+
   /*
   tinyply::PlyFile file;
 

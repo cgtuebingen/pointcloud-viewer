@@ -5,19 +5,21 @@
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/point_cloud_layers.hpp>
+#include <pointcloud_viewer/workers/import_pointcloud.hpp>
 
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 
 public:
+  PointCloudLayers pointCloudLayer;
+  ImportPointCloud importPointCloud;
+
   MainWindow();
   ~MainWindow();
 
 private:
   Viewport viewport;
-
-  PointCloudLayers pointCloudLayer;
 
   void initMenuBar();
   void initDocks();

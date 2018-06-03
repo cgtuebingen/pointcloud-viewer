@@ -1,3 +1,5 @@
+set(CMAKE_AUTOMOC ON)
+
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_library(core_library STATIC
