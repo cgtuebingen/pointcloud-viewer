@@ -62,8 +62,9 @@ void ImportPointCloud::closeProgressDialog()
 
 void ImportPointCloud::init_task(QString name)
 {
-  progressDialog = new QProgressDialog("Importing Point Cloud Layer...", "&Abort Import", 0, 65536, mainWindow);
+  progressDialog = new QProgressDialog("Importing Point Cloud Layer...", "&Abort", 0, 65536, mainWindow);
   progressDialog->setWindowModality(Qt::WindowModal);
+  connect(progressDialog, &QProgressDialog::canceled, point_cloud_loader, &ThreadedWorkQueue<PointCloudFile>::abort);
 
   progressDialog->setValue(0);
   progressDialog->show();

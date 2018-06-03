@@ -141,6 +141,8 @@ public:
   void enqueue(data_t data);
   bool is_empty();
 
+  void abort() override;
+
 private:
   friend class internal::WorkQueueWorkerImplementation<data_t>;
 
@@ -158,8 +160,6 @@ private:
   std::atomic<uint64_t> aborted_jobs;
 
   data_t dequeue();
-
-  void abort() override;
 };
 
 #include <core_library/work_queue.inl>
