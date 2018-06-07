@@ -1,8 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 
 MainWindow::MainWindow()
-  : pointCloudLayer(this),
-    importPointCloud(this)
+  : pointCloudLayer(this)
 {
   setWindowTitle("Pointcloud Viewer");
 

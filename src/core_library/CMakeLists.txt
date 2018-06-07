@@ -7,9 +7,6 @@ add_library(core_library STATIC
   color_palette.hpp
   print.hpp
   print.inl
-  work_queue.cpp
-  work_queue.hpp
-  work_queue.inl
 )
 
 target_link_libraries(core_library PUBLIC Qt5::Gui glm)

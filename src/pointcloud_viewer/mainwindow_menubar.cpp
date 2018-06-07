@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/mainwindow.hpp>
+#include <pointcloud_viewer/workers/import_pointcloud.hpp>
 
 #include <QMenuBar>
 #include <QFileDialog>
@@ -31,5 +32,5 @@ void MainWindow::importPointcloudLayer()
                                                               "PLY (*.ply)");
 
   for(QString file_to_import : files_to_import)
-    importPointCloud.importPointCloudLayer(file_to_import);
+    import_point_cloud(this, file_to_import);
 }
