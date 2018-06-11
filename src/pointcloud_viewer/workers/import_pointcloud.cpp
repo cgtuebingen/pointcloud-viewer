@@ -58,6 +58,7 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   progressDialog.setWindowModality(Qt::ApplicationModal);
 
   progressDialog.show();
+  progressDialog.setDisabled(true);
 
   QThread thread;
   importer->moveToThread(&thread);
@@ -66,6 +67,7 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   QObject::connect(importer.data(), &AbstractPointCloudImporter::finished, &thread, &QThread::quit);
   QObject::connect(&progressDialog, &QProgressDialog::canceled, importer.data(), &AbstractPointCloudImporter::cancel);
   QObject::connect(&thread, &QThread::started, importer.data(), &AbstractPointCloudImporter::import);
+
 
   thread.start();
 
@@ -87,6 +89,8 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   case AbstractPointCloudImporter::SUCCEEDED:
     return succeeded;
   }
+
+  progressDialog.hide();
 
   return failed;
 }
