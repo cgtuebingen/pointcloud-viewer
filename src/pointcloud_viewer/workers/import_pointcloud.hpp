@@ -1,9 +1,23 @@
 #ifndef POINTCLOUDVIEWER_WORKERS_IMPORTPOINTCLOUD_HPP_
 #define POINTCLOUDVIEWER_WORKERS_IMPORTPOINTCLOUD_HPP_
 
-#include <QProgressDialog>
-#include <functional>
+#include <pointcloud_viewer/point_cloud.hpp>
+#include <QSharedPointer>
+#include <QObject>
 
+/**
+The function responsible for import point clouds.
+*/
+QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString file);
+
+
+// ======== Implementation =============================================================================================
+// I would have prefered to put the class definitions to put into the cpp, but the moc system enforced me to put them
+// into a header file.
+
+/**
+Parent class for different kinds of PointCloud formats to import.
+*/
 class AbstractPointCloudImporter : public QObject
 {
   Q_OBJECT
@@ -21,6 +35,8 @@ public:
   std::istream& input_stream;
   int64_t total_num_bytes = 0;
   state_t state = IDLE;
+
+  QSharedPointer<PointCloud> point_cloud;
 
   AbstractPointCloudImporter(std::istream& input_stream, int64_t total_num_bytes);
 
@@ -54,7 +70,5 @@ public:
 protected:
   bool import_implementation() override;
 };
-
-bool import_point_cloud(QWidget* parent, QString file);
 
 #endif // POINTCLOUDVIEWER_WORKERS_IMPORTPOINTCLOUD_HPP_

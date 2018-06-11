@@ -18,6 +18,8 @@ add_executable(point_cloud_viewer
   navigation.hpp
   point_cloud_layers.cpp
   point_cloud_layers.hpp
+  point_cloud.cpp
+  point_cloud.hpp
   viewport.cpp
   viewport.hpp
   visualizations.cpp

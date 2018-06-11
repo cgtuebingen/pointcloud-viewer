@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QProgressDialog>
 #include <QAbstractEventDispatcher>
 
 #include <fstream>
@@ -15,19 +16,17 @@
 
 typedef long double float86_t;
 
-typedef bool result_t;
-const result_t failed = false;
-const result_t succeeded = true;
+const QSharedPointer<PointCloud> failed(){return QSharedPointer<PointCloud>();}
 
 
-result_t import_point_cloud(QWidget* parent, QString filepath)
+QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
 {
   QFileInfo file(filepath);
 
   if(!file.exists())
   {
     QMessageBox::warning(parent, "Not existing file", QString("The given file <%0> does not exist!").arg(filepath));
-    return failed;
+    return failed();
   }
 
   std::ifstream input_stream;
@@ -37,7 +36,7 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   }catch(...)
   {
     QMessageBox::warning(parent, "Can't existing file", QString("Could not open the file <%0> for reading.").arg(filepath));
-    return failed;
+    return failed();
   }
 
   const QString suffix = file.completeSuffix();
@@ -51,7 +50,7 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   }else
   {
     QMessageBox::warning(parent, "Unexpected file format", QString("Unexpected file format '%0'.").arg(suffix));
-    return failed;
+    return failed();
   }
 
   QProgressDialog progressDialog(QString("Importing Point Cloud Layer\n<%1>").arg(file.fileName()), "&Abort", 0, AbstractPointCloudImporter::progress_max(), parent);
@@ -78,21 +77,21 @@ result_t import_point_cloud(QWidget* parent, QString filepath)
   {
   case AbstractPointCloudImporter::CANCELED:
     QMessageBox::warning(parent, "Importing Cancelled", QString("Importing the pointcloud file was canceled by the user."));
-    return failed;
+    return failed();
   case AbstractPointCloudImporter::RUNNING:
   case AbstractPointCloudImporter::IDLE:
     QMessageBox::warning(parent, "Unknown Error", QString("Internal error"));
-    return failed;
+    return failed();
   case AbstractPointCloudImporter::RUNTIME_ERROR:
     QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0. Probably an io error or invalid file.").arg(file.fileName()));
-    return failed;
+    return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
-    return succeeded;
+    return importer->point_cloud;
   }
 
   progressDialog.hide();
 
-  return failed;
+  return failed();
 }
 
 void AbstractPointCloudImporter::import()
@@ -206,9 +205,12 @@ bool PlyImporter::import_implementation()
     throw QString("File contains too many data components. A maximum of 4 data components is supported.");
 
   if(!handle_loaded_chunk(input_stream.tellg()))
-    return failed;
+    return false;
 
   file.read(input_stream);
 
-  return succeeded;
+  point_cloud = QSharedPointer<PointCloud>(new PointCloud);
+  // TODO::
+
+  return true;
 }
