@@ -8,7 +8,7 @@
 /**
 The function responsible for import point clouds.
 */
-QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString file);
+PointCloud import_point_cloud(QWidget* parent, QString file);
 
 
 // ======== Implementation =============================================================================================
@@ -33,10 +33,10 @@ public:
   };
 
   std::istream& input_stream;
-  int64_t total_num_bytes = 0;
+  const int64_t total_num_bytes = 0;
   state_t state = IDLE;
 
-  QSharedPointer<PointCloud> point_cloud;
+  PointCloud point_cloud;
 
   AbstractPointCloudImporter(std::istream& input_stream, int64_t total_num_bytes);
 

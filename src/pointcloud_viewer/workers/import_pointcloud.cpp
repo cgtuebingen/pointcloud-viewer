@@ -16,10 +16,10 @@
 
 typedef long double float86_t;
 
-const QSharedPointer<PointCloud> failed(){return QSharedPointer<PointCloud>();}
+PointCloud failed(){return PointCloud();}
 
 
-QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
+PointCloud import_point_cloud(QWidget* parent, QString filepath)
 {
   QFileInfo file(filepath);
 
@@ -55,6 +55,7 @@ QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
 
   QProgressDialog progressDialog(QString("Importing Point Cloud Layer\n<%1>").arg(file.fileName()), "&Abort", 0, AbstractPointCloudImporter::progress_max(), parent);
   progressDialog.setWindowModality(Qt::ApplicationModal);
+  progressDialog.setWindowFlags(Qt::Dialog|Qt::FramelessWindowHint);
 
   progressDialog.show();
   progressDialog.setDisabled(true);
@@ -62,15 +63,18 @@ QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
   QThread thread;
   importer->moveToThread(&thread);
 
+  bool waiting = true;
+
   QObject::connect(importer.data(), &AbstractPointCloudImporter::update_progress, &progressDialog, &QProgressDialog::setValue);
   QObject::connect(importer.data(), &AbstractPointCloudImporter::finished, &thread, &QThread::quit);
   QObject::connect(&progressDialog, &QProgressDialog::canceled, importer.data(), &AbstractPointCloudImporter::cancel);
   QObject::connect(&thread, &QThread::started, importer.data(), &AbstractPointCloudImporter::import);
+  QObject::connect(&thread, &QThread::finished, [&waiting](){waiting=false;});
 
 
   thread.start();
 
-  while(importer->state==AbstractPointCloudImporter::IDLE || importer->state==AbstractPointCloudImporter::RUNNING || thread.isRunning())
+  while(waiting)
     QCoreApplication::processEvents(QEventLoop::EventLoopExec | QEventLoop::DialogExec | QEventLoop::WaitForMoreEvents);
 
   switch(importer->state)
@@ -86,7 +90,10 @@ QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
     QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0. Probably an io error or invalid file.").arg(file.fileName()));
     return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
-    return importer->point_cloud;
+  {
+    PointCloud point_cloud(std::move(importer->point_cloud));
+    return point_cloud;
+  }
   }
 
   progressDialog.hide();
@@ -186,31 +193,87 @@ bool PlyImporter::import_implementation()
   if(glm::all(has_xyz) == false)
     throw QString("Pointcloud contains no coordinates!!");
 
-  std::shared_ptr<tinyply::PlyData> vertices, colors, data;
+  std::shared_ptr<tinyply::PlyData> vertices, colors, user_data;
 
   vertices = file.request_properties_from_element("vertex", {"x", "y", "z"});
 
   if(glm::all(has_red_green_blue))
     colors = file.request_properties_from_element("vertex", {"red", "green", "blue"});
 
+#if 0
   if(data_components.size() == 1)
-    data = file.request_properties_from_element("vertex", {data_components[0]});
+    user_data = file.request_properties_from_element("vertex", {data_components[0]});
   else if(data_components.size() == 2)
-    data = file.request_properties_from_element("vertex", {data_components[0], data_components[1]});
+    user_data = file.request_properties_from_element("vertex", {data_components[0], data_components[1]});
   else if(data_components.size() == 3)
-    data = file.request_properties_from_element("vertex", {data_components[0], data_components[1], data_components[3]});
+    user_data = file.request_properties_from_element("vertex", {data_components[0], data_components[1], data_components[3]});
   else if(data_components.size() == 4)
-    data = file.request_properties_from_element("vertex", {data_components[0], data_components[1], data_components[3], data_components[4]});
+    user_data = file.request_properties_from_element("vertex", {data_components[0], data_components[1], data_components[3], data_components[4]});
   else if(data_components.size() != 0)
     throw QString("File contains too many data components. A maximum of 4 data components is supported.");
+#else
+  std::cout << "The following data components are ignored in this version:\n";
+  for(const std::string& name : data_components)
+    print(" ", name);
+#endif
 
   if(!handle_loaded_chunk(input_stream.tellg()))
     return false;
 
   file.read(input_stream);
 
-  point_cloud = QSharedPointer<PointCloud>(new PointCloud);
-  // TODO::
+  if(!handle_loaded_chunk(total_num_bytes))
+    return false;
+
+  point_cloud.clear();
+
+  auto get_type = [](const std::shared_ptr<tinyply::PlyData>& data){
+    data_type_t data_type;
+    switch(data->t)
+    {
+    case tinyply::Type::INVALID:
+      throw QString("Invalid type");
+    case tinyply::Type::INT8:
+      data_type.base_type = data_type_t::BASE_TYPE::INT8;
+      break;
+    case tinyply::Type::INT16:
+      data_type.base_type = data_type_t::BASE_TYPE::INT16;
+      break;
+    case tinyply::Type::INT32:
+      data_type.base_type = data_type_t::BASE_TYPE::INT32;
+      break;
+    case tinyply::Type::UINT8:
+      data_type.base_type = data_type_t::BASE_TYPE::UINT8;
+      break;
+    case tinyply::Type::UINT16:
+      data_type.base_type = data_type_t::BASE_TYPE::UINT16;
+      break;
+    case tinyply::Type::UINT32:
+      data_type.base_type = data_type_t::BASE_TYPE::UINT32;
+      break;
+    case tinyply::Type::FLOAT32:
+      data_type.base_type = data_type_t::BASE_TYPE::FLOAT32;
+      break;
+    case tinyply::Type::FLOAT64:
+      data_type.base_type = data_type_t::BASE_TYPE::FLOAT64;
+      break;
+    }
+    if(data->count > 4)
+      throw QString("Maximum number of supported components: 4");
+    if(data->count < 1)
+      throw QString("Minimum number of supported components: 1");
+    data_type.num_components = uint(data->count);
+    data_type.stride_in_bytes = uint(tinyply::PropertyTable[data->t].stride);
+    return data_type;
+  };
+
+  point_cloud.set_data(PointCloud::COLUMN::COORDINATES, get_type(vertices), vertices->buffer.get(), vertices->buffer.size_bytes());
+  if(colors != nullptr)
+    point_cloud.set_data(PointCloud::COLUMN::COLOR, get_type(colors), colors->buffer.get(), colors->buffer.size_bytes());
+  if(user_data != nullptr)
+    point_cloud.set_data(PointCloud::COLUMN::USER_DATA, get_type(user_data), user_data->buffer.get(), user_data->buffer.size_bytes());
+
+  glm::vec3 aabb_min(0), aabb_max(0);
 
   return true;
 }
