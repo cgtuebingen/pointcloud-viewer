@@ -4,8 +4,12 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_executable(point_cloud_viewer
+  helpers/all_buffer_types.inl
+  helpers/all_buffer_types_combi.inl
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
+  buffer.cpp
+  buffer.hpp
   camera.cpp
   camera.hpp
   declarations.hpp

@@ -8,6 +8,7 @@ add_library(core_library STATIC
   padding.hpp
   print.hpp
   print.inl
+  types.hpp
 )
 
 target_link_libraries(core_library PUBLIC Qt5::Gui glm)

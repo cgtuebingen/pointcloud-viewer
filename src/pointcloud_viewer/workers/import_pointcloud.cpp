@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <core_library/print.hpp>
+#include <core_library/types.hpp>
 
 #include <QDebug>
 #include <QFileInfo>
@@ -13,8 +14,6 @@
 #include <fstream>
 
 #include <tinyply.h>
-
-typedef long double float86_t;
 
 PointCloud failed(){return PointCloud();}
 
@@ -112,6 +111,10 @@ void AbstractPointCloudImporter::import()
       this->state = SUCCEEDED;
     else if(this->state == RUNNING)
       this->state = RUNTIME_ERROR;
+  }catch(QString message)
+  {
+    std::cerr << message.toStdString() << std::endl;
+    this->state = RUNTIME_ERROR;
   }catch(...)
   {
     this->state = RUNTIME_ERROR;
@@ -234,22 +237,22 @@ bool PlyImporter::import_implementation()
     case tinyply::Type::INVALID:
       throw QString("Invalid type");
     case tinyply::Type::INT8:
-      data_type.base_type = data_type_t::BASE_TYPE::INT8;
+      data_type.base_type = data_type_t::BASE_TYPE::INT8_NORMALIZED;
       break;
     case tinyply::Type::INT16:
-      data_type.base_type = data_type_t::BASE_TYPE::INT16;
+      data_type.base_type = data_type_t::BASE_TYPE::INT16_NORMALIZED;
       break;
     case tinyply::Type::INT32:
-      data_type.base_type = data_type_t::BASE_TYPE::INT32;
+      data_type.base_type = data_type_t::BASE_TYPE::INT32_NORMALIZED;
       break;
     case tinyply::Type::UINT8:
-      data_type.base_type = data_type_t::BASE_TYPE::UINT8;
+      data_type.base_type = data_type_t::BASE_TYPE::UINT8_NORMALIZED;
       break;
     case tinyply::Type::UINT16:
-      data_type.base_type = data_type_t::BASE_TYPE::UINT16;
+      data_type.base_type = data_type_t::BASE_TYPE::UINT16_NORMALIZED;
       break;
     case tinyply::Type::UINT32:
-      data_type.base_type = data_type_t::BASE_TYPE::UINT32;
+      data_type.base_type = data_type_t::BASE_TYPE::UINT32_NORMALIZED;
       break;
     case tinyply::Type::FLOAT32:
       data_type.base_type = data_type_t::BASE_TYPE::FLOAT32;
