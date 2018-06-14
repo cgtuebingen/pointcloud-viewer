@@ -35,7 +35,7 @@ PointRenderer::PointRenderer()
   for(int i=0; i<NUM_VERTICES; ++i)
   {
     float32_t color;
-    write_value_to_buffer<uint32_t>(&color, 0x00ffffff);
+    write_value_to_buffer<uint32_t>(&color, 0x00ffffff); TODO wha is the point still not white?
 
     float angle = glm::two_pi<float>() * i / float(NUM_VERTICES);
     vertex[i] = glm::vec4(glm::cos(angle), glm::sin(angle), 0.f, color);
