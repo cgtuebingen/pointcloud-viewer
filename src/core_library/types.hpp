@@ -20,7 +20,7 @@ T_out read_value_from_buffer(const T_in* buffer)
   return value;
 }
 
-template<typename T_out, typename T_in>
+template<typename T_in, typename T_out>
 void write_value_to_buffer(T_out* buffer, const T_in value)
 {
   std::memcpy(buffer, &value, sizeof(T_in));
