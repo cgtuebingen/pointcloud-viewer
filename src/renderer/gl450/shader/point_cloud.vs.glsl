@@ -3,13 +3,15 @@
 #include <uniforms/global.vs.glsl>
 
 layout(location = POSITION_BINDING_INDEX)
-in vec4 point_coord;
+in vec3 point_coord;
+layout(location = COLOR_BINDING_INDEX)
+in vec3 point_color;
 
-out vec3 color;
+out vec4 color;
 
 void main()
 {
   gl_Position = global.camera_matrix * vec4(point_coord.xyz, 1);
   
-  color = vec3(1, 0.5, 0);
+  color = vec4(point_color, 1);
 }
