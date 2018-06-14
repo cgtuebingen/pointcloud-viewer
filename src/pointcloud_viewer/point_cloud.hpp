@@ -23,7 +23,7 @@ public:
   void operator=(PointCloud&& other);
 
   void clear();
-  void set_data(column_t column, data_type_t input_data_type, const void* data, size_t size_in_bytes);
+  void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t size_in_bytes);
 
 private:
   Buffer coordinate_color, user_data;

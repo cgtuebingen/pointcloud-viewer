@@ -4,6 +4,7 @@
 #include <core_library/types.hpp>
 #include <vector>
 
+
 struct data_type_t final
 {
   enum class base_type_t : uint8_t
@@ -26,6 +27,9 @@ struct data_type_t final
   uint stride_in_bytes;
 };
 
+/**
+Buffer for storing the point cloud
+*/
 class Buffer final
 {
 public:
@@ -38,7 +42,7 @@ public:
 
   void clear();
 
-  void fill(data_type_t internal_data_type, data_type_t input_data_type, const void* input_data, size_t input_size_in_bytes, size_t target_offset=0);
+  void fill(data_type_t internal_data_type, data_type_t input_data_type, const uint8_t* input_data, size_t input_size_in_bytes, size_t target_offset=0);
 
 private:
   std::vector<uint8_t> bytes;

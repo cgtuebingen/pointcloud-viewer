@@ -30,7 +30,7 @@ void PointCloud::clear()
   user_data.clear();
 }
 
-void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_type, const void* data, size_t size_in_bytes)
+void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_type, const uint8_t* data, size_t size_in_bytes)
 {
   data_type_t internal_data_type;
 

@@ -230,7 +230,7 @@ bool PlyImporter::import_implementation()
 
   point_cloud.clear();
 
-  auto get_type = [](const std::shared_ptr<tinyply::PlyData>& data){
+  auto get_type = [](const std::shared_ptr<tinyply::PlyData>& data, int num_components){
     data_type_t data_type;
     switch(data->t)
     {
@@ -261,20 +261,20 @@ bool PlyImporter::import_implementation()
       data_type.base_type = data_type_t::BASE_TYPE::FLOAT64;
       break;
     }
-    if(data->count > 4)
-      throw QString("Maximum number of supported components: 4");
-    if(data->count < 1)
-      throw QString("Minimum number of supported components: 1");
-    data_type.num_components = uint(data->count);
+    if(num_components > 4)
+      throw QString("Maximum number of supported components: 4. Actually got: %0").arg(num_components);
+    if(num_components < 1)
+      throw QString("Minimum number of supported components: 1. Actually got: %0").arg(num_components);
+    data_type.num_components = uint(num_components);
     data_type.stride_in_bytes = uint(tinyply::PropertyTable[data->t].stride);
     return data_type;
   };
 
-  point_cloud.set_data(PointCloud::COLUMN::COORDINATES, get_type(vertices), vertices->buffer.get(), vertices->buffer.size_bytes());
+  point_cloud.set_data(PointCloud::COLUMN::COORDINATES, get_type(vertices, 3), vertices->buffer.get(), vertices->buffer.size_bytes());
   if(colors != nullptr)
-    point_cloud.set_data(PointCloud::COLUMN::COLOR, get_type(colors), colors->buffer.get(), colors->buffer.size_bytes());
+    point_cloud.set_data(PointCloud::COLUMN::COLOR, get_type(colors, 3), colors->buffer.get(), colors->buffer.size_bytes());
   if(user_data != nullptr)
-    point_cloud.set_data(PointCloud::COLUMN::USER_DATA, get_type(user_data), user_data->buffer.get(), user_data->buffer.size_bytes());
+    point_cloud.set_data(PointCloud::COLUMN::USER_DATA, get_type(user_data, int(data_components.size())), user_data->buffer.get(), user_data->buffer.size_bytes());
 
   glm::vec3 aabb_min(0), aabb_max(0);
 
