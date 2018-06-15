@@ -23,12 +23,15 @@ public:
   PointRenderer(PointRenderer&& point_renderer);
   PointRenderer& operator=(PointRenderer&& point_renderer);
 
+  void load_test(int num_vertices=512);
+
   void render_points();
 
 private:
   gl::ShaderObject shader_object;
   gl::Buffer vertex_position_buffer;
   gl::VertexArrayObject vertex_array_object;
+  GLsizei num_vertices = 0;
 };
 
 } //namespace gl450

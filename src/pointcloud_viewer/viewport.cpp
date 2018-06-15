@@ -35,6 +35,8 @@ void Viewport::initializeGL()
   global_uniform = new GlobalUniform();
   visualization = new Visualization();
 
+  point_renderer->load_test();
+
   glm::vec4 bg_color = color_palette::grey[0];
   GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 }
