@@ -49,7 +49,15 @@ PointRenderer& PointRenderer::operator=(PointRenderer&& point_renderer)
   return *this;
 }
 
-void PointRenderer::load_test(int num_vertices)
+void PointRenderer::load_points(const uint8_t* point_data, size_t num_points)
+{
+  gl::Buffer buffer(num_points * STRIDE, gl::Buffer::UsageFlag::IMMUTABLE, point_data);
+
+  this->vertex_position_buffer = std::move(buffer);
+  this->num_vertices = num_points;
+}
+
+void PointRenderer::load_test(size_t num_vertices)
 {
   gl::Buffer buffer(num_vertices * STRIDE, gl::Buffer::UsageFlag::MAP_WRITE, nullptr);
 

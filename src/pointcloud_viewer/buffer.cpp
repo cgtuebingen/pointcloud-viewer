@@ -23,6 +23,11 @@ void Buffer::operator=(Buffer&& other)
   std::swap(num_elements, other.num_elements);
 }
 
+const uint8_t*Buffer::data() const
+{
+  return bytes.data();
+}
+
 void Buffer::clear()
 {
   bytes.clear();

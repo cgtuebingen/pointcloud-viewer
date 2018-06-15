@@ -61,6 +61,8 @@ public:
   Buffer(const Buffer& buffer) = delete;
   Buffer& operator=(const Buffer& buffer) = delete;
 
+  const uint8_t* data() const;
+
   void clear();
 
   // Note, that the padding will be left untouched, so you can call ths function

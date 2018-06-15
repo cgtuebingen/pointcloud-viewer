@@ -26,6 +26,16 @@ Viewport::~Viewport()
   delete visualization;
 }
 
+point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
+{
+  point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
+  PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
+
+  point_renderer->load_points(p.coordinate_color.data(), p.num_points);
+
+  return point_cloud_handle_t(handle);
+}
+
 // Called by Qt right after the OpenGL context was created
 void Viewport::initializeGL()
 {
@@ -35,7 +45,7 @@ void Viewport::initializeGL()
   global_uniform = new GlobalUniform();
   visualization = new Visualization();
 
-  point_renderer->load_test();
+//  point_renderer->load_test();
 
   glm::vec4 bg_color = color_palette::grey[0];
   GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);

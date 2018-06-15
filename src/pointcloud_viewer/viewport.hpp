@@ -5,13 +5,20 @@
 #include <pointcloud_viewer/declarations.hpp>
 #include <pointcloud_viewer/camera.hpp>
 #include <pointcloud_viewer/navigation.hpp>
+#include <pointcloud_viewer/point_cloud.hpp>
+#include <pointcloud_viewer/point_cloud.hpp>
 
 #include <QOpenGLWidget>
+#include <unordered_map>
 
 /*
 The viewport is owning the opengl context and delegating the point rendering to
 the renderer.
 */
+
+enum class point_cloud_handle_t : size_t
+{
+};
 
 class Viewport final : public QOpenGLWidget
 {
@@ -21,6 +28,8 @@ public:
 
   Viewport();
   ~Viewport() override;
+
+  point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
 
 protected:
   void initializeGL() override;
@@ -41,6 +50,9 @@ private:
   GlobalUniform* global_uniform = nullptr;
 
   Visualization* visualization;
+
+  std::unordered_map<size_t, PointCloud> point_clouds;
+  size_t next_handle = 0;
 };
 
 
