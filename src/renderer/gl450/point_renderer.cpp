@@ -9,6 +9,7 @@ namespace gl450 {
 
 const int NUM_VERTICES = 512;
 
+const int COLOR_OFFSET = 3*4;
 const int STRIDE = 4*4;
 
 const int POSITION_BINDING_INDEX = 0;
@@ -18,9 +19,9 @@ const int PADDING = 0;
 
 PointRenderer::PointRenderer()
   : shader_object("point_renderer"),
-    vertex_position_buffer(NUM_VERTICES * sizeof(glm::vec4), gl::Buffer::UsageFlag::MAP_WRITE, nullptr),
+    vertex_position_buffer(NUM_VERTICES * STRIDE, gl::Buffer::UsageFlag::MAP_WRITE, nullptr),
     vertex_array_object({gl::VertexArrayObject::Attribute(gl::VertexArrayObject::Attribute::Type::FLOAT, 3, POSITION_BINDING_INDEX),
-                        gl::VertexArrayObject::Attribute(gl::VertexArrayObject::Attribute::Type::UINT8, 3, COLOR_BINDING_INDEX),
+                        gl::VertexArrayObject::Attribute(gl::VertexArrayObject::Attribute::Type::UINT8, 3, COLOR_BINDING_INDEX, gl::VertexArrayObject::Attribute::IntegerHandling::NORMALIZED),
 })
 {
   shader_object.AddShaderFromFile(gl::ShaderObject::ShaderType::VERTEX,
@@ -31,17 +32,21 @@ PointRenderer::PointRenderer()
                                   "point_cloud.fs.glsl");
   shader_object.CreateProgram();
 
-  glm::vec4* vertex = reinterpret_cast<glm::vec4*>(vertex_position_buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
+  uint8_t* vertices = reinterpret_cast<uint8_t*>(vertex_position_buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
   for(int i=0; i<NUM_VERTICES; ++i)
   {
-    float32_t color;
-    write_value_to_buffer<uint32_t>(&color, 0x00ffffff); TODO wha is the point still not white?
-
     float angle = glm::two_pi<float>() * i / float(NUM_VERTICES);
-    vertex[i] = glm::vec4(glm::cos(angle), glm::sin(angle), 0.f, color);
+
+    glm::vec3 coordinate = glm::vec3(glm::cos(angle), glm::sin(angle), 0.f);
+    glm::u8vec3 color = glm::u8vec3(255, 128, 0);
+
+    write_value_to_buffer(vertices, coordinate);
+    write_value_to_buffer(vertices + COLOR_OFFSET, color);
+
+    vertices += STRIDE;
   }
+  vertices = nullptr;
   vertex_position_buffer.Unmap();
-  vertex = nullptr;
 }
 
 PointRenderer::~PointRenderer()
@@ -67,7 +72,7 @@ void PointRenderer::render_points()
 {
   vertex_array_object.Bind();
   vertex_position_buffer.BindVertexBuffer(POSITION_BINDING_INDEX, 0, STRIDE);
-  vertex_position_buffer.BindVertexBuffer(COLOR_BINDING_INDEX, 3*4, STRIDE);
+  vertex_position_buffer.BindVertexBuffer(COLOR_BINDING_INDEX, COLOR_OFFSET, STRIDE);
 
   shader_object.Activate();
   GL_CALL(glDrawArrays, GL_POINTS, 0, NUM_VERTICES);

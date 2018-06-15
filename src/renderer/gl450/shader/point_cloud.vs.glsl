@@ -13,5 +13,5 @@ void main()
 {
   gl_Position = global.camera_matrix * vec4(point_coord.xyz, 1);
   
-  color = vec4(point_color, 1);
+  color = vec4(point_color.rgb, 1);
 }
