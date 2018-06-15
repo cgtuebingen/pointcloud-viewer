@@ -1,3 +1,5 @@
+// Used by buffer to get all possible type combinations
+
 BEGIN_TYPE_COMBI(INT8_NORMALIZED, int8_t)
 #include "./all_buffer_types.inl"
 END_TYPE_COMBI

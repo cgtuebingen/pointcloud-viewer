@@ -7,6 +7,9 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 
+/*
+Handles input events for implementing navigation
+*/
 class Navigation final : public QObject
 {
   Q_OBJECT

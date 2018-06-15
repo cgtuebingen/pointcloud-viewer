@@ -12,6 +12,11 @@ typedef float float32_t;
 
 typedef unsigned int uint;
 
+
+/*
+Read and write into random buffers without violating any strict aliasing rules.
+*/
+
 template<typename T_out, typename T_in>
 T_out read_value_from_buffer(const T_in* buffer)
 {

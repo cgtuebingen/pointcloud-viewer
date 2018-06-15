@@ -1,3 +1,5 @@
+// Included by all_buffer_types_combi.inl to get all possible type combinations
+
 TYPE(INT8_NORMALIZED, int8_t)
 TYPE(INT16_NORMALIZED, int16_t)
 TYPE(INT32_NORMALIZED, int32_t)

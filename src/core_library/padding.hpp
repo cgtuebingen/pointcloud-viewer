@@ -4,6 +4,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/*
+Helper class to make padding more obvious.
+
+Example usage:
+
+ vec3 interesting_part1;
+ padding<float> _padding1;
+ vec3 interesting_part2;
+ padding<float> _padding2;
+*/
+
 template<typename T, int N=1>
 struct padding final
 {

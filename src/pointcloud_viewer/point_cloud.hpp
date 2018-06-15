@@ -4,6 +4,9 @@
 #include <pointcloud_viewer/buffer.hpp>
 #include <geometry/aabb.hpp>
 
+/*
+Stores the whole point cloud
+*/
 class PointCloud final
 {
 public:

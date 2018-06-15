@@ -3,6 +3,9 @@
 
 #include <geometry/frame.hpp>
 
+/*
+Object storing the camera parameters and returning the camera matrices
+*/
 class Camera final
 {
 public:
