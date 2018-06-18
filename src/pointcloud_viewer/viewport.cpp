@@ -31,7 +31,10 @@ point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
   point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
   PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
 
-  point_renderer->load_points(p.coordinate_color.data(), p.num_points);
+  if(Q_UNLIKELY(p.num_points>std::numeric_limits<GLsizei>::max()))
+    return point_cloud_handle_t::INVALID;
+
+  point_renderer->load_points(p.coordinate_color.data(), GLsizei(p.num_points));
 
   return point_cloud_handle_t(handle);
 }
