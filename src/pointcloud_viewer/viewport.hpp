@@ -5,8 +5,8 @@
 #include <pointcloud_viewer/declarations.hpp>
 #include <pointcloud_viewer/camera.hpp>
 #include <pointcloud_viewer/navigation.hpp>
-#include <pointcloud_viewer/point_cloud.hpp>
-#include <pointcloud_viewer/point_cloud.hpp>
+#include <pointcloud/pointcloud.hpp>
+#include <pointcloud/pointcloud.hpp>
 
 #include <QOpenGLWidget>
 #include <unordered_map>

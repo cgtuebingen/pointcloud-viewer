@@ -1,4 +1,4 @@
-#include <pointcloud_viewer/point_cloud.hpp>
+#include <pointcloud/pointcloud.hpp>
 #include <core_library/print.hpp>
 #include <cstring>
 

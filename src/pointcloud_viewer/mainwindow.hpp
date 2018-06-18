@@ -4,7 +4,7 @@
 #include <QMainWindow>
 
 #include <pointcloud_viewer/viewport.hpp>
-#include <pointcloud_viewer/point_cloud_layers.hpp>
+#include <pointcloud_viewer/pointcloud_layers.hpp>
 
 class MainWindow : public QMainWindow
 {

@@ -1,4 +1,4 @@
-#include <pointcloud_viewer/point_cloud_layers.hpp>
+#include <pointcloud_viewer/pointcloud_layers.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
 
 #include <QDebug>

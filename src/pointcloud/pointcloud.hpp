@@ -1,7 +1,7 @@
 #ifndef POINTCLOUDVIEWER_POINT_CLOUD_HPP_
 #define POINTCLOUDVIEWER_POINT_CLOUD_HPP_
 
-#include <pointcloud_viewer/buffer.hpp>
+#include <pointcloud/buffer.hpp>
 #include <geometry/aabb.hpp>
 
 /*

@@ -1,4 +1,4 @@
-#include <pointcloud_viewer/buffer.hpp>
+#include <pointcloud/buffer.hpp>
 
 #include <QString>
 #include <glm/glm.hpp>
