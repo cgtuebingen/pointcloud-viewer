@@ -4,3 +4,6 @@
 [submodule "glhelper"]
 	path = src/external/glhelper
 	url = git@github.com:Robert42/glhelper.git
+[submodule "cmake"]
+	path = src/external/cmake
+	url = git@github.com:Robert42/cmake-finders.git
