@@ -1,14 +1,23 @@
 #include <renderer/gl450/point_renderer.hpp>
 
 #include <glm/gtc/constants.hpp>
+#include <glm/gtx/io.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
+#include <core_library/padding.hpp>
 
 namespace renderer {
 namespace gl450 {
 
+struct vertex_t
+{
+  glm::vec3 coordinate;
+  glm::u8vec3 color;
+  padding<uint8_t> _padding;
+};
+
 const int COLOR_OFFSET = 3*4;
-const int STRIDE = 4*4;
+const GLsizeiptr STRIDE = 4*4;
 
 const int POSITION_BINDING_INDEX = 0;
 const int COLOR_BINDING_INDEX = 1;
@@ -49,30 +58,29 @@ PointRenderer& PointRenderer::operator=(PointRenderer&& point_renderer)
   return *this;
 }
 
-void PointRenderer::load_points(const uint8_t* point_data, size_t num_points)
+void PointRenderer::load_points(const uint8_t* point_data, GLsizei num_points)
 {
-  gl::Buffer buffer(num_points * STRIDE, gl::Buffer::UsageFlag::IMMUTABLE, point_data);
+  gl::Buffer buffer(GLsizeiptr(num_points) * STRIDE, gl::Buffer::UsageFlag::IMMUTABLE, point_data);
 
   this->vertex_position_buffer = std::move(buffer);
   this->num_vertices = num_points;
+
+  const vertex_t* vertices = reinterpret_cast<const vertex_t*>(point_data);
+  for(GLsizei i=0; i<num_points; ++i)
+    print(vertices[i].coordinate, " ", vertices[i].color);
 }
 
-void PointRenderer::load_test(size_t num_vertices)
+void PointRenderer::load_test(GLsizei num_vertices)
 {
-  gl::Buffer buffer(num_vertices * STRIDE, gl::Buffer::UsageFlag::MAP_WRITE, nullptr);
+  gl::Buffer buffer(GLsizeiptr(num_vertices) * STRIDE, gl::Buffer::UsageFlag::MAP_WRITE, nullptr);
 
-  uint8_t* vertices = reinterpret_cast<uint8_t*>(buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
-  for(int i=0; i<num_vertices; ++i)
+  vertex_t* vertices = reinterpret_cast<vertex_t*>(buffer.Map(gl::Buffer::MapType::WRITE, gl::Buffer::MapWriteFlag::INVALIDATE_BUFFER));
+  for(GLsizei i=0; i<num_vertices; ++i)
   {
     float angle = glm::two_pi<float>() * i / float(num_vertices);
 
-    glm::vec3 coordinate = glm::vec3(glm::cos(angle), glm::sin(angle), 0.f);
-    glm::u8vec3 color = glm::u8vec3(255, 128, 0);
-
-    write_value_to_buffer(vertices, coordinate);
-    write_value_to_buffer(vertices + COLOR_OFFSET, color);
-
-    vertices += STRIDE;
+    vertices[i].coordinate = glm::vec3(glm::cos(angle), glm::sin(angle), 0.f);
+    vertices[i].color = glm::u8vec3(255, 128, 0);
   }
   vertices = nullptr;
   buffer.Unmap();

@@ -18,6 +18,7 @@ the renderer.
 
 enum class point_cloud_handle_t : size_t
 {
+  INVALID = std::numeric_limits<size_t>::max(),
 };
 
 class Viewport final : public QOpenGLWidget

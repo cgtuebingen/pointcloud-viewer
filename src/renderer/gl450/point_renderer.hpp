@@ -23,8 +23,8 @@ public:
   PointRenderer(PointRenderer&& point_renderer);
   PointRenderer& operator=(PointRenderer&& point_renderer);
 
-  void load_points(const uint8_t* point_data, size_t num_points);
-  void load_test(size_t num_vertices=512);
+  void load_points(const uint8_t* point_data, GLsizei num_points);
+  void load_test(GLsizei num_vertices=512);
 
   void render_points();
 
