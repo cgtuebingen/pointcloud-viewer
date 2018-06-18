@@ -7,12 +7,12 @@
 Implementation for loading ply files
 */
 
-class PlyImporter final : public AbstractPointCloudImporter
+class AssimpImporter final : public AbstractPointCloudImporter
 {
   Q_OBJECT
 
 public:
-  PlyImporter(std::istream& input_stream, int64_t total_num_bytes);
+  AssimpImporter(const std::string& input_file, int64_t total_num_bytes);
 
 protected:
   bool import_implementation() override;

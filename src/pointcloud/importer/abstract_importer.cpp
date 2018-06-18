@@ -34,8 +34,8 @@ void AbstractPointCloudImporter::import()
   finished();
 }
 
-AbstractPointCloudImporter::AbstractPointCloudImporter(std::istream& input_stream, int64_t total_num_bytes)
-  : input_stream(input_stream),
+AbstractPointCloudImporter::AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes)
+  : input_file(input_file),
     total_num_bytes(total_num_bytes)
 {
 }

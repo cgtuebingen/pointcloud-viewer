@@ -8,8 +8,8 @@ add_library(pointcloud STATIC
  helpers/all_buffer_types_combi.inl
  importer/abstract_importer.cpp
  importer/abstract_importer.hpp
- importer/ply_importer.cpp
- importer/ply_importer.hpp
+ importer/assimp_importer.cpp
+ importer/assimp_importer.hpp
  buffer.cpp
  buffer.hpp
  pointcloud.cpp

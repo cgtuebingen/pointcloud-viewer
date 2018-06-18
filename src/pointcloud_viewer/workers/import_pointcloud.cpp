@@ -1,5 +1,5 @@
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
-#include <pointcloud/importer/ply_importer.hpp>
+#include <pointcloud/importer/assimp_importer.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
@@ -27,14 +27,18 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
     return failed();
   }
 
-  std::ifstream input_stream;
-  try
+  const std::string filepath_std = file.absoluteFilePath().toStdString();
+
   {
-    input_stream.open(file.absoluteFilePath().toStdString());
-  }catch(...)
-  {
-    QMessageBox::warning(parent, "Can't existing file", QString("Could not open the file <%0> for reading.").arg(filepath));
-    return failed();
+    std::ifstream input_stream;
+    try
+    {
+      input_stream.open(filepath_std);
+    }catch(...)
+    {
+      QMessageBox::warning(parent, "Can't existing file", QString("Could not open the file <%0> for reading.").arg(filepath));
+      return failed();
+    }
   }
 
   const QString suffix = file.completeSuffix();
@@ -44,7 +48,7 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
   QSharedPointer<AbstractPointCloudImporter> importer;
   if(suffix == "ply")
   {
-    importer = QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(input_stream, total_bytes));
+    importer = QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath_std, total_bytes));
   }else
   {
     QMessageBox::warning(parent, "Unexpected file format", QString("Unexpected file format '%0'.").arg(suffix));

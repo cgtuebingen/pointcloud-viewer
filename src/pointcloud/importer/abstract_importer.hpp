@@ -21,13 +21,13 @@ public:
     CANCELED,
   };
 
-  std::istream& input_stream;
+  const std::string input_file;
   const int64_t total_num_bytes = 0;
   state_t state = IDLE;
 
   PointCloud point_cloud;
 
-  AbstractPointCloudImporter(std::istream& input_stream, int64_t total_num_bytes);
+  AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes);
   ~AbstractPointCloudImporter();
 
   constexpr static int progress_max(){return 65536;}
