@@ -29,7 +29,7 @@ void MainWindow::importPointcloudLayer()
   QStringList files_to_import = QFileDialog::getOpenFileNames(this,
                                                               "Select one or more pointcloud layers to import",
                                                               ".",
-                                                              "PLY (*.ply)");
+                                                              "Any Supported (*.ply *.obj);;PLY (*.ply);;OBJ (*.obj)");
 
   for(QString file_to_import : files_to_import)
   {

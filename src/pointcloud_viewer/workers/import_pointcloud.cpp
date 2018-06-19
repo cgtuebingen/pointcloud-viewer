@@ -49,6 +49,9 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
   if(suffix == "ply")
   {
     importer = QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath_std, total_bytes));
+  }else if(suffix == "obj")
+  {
+    importer = QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath_std, total_bytes));
   }else
   {
     QMessageBox::warning(parent, "Unexpected file format", QString("Unexpected file format '%0'.").arg(suffix));
