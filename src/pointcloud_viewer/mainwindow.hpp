@@ -23,6 +23,7 @@ private:
   void initDocks();
 
   void importPointcloudLayer();
+  void openAboutDialog();
 };
 
 
