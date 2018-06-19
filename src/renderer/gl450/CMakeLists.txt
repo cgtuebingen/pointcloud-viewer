@@ -10,4 +10,4 @@ add_library(gl450 STATIC
  uniforms.hpp
 )
 
-target_link_libraries(gl450 PUBLIC core_library glad glm glhelper)
+target_link_libraries(gl450 PUBLIC core_library glad glm glhelper pointcloud)

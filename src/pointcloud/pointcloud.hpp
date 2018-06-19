@@ -18,6 +18,13 @@ public:
   };
   typedef column_t COLUMN;
 
+  struct vertex_t
+  {
+    glm::vec3 coordinate;
+    glm::u8vec3 color;
+    padding<uint8_t> _padding;
+  };
+
   Buffer coordinate_color, user_data;
   aabb_t aabb;
   size_t num_points;
@@ -27,7 +34,8 @@ public:
   PointCloud& operator=(PointCloud&& other);
 
   void clear();
-  void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t size_in_bytes);
+  void resize(size_t num_points);
+  void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);
 };
 
 #endif // POINTCLOUDVIEWER_POINT_CLOUD_HPP_

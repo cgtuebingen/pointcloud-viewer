@@ -1,4 +1,5 @@
 #include <renderer/gl450/point_renderer.hpp>
+#include <pointcloud/pointcloud.hpp>
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/io.hpp>
@@ -9,12 +10,7 @@
 namespace renderer {
 namespace gl450 {
 
-struct vertex_t
-{
-  glm::vec3 coordinate;
-  glm::u8vec3 color;
-  padding<uint8_t> _padding;
-};
+typedef PointCloud::vertex_t vertex_t;
 
 const int COLOR_OFFSET = 3*4;
 const GLsizeiptr STRIDE = 4*4;
@@ -65,9 +61,11 @@ void PointRenderer::load_points(const uint8_t* point_data, GLsizei num_points)
   this->vertex_position_buffer = std::move(buffer);
   this->num_vertices = num_points;
 
+#if 0
   const vertex_t* vertices = reinterpret_cast<const vertex_t*>(point_data);
-  for(GLsizei i=0; i<num_points; ++i)
+  for(GLsizei i=0; i<glm::min(num_points, 10); ++i)
     print(vertices[i].coordinate, " ", vertices[i].color);
+#endif
 }
 
 void PointRenderer::load_test(GLsizei num_vertices)

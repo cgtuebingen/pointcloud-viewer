@@ -6,6 +6,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <glm/gtx/io.hpp>
+
 #include <QThread>
 #include <QAbstractEventDispatcher>
 
@@ -22,16 +24,44 @@ bool AssimpImporter::import_implementation()
 {
   Assimp::Importer importer;
 
-  importer.ReadFile(input_file,
-                    aiProcess_PreTransformVertices |
-                    aiProcess_ImproveCacheLocality);
+  const aiScene* scene = importer.ReadFile(input_file,
+                                           aiProcess_PreTransformVertices |
+                                           aiProcess_ImproveCacheLocality);
 
-  TODO
+  if(scene == nullptr)
+  {
+    print_error(importer.GetErrorString());
+    return false;
+  }
 
-#if 0
-  point_cloud.set_data(PointCloud::COLUMN::COORDINATES, get_type(vertices, 3), vertices->buffer.get(), vertices->buffer.size_bytes());
-    point_cloud.set_data(PointCloud::COLUMN::COLOR, get_type(colors, 3), colors->buffer.get(), colors->buffer.size_bytes());
-    point_cloud.set_data(PointCloud::COLUMN::USER_DATA, get_type(user_data, int(data_components.size())), user_data->buffer.get(), user_data->buffer.size_bytes());
-#endif
+  size_t num_vertices = 0;
+
+  for(uint mesh_index=0; mesh_index<scene->mNumMeshes; ++mesh_index)
+    num_vertices += scene->mMeshes[mesh_index]->mNumVertices;
+
+  print("num_vertices ", num_vertices);
+
+  pointcloud.resize(num_vertices);
+
+  size_t begin_subrange = 0;
+  for(uint mesh_index=0; mesh_index<scene->mNumMeshes; ++mesh_index)
+  {
+    const aiMesh& mesh = *scene->mMeshes[mesh_index];
+
+    const uint subrange_length = mesh.mNumVertices;
+
+    static_assert(std::is_same<float32_t, decltype(mesh.mVertices->x)>::value, "Need to update the data type below");
+    static_assert(std::is_same<float32_t, decltype(mesh.mColors[0]->r)>::value, "Need to update the data type below");
+
+    const data_type_t vertex_input_type{data_type_t::BASE_TYPE::FLOAT32, 3, sizeof(aiVector3D)};
+    const data_type_t color_input_type{data_type_t::BASE_TYPE::FLOAT32, 3, sizeof(aiColor4D)};
+
+    pointcloud.set_data(PointCloud::COLUMN::COORDINATES, vertex_input_type, reinterpret_cast<const unsigned  char*>(mesh.mVertices), begin_subrange, subrange_length);
+
+    if(mesh.mColors[0] != nullptr)
+      pointcloud.set_data(PointCloud::COLUMN::COLOR, color_input_type, reinterpret_cast<const unsigned  char*>(mesh.mColors[0]), begin_subrange, subrange_length);
+
+    begin_subrange += subrange_length;
+  }
   return true;
 }

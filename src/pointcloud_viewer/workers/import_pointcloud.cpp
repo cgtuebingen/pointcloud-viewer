@@ -89,12 +89,12 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
     QMessageBox::warning(parent, "Unknown Error", QString("Internal error"));
     return failed();
   case AbstractPointCloudImporter::RUNTIME_ERROR:
-    QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0. Probably an io error or invalid file.").arg(file.fileName()));
+    QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0>. Probably an io error or invalid file.").arg(file.fileName()));
     return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
   {
-    PointCloud point_cloud(std::move(importer->point_cloud));
-    return point_cloud;
+    PointCloud pointcloud(std::move(importer->pointcloud));
+    return pointcloud;
   }
   }
 

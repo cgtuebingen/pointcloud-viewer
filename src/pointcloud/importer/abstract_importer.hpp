@@ -25,7 +25,7 @@ public:
   const int64_t total_num_bytes = 0;
   state_t state = IDLE;
 
-  PointCloud point_cloud;
+  PointCloud pointcloud;
 
   AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes);
   ~AbstractPointCloudImporter();

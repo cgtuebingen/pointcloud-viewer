@@ -65,6 +65,9 @@ public:
 
   void clear();
 
+  void resize(size_t size);
+  void memset(uint32_t value);
+
   // Note, that the padding will be left untouched, so you can call ths function
   // multiple times to store multiple array withing the same buffer.
   // The point clouds for example use the first 12 bytes for a vec3 coordinate
@@ -74,7 +77,6 @@ public:
 private:
   std::vector<uint8_t> bytes;
   data_type_t data_type;
-  size_t num_elements;
 };
 
 #endif // POINTCLOUDVIEWER_BUFFER_HPP_
