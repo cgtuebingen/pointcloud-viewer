@@ -22,3 +22,6 @@ set(GLHELPER_ADDITIONAL_LIBRARIES glad glm Qt5::Core)
 set(GLHELPER_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/config)
 set(GLHELPER_CONFIG_FILE ${GLHELPER_CONFIG_DIR}/glhelperconfig.hpp)
 add_subdirectory(glhelper)
+
+######## pcl ########
+add_subdirectory(pcl)
