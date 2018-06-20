@@ -1,5 +1,5 @@
-#ifndef POINTCLOUDVIEWER_POINT_CLOUD_HPP_
-#define POINTCLOUDVIEWER_POINT_CLOUD_HPP_
+#ifndef POINTCLOUDVIEWER_POINTCLOUD_HPP_
+#define POINTCLOUDVIEWER_POINTCLOUD_HPP_
 
 #include <pointcloud/buffer.hpp>
 #include <geometry/aabb.hpp>
@@ -38,4 +38,4 @@ public:
   void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);
 };
 
-#endif // POINTCLOUDVIEWER_POINT_CLOUD_HPP_
+#endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_

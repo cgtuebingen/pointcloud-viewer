@@ -1,4 +1,5 @@
 #include <pointcloud/buffer.hpp>
+#include <pointcloud/convert_values.hpp>
 #include <core_library/print.hpp>
 
 #include <QString>
@@ -51,93 +52,6 @@ struct copy_parameters_t
   size_t source_stride;
   size_t num_elements;
   size_t num_components;
-};
-
-template<size_t size>
-struct float_type
-{
-  typedef float32_t type;
-};
-
-template<>
-struct float_type<8>
-{
-  typedef float64_t type;
-};
-
-template<typename T, typename float_t=typename float_type<sizeof(T)>::type>
-typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, float_t>::type
-to_float_normalized(T value)
-{
-  return float_t(value) / float_t(std::numeric_limits<T>::max());
-}
-
-template<typename T, typename float_t=typename float_type<sizeof(T)>::type>
-typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, float_t>::type
-to_float_normalized(T value)
-{
-  if(value >= 0)
-    return float_t(value) / float_t(std::numeric_limits<T>::max());
-  else
-    return -float_t(value) / float_t(std::numeric_limits<T>::min());
-}
-
-template<typename T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
-to_float_normalized(T value)
-{
-  return value;
-}
-
-template<typename T, typename float_t=typename float_type<sizeof(T)>::type>
-typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, T>::type
-from_float_normalized(float_t value)
-{
-  value = value * float_t(std::numeric_limits<T>::max());
-
-  return T(glm::clamp<float_t>(glm::round(value),
-                               0,
-                               float_t(std::numeric_limits<T>::max())));
-}
-
-template<typename T, typename float_t=typename float_type<sizeof(T)>::type>
-typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, T>::type
-from_float_normalized(float_t value)
-{
-  if(value >= 0)
-    value = value * float_t(std::numeric_limits<T>::max());
-  else
-    value = -value * float_t(std::numeric_limits<T>::min());
-
-  return T(glm::clamp(glm::round(value),
-                      float_t(std::numeric_limits<T>::min()),
-                      float_t(std::numeric_limits<T>::max())));
-}
-
-template<typename T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
-from_float_normalized(T value)
-{
-  return value;
-}
-
-template<typename t_in, typename t_out>
-struct convert_component
-{
-  static void convert_normalized(const void* source, uint8_t* target)
-  {
-    typedef typename float_type<sizeof(t_out)>::type float_t;
-    write_value_to_buffer(target, from_float_normalized<t_out>(static_cast<float_t>(to_float_normalized<t_in>(read_value_from_buffer<t_in>(source)))));
-  }
-};
-
-template<typename T>
-struct convert_component<T, T>
-{
-  static void convert_normalized(const void* source, uint8_t* target)
-  {
-    std::memcpy(target, source, sizeof(T));
-  }
 };
 
 template<typename t_in, typename t_out>

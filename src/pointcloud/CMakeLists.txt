@@ -10,10 +10,13 @@ add_library(pointcloud STATIC
  importer/abstract_importer.hpp
  importer/assimp_importer.cpp
  importer/assimp_importer.hpp
+ importer/ply_importer.cpp
+ importer/ply_importer.hpp
  buffer.cpp
  buffer.hpp
+ convert_values.hpp
  pointcloud.cpp
  pointcloud.hpp
 )
 
-target_link_libraries(pointcloud PUBLIC Qt5::Core core_library assimp)
+target_link_libraries(pointcloud PUBLIC Qt5::Core core_library assimp pcl)

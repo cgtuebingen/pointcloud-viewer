@@ -1,5 +1,6 @@
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
 #include <pointcloud/importer/assimp_importer.hpp>
+#include <pointcloud/importer/ply_importer.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
@@ -48,7 +49,7 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
   QSharedPointer<AbstractPointCloudImporter> importer;
   if(suffix == "ply")
   {
-    importer = QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath_std, total_bytes));
+    importer = QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(filepath_std, total_bytes));
   }else if(suffix == "obj")
   {
     importer = QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath_std, total_bytes));
