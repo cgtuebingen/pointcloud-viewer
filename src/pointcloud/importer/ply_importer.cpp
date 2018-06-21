@@ -54,7 +54,8 @@ bool PlyImporter::import_implementation()
     new_vertex_r = new_vertex_x;
     new_vertex_g = new_vertex_x;
     new_vertex_b = new_vertex_x;
-    this->total_progress = n;
+    Q_ASSERT(n < std::numeric_limits<int64_t>::max());
+    this->total_progress = int64_t(n);
     return ply_parser::element_callbacks_type();
   });
 
