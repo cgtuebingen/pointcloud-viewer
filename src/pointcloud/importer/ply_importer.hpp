@@ -8,7 +8,6 @@
 /**
 Implementation for loading ply files
 */
-
 class PlyImporter final : public AbstractPointCloudImporter
 {
 public:
