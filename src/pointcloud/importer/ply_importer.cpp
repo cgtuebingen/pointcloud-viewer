@@ -22,7 +22,12 @@ PlyImporter::PlyImporter(const std::string& input_file, int64_t total_num_bytes)
 
 // Returns the callback handler for reading properties, which o the other hand returns the actual callback for each property depending on name and type.
 template<typename value_type>
-typename ply_parser::scalar_property_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex);
+typename ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
+                                                                                                          PointCloud::vertex_t** new_vertex_y,
+                                                                                                          PointCloud::vertex_t** new_vertex_z,
+                                                                                                          PointCloud::vertex_t** new_vertex_r,
+                                                                                                          PointCloud::vertex_t** new_vertex_g,
+                                                                                                          PointCloud::vertex_t** new_vertex_b);
 
 bool PlyImporter::import_implementation()
 {
@@ -42,60 +47,72 @@ bool PlyImporter::import_implementation()
   parser.warning_callback([format_message](std::size_t line, const std::string& message){print_error(format_message("Warning for ply file", line, message));});
   parser.info_callback([format_message](std::size_t line, const std::string& message){print(format_message("Info: ", line, message));});
 
-  size_t num_vertices = 0;
-  PointCloud::vertex_t* new_vertex = nullptr; // TODO::::::: actually use
+  PointCloud::vertex_t* new_vertex_x = nullptr;
+  PointCloud::vertex_t* new_vertex_y = nullptr;
+  PointCloud::vertex_t* new_vertex_z = nullptr;
+  PointCloud::vertex_t* new_vertex_r = nullptr;
+  PointCloud::vertex_t* new_vertex_g = nullptr;
+  PointCloud::vertex_t* new_vertex_b = nullptr;
 
-  parser.element_definition_callback([&num_vertices](const std::string& name, std::size_t n){
+  parser.element_definition_callback([this, &new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b](const std::string& name, std::size_t n){
     if(name != "vertex")
       return ply_parser::element_callbacks_type();
-    num_vertices = n;
+    this->pointcloud.resize(n);
+    new_vertex_x = reinterpret_cast<PointCloud::vertex_t*>(this->pointcloud.coordinate_color.data());
+    new_vertex_y = new_vertex_x;
+    new_vertex_z = new_vertex_x;
+    new_vertex_r = new_vertex_x;
+    new_vertex_g = new_vertex_x;
+    new_vertex_b = new_vertex_x;
     return ply_parser::element_callbacks_type();
   });
 
   ply_parser::scalar_property_definition_callbacks_type scalar_property_callbacks;
 
-  ply_parser::at<uint8_t>(scalar_property_callbacks) = property_callback_handler<uint8_t>(&new_vertex);
-  ply_parser::at<uint16_t>(scalar_property_callbacks) = property_callback_handler<uint16_t>(&new_vertex);
-  ply_parser::at<uint32_t>(scalar_property_callbacks) = property_callback_handler<uint32_t>(&new_vertex);
-  ply_parser::at<uint64_t>(scalar_property_callbacks) = property_callback_handler<uint64_t>(&new_vertex);
-  ply_parser::at<int8_t>(scalar_property_callbacks) = property_callback_handler<int8_t>(&new_vertex);
-  ply_parser::at<int16_t>(scalar_property_callbacks) = property_callback_handler<int16_t>(&new_vertex);
-  ply_parser::at<int32_t>(scalar_property_callbacks) = property_callback_handler<int32_t>(&new_vertex);
-  ply_parser::at<int64_t>(scalar_property_callbacks) = property_callback_handler<int64_t>(&new_vertex);
-  ply_parser::at<float32_t>(scalar_property_callbacks) = property_callback_handler<float32_t>(&new_vertex);
-  ply_parser::at<float64_t>(scalar_property_callbacks) = property_callback_handler<float64_t>(&new_vertex);
+  ply_parser::at<uint8_t>(scalar_property_callbacks) = property_callback_handler<uint8_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<uint16_t>(scalar_property_callbacks) = property_callback_handler<uint16_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<uint32_t>(scalar_property_callbacks) = property_callback_handler<uint32_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<int8_t>(scalar_property_callbacks) = property_callback_handler<int8_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<int16_t>(scalar_property_callbacks) = property_callback_handler<int16_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<int32_t>(scalar_property_callbacks) = property_callback_handler<int32_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<float32_t>(scalar_property_callbacks) = property_callback_handler<float32_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
+  ply_parser::at<float64_t>(scalar_property_callbacks) = property_callback_handler<float64_t>(&new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b);
 
   parser.scalar_property_definition_callbacks(scalar_property_callbacks);
 
   if(Q_UNLIKELY(!parser.parse(input_file)))
     return false;
 
-  print_error("TODO");
-  return false;
+  return true;
 }
 
 
 // Returns the callback handler for reading properties, which o the other hand returns the actual callback for each property depending on name and type.
 template<typename value_type>
-typename ply_parser::scalar_property_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex)
+typename ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
+                                                                                                          PointCloud::vertex_t** new_vertex_y,
+                                                                                                          PointCloud::vertex_t** new_vertex_z,
+                                                                                                          PointCloud::vertex_t** new_vertex_r,
+                                                                                                          PointCloud::vertex_t** new_vertex_g,
+                                                                                                          PointCloud::vertex_t** new_vertex_b)
 {
-  return [new_vertex](const std::string& current_element_name, const std::string& property_name) -> typename ply_parser::scalar_property_callback_type<uint8_t>::type {
+  return [new_vertex_x, new_vertex_y, new_vertex_z, new_vertex_r, new_vertex_g, new_vertex_b](const std::string& current_element_name, const std::string& property_name) -> typename ply_parser::scalar_property_callback_type<value_type>::type {
     if(current_element_name != "vertex")
       return ply_parser::scalar_property_callback_type<uint8_t>::type();
 
     if(property_name == "red")
-      return [&new_vertex](uint8_t value){convert_component<value_type, uint8_t>::convert_normalized(&value, &(*new_vertex)->color.r);};
+      return [new_vertex_r](value_type value){convert_component<value_type, uint8_t>::convert_normalized(&value, &((*new_vertex_r)++)->color.r);};
     if(property_name == "green")
-      return [&new_vertex](uint8_t value){convert_component<value_type, uint8_t>::convert_normalized(&value, &(*new_vertex)->color.g);};
+      return [new_vertex_g](value_type value){convert_component<value_type, uint8_t>::convert_normalized(&value, &((*new_vertex_g)++)->color.g);};
     if(property_name == "blue")
-      return [&new_vertex](uint8_t value){convert_component<value_type, uint8_t>::convert_normalized(&value, &(*new_vertex)->color.b);};
+      return [new_vertex_b](value_type value){convert_component<value_type, uint8_t>::convert_normalized(&value, &((*new_vertex_b)++)->color.b);};
 
     if(property_name == "x")
-      return [&new_vertex](uint8_t value){convert_component<value_type, float32_t>::convert_normalized(&value, &(*new_vertex)->coordinate.x);};
+      return [new_vertex_x](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_x)++)->coordinate.x);};
     if(property_name == "y")
-      return [&new_vertex](uint8_t value){convert_component<value_type, float32_t>::convert_normalized(&value, &(*new_vertex)->coordinate.y);};
+      return [new_vertex_y](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_y)++)->coordinate.y);};
     if(property_name == "z")
-      return [&new_vertex](uint8_t value){convert_component<value_type, float32_t>::convert_normalized(&value, &(*new_vertex)->coordinate.z);};
+      return [new_vertex_z](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_z)++)->coordinate.z);};
 
     print_error("Warning: Property ", property_name, " ignored! Data components are currently not supported.");
     return ply_parser::scalar_property_callback_type<uint8_t>::type();
