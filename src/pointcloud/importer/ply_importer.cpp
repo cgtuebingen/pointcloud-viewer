@@ -3,8 +3,6 @@
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
 
-#include <pcl/io/ply/ply_parser.h>
-
 #include <glm/gtx/io.hpp>
 
 #include <QThread>
@@ -20,17 +18,9 @@ PlyImporter::PlyImporter(const std::string& input_file, int64_t total_num_bytes)
 {
 }
 
-// Returns the callback handler for reading properties, which o the other hand returns the actual callback for each property depending on name and type.
-template<typename value_type>
-typename ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
-                                                                                                          PointCloud::vertex_t** new_vertex_y,
-                                                                                                          PointCloud::vertex_t** new_vertex_z,
-                                                                                                          PointCloud::vertex_t** new_vertex_r,
-                                                                                                          PointCloud::vertex_t** new_vertex_g,
-                                                                                                          PointCloud::vertex_t** new_vertex_b);
-
 bool PlyImporter::import_implementation()
 {
+  current_progress = 0;
 
   ply_parser parser;
 
@@ -64,6 +54,7 @@ bool PlyImporter::import_implementation()
     new_vertex_r = new_vertex_x;
     new_vertex_g = new_vertex_x;
     new_vertex_b = new_vertex_x;
+    this->total_progress = n;
     return ply_parser::element_callbacks_type();
   });
 
@@ -89,14 +80,14 @@ bool PlyImporter::import_implementation()
 
 // Returns the callback handler for reading properties, which o the other hand returns the actual callback for each property depending on name and type.
 template<typename value_type>
-typename ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
-                                                                                                          PointCloud::vertex_t** new_vertex_y,
-                                                                                                          PointCloud::vertex_t** new_vertex_z,
-                                                                                                          PointCloud::vertex_t** new_vertex_r,
-                                                                                                          PointCloud::vertex_t** new_vertex_g,
-                                                                                                          PointCloud::vertex_t** new_vertex_b)
+typename ply_parser::scalar_property_definition_callback_type<value_type>::type PlyImporter::property_callback_handler(PointCloud::vertex_t** new_vertex_x,
+                                                                                                                       PointCloud::vertex_t** new_vertex_y,
+                                                                                                                       PointCloud::vertex_t** new_vertex_z,
+                                                                                                                       PointCloud::vertex_t** new_vertex_r,
+                                                                                                                       PointCloud::vertex_t** new_vertex_g,
+                                                                                                                       PointCloud::vertex_t** new_vertex_b)
 {
-  return [new_vertex_x, new_vertex_y, new_vertex_z, new_vertex_r, new_vertex_g, new_vertex_b](const std::string& current_element_name, const std::string& property_name) -> typename ply_parser::scalar_property_callback_type<value_type>::type {
+  return [new_vertex_x, new_vertex_y, new_vertex_z, new_vertex_r, new_vertex_g, new_vertex_b, this](const std::string& current_element_name, const std::string& property_name) -> typename ply_parser::scalar_property_callback_type<value_type>::type {
     if(current_element_name != "vertex")
       return ply_parser::scalar_property_callback_type<uint8_t>::type();
 
@@ -108,7 +99,12 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
       return [new_vertex_b](value_type value){convert_component<value_type, uint8_t>::convert_normalized(&value, &((*new_vertex_b)++)->color.b);};
 
     if(property_name == "x")
-      return [new_vertex_x](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_x)++)->coordinate.x);};
+      return [new_vertex_x, this](value_type value){
+        current_progress++;
+        if(Q_UNLIKELY(current_progress%4096 == 0))
+          handle_loaded_chunk(current_progress);
+        convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_x)++)->coordinate.x);
+      };
     if(property_name == "y")
       return [new_vertex_y](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_y)++)->coordinate.y);};
     if(property_name == "z")

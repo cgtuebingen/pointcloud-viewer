@@ -14,7 +14,6 @@ AbstractPointCloudImporter::~AbstractPointCloudImporter()
 void AbstractPointCloudImporter::import()
 {
   this->state = RUNNING;
-  this->num_bytes_processed = 0;
 
   try
   {
@@ -36,7 +35,7 @@ void AbstractPointCloudImporter::import()
 
 AbstractPointCloudImporter::AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes)
   : input_file(input_file),
-    total_num_bytes(total_num_bytes)
+    total_progress(total_num_bytes)
 {
 }
 
@@ -45,13 +44,11 @@ void AbstractPointCloudImporter::cancel()
   this->state = CANCELED;
 }
 
-bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t num_bytes_processed)
+bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
 {
-  Q_ASSERT(num_bytes_processed <= total_num_bytes);
+  Q_ASSERT(current_progress <= total_progress);
 
-  this->num_bytes_processed = num_bytes_processed;
-
-  float86_t progress = float86_t(num_bytes_processed) / float86_t(total_num_bytes);
+  float86_t progress = float86_t(current_progress) / float86_t(total_progress);
   int discrete_progress_value = int(progress * 65536 + float86_t(0.5));
   discrete_progress_value = glm::clamp(0, 65536, discrete_progress_value);
 

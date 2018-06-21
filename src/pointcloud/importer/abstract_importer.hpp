@@ -22,7 +22,6 @@ public:
   };
 
   const std::string input_file;
-  const int64_t total_num_bytes = 0;
   state_t state = IDLE;
 
   PointCloud pointcloud;
@@ -41,13 +40,11 @@ signals:
   void finished();
 
 protected:
-  bool handle_loaded_chunk(int64_t num_bytes_processed);
+  int64_t total_progress = 0;
+  bool handle_loaded_chunk(int64_t progress);
 
 protected slots:
   virtual bool import_implementation() = 0;
-
-private:
-  int64_t num_bytes_processed = 0;
 };
 
 #endif // POINTCLOUD_IMPORTER_ABSTRACTIMPORTER_HPP_
