@@ -562,7 +562,11 @@ bool pcl::io::ply::ply_parser::parse (const std::string& filename)
           element.end_element_callback ();
       }
     }
+    if(istream.eof ())
+      return true;
+
     istream >> std::ws;
+
     if (istream.fail () || !istream.eof () || istream.bad ())
     {
       if (error_callback_)
