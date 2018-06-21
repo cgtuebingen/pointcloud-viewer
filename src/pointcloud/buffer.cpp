@@ -24,6 +24,11 @@ void Buffer::operator=(Buffer&& other)
   std::swap(data_type, other.data_type);
 }
 
+uint8_t*Buffer::data()
+{
+  return bytes.data();
+}
+
 const uint8_t*Buffer::data() const
 {
   return bytes.data();

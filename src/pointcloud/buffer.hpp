@@ -61,6 +61,7 @@ public:
   Buffer(const Buffer& buffer) = delete;
   Buffer& operator=(const Buffer& buffer) = delete;
 
+  uint8_t* data();
   const uint8_t* data() const;
 
   void clear();
