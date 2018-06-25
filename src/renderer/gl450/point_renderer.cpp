@@ -54,8 +54,16 @@ PointRenderer& PointRenderer::operator=(PointRenderer&& point_renderer)
   return *this;
 }
 
+void PointRenderer::clear_buffer()
+{
+  gl::Buffer buffer;
+  this->vertex_position_buffer = std::move(buffer);
+}
+
 void PointRenderer::load_points(const uint8_t* point_data, GLsizei num_points)
 {
+  clear_buffer();
+
   gl::Buffer buffer(GLsizeiptr(num_points) * STRIDE, gl::Buffer::UsageFlag::IMMUTABLE, point_data);
 
   this->vertex_position_buffer = std::move(buffer);
