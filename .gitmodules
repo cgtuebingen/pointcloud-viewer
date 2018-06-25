@@ -1,9 +1,9 @@
 [submodule "glm"]
 	path = src/external/glm
 	url = git@github.com:g-truc/glm.git
-[submodule "glfw"]
-	path = src/external/glfw
-	url = git@github.com:glfw/glfw.git
-[submodule "tinyply"]
-	path = src/external/tinyply
-	url = git@github.com:ddiakopoulos/tinyply.git
+[submodule "glhelper"]
+	path = src/external/glhelper
+	url = git@github.com:Robert42/glhelper.git
+[submodule "cmake-finders"]
+	path = src/external/cmake/modules
+	url = git@github.com:Robert42/cmake-finders.git

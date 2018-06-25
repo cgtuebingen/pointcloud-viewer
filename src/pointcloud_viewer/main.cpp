@@ -1,28 +1,19 @@
-#include <core_library/exception.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
+#include <renderer/gl450/locate_shaders.hpp>
 
-#include <iostream>
+#include <fstream>
 
-using namespace pointcloud_viewer;
+#include <QApplication>
 
 int main(int argc, char** argv)
 {
-  try
-  {
-    mainwindow::Instance mainwindow_instance;
+  QApplication application(argc, argv);
 
-    while(mainwindow::is_open())
-    {
-      glClear(GL_COLOR_BUFFER_BIT);
+  renderer::gl450::locate_shaders();
 
-      mainwindow::swap_buffers();
+  MainWindow mainwindow;
 
-      mainwindow::process_events();
-    }
+  mainwindow.show();
 
-  }catch(exception_t exception)
-  {
-    print_error(exception.message);
-    return -1;
-  }
+  application.exec();
 }
