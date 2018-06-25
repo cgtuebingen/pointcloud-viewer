@@ -42,7 +42,7 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
     }
   }
 
-  const QString suffix = file.completeSuffix();
+  const QString suffix = file.suffix();
 
   int64_t total_bytes = file.size();
 
