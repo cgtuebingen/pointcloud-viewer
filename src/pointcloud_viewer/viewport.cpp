@@ -66,6 +66,7 @@ void Viewport::resizeGL(int w, int h)
 void Viewport::paintGL()
 {
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL_CALL(glEnable, GL_DEPTH_TEST);
 
   // Update the global uniforms
   GlobalUniform::vertex_data_t global_vertex_data;
