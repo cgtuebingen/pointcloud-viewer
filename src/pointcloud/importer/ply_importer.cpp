@@ -46,6 +46,8 @@ bool PlyImporter::import_implementation()
   PointCloud::vertex_t* new_vertex_g = nullptr;
   PointCloud::vertex_t* new_vertex_b = nullptr;
 
+  pointcloud.aabb = aabb_t::invalid();
+
   // register the callback called after an element definition completed. Used to get the number of vertices, allocate teh buffers and prepare the pointers.
   parser.element_definition_callback([this, &new_vertex_x, &new_vertex_y, &new_vertex_z, &new_vertex_r, &new_vertex_g, &new_vertex_b](const std::string& name, std::size_t n){
     if(name != "vertex")
@@ -109,9 +111,16 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
     if(property_name == "blue")
       return [new_vertex_b](value_type value){convert_component<value_type, uint8_t>::convert_normalized(&value, &((*new_vertex_b)++)->color.b);};
 
+    aabb_t& aabb = this->pointcloud.aabb;
+
     if(property_name == "x")
-      return [new_vertex_x, this](value_type value){
-        convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_x)++)->coordinate.x);
+      return [new_vertex_x, this, &aabb](value_type value){
+        float x;
+        convert_component<value_type, float32_t>::convert_normalized(&value, &x);
+        ((*new_vertex_x)++)->coordinate.x = x;
+
+        aabb.max_point.x = glm::max(x, aabb.max_point.x);
+        aabb.min_point.x = glm::min(x, aabb.min_point.x);
 
         // Update the progress bar to relax the user.
         current_progress++;
@@ -119,9 +128,23 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
           handle_loaded_chunk(current_progress);
       };
     if(property_name == "y")
-      return [new_vertex_y](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_y)++)->coordinate.y);};
+      return [new_vertex_y, &aabb](value_type value){
+        float y;
+        convert_component<value_type, float32_t>::convert_normalized(&value, &y);
+        ((*new_vertex_y)++)->coordinate.y = y;
+
+        aabb.max_point.y = glm::max(y, aabb.max_point.y);
+        aabb.min_point.y = glm::min(y, aabb.min_point.y);
+      };
     if(property_name == "z")
-      return [new_vertex_z](value_type value){convert_component<value_type, float32_t>::convert_normalized(&value, &((*new_vertex_z)++)->coordinate.z);};
+      return [new_vertex_z, &aabb](value_type value){
+        float z;
+        convert_component<value_type, float32_t>::convert_normalized(&value, &z);
+        ((*new_vertex_z)++)->coordinate.z = z;
+
+        aabb.max_point.y = glm::max(z, aabb.max_point.z);
+        aabb.min_point.y = glm::min(z, aabb.min_point.z);
+      };
 
     print_error("Warning: Property ", property_name, " ignored! Data components are currently not supported.");
     return ply_parser::scalar_property_callback_type<uint8_t>::type();

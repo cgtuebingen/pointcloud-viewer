@@ -19,4 +19,4 @@ add_library(pointcloud STATIC
  pointcloud.hpp
 )
 
-target_link_libraries(pointcloud PUBLIC Qt5::Core core_library assimp pcl)
+target_link_libraries(pointcloud PUBLIC Qt5::Core core_library geometry assimp pcl)
