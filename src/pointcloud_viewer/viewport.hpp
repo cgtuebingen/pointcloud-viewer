@@ -30,6 +30,7 @@ public:
   Viewport();
   ~Viewport() override;
 
+  void unload_all_point_clouds();
   point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
 
 protected:

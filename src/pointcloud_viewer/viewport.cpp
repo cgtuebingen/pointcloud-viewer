@@ -26,6 +26,11 @@ Viewport::~Viewport()
   delete visualization;
 }
 
+void Viewport::unload_all_point_clouds()
+{
+  point_renderer->clear_buffer();
+}
+
 point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 {
   point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
