@@ -63,5 +63,14 @@ bool AssimpImporter::import_implementation()
 
     begin_subrange += subrange_length;
   }
+
+  pointcloud.aabb = aabb_t::invalid();
+
+  const PointCloud::vertex_t* vertices = reinterpret_cast<const PointCloud::vertex_t*>(pointcloud.coordinate_color.data());
+  for(size_t i=0; i<num_vertices; ++i)
+  {
+    pointcloud.aabb |= vertices[i].coordinate;
+  }
+
   return true;
 }
