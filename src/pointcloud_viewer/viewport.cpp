@@ -36,6 +36,8 @@ point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 
   point_renderer->load_points(p.coordinate_color.data(), GLsizei(p.num_points));
 
+  this->update();
+
   return point_cloud_handle_t(handle);
 }
 
