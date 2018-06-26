@@ -55,6 +55,8 @@ private:
 
   glm::ivec2 last_mouse_pos;
 
+  glm::ivec2 viewport_center() const;
+
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
 
@@ -64,6 +66,8 @@ private:
 
   void enableMode(mode_t mode);
   void disableMode(mode_t mode);
+
+  void set_mouse_pos(glm::ivec2 mouse_pos);
 };
 
 

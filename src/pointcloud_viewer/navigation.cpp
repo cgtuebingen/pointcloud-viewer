@@ -49,6 +49,20 @@ void Navigation::stopFpsNavigation()
 void Navigation::mouseMoveEvent(QMouseEvent* event)
 {
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
+
+  if(mode == Navigation::FPS)
+  {
+    const glm::ivec2 center = viewport_center();
+    if(center == current_mouse_pos)
+    {
+      last_mouse_pos = current_mouse_pos;
+      return;
+    }else
+    {
+      set_mouse_pos(center);
+    }
+  }
+
   mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
 
   mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
@@ -60,7 +74,6 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
   }
 
   last_mouse_pos = current_mouse_pos;
-
 }
 
 void Navigation::mousePressEvent(QMouseEvent* event)
@@ -165,6 +178,13 @@ void Navigation::timerEvent(QTimerEvent* timerEvent)
   ++num_frames_in_fps_mode;
 }
 
+glm::ivec2 Navigation::viewport_center() const
+{
+  QSize size = viewport->size();
+
+  return glm::ivec2(size.width()/2,size.height()/2);
+}
+
 void Navigation::update_key_force()
 {
   if(glm::length(key_direction) > 0.5f)
@@ -236,4 +256,11 @@ void Navigation::disableMode(Navigation::mode_t mode)
 {
   if(this->mode == mode)
     this->mode = IDLE;
+}
+
+void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)
+{
+  QCursor cursor = viewport->cursor();
+  cursor.setPos(viewport->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
+  viewport->setCursor(cursor);
 }
