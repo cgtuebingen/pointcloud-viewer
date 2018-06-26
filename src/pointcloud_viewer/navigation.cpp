@@ -25,7 +25,7 @@ void Navigation::startFpsNavigation()
     key_speed = 0;
     num_frames_in_fps_mode = 0;
     enableMode(Navigation::FPS);
-    viewport->grabMouse(Qt::BlankCursor);
+    viewport->grabMouse(/*Qt::BlankCursor*/);
     viewport->grabKeyboard();
     viewport->setMouseTracking(true);
   }
@@ -53,13 +53,20 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
   if(mode == Navigation::FPS)
   {
     const glm::ivec2 center = viewport_center();
-    last_mouse_pos = center;
-    if(center == current_mouse_pos)
+
+    const distance_t last_mouse_distance = distance_to_viewport_center(last_mouse_pos);
+    const distance_t current_mouse_distance = distance_to_viewport_center(current_mouse_pos);
+
+    if(current_mouse_distance==FAR)
     {
-      return;
-    }else
-    {
+      fps_resetting_mouse_to_center = true;
       set_mouse_pos(center);
+    }
+
+    if(fps_resetting_mouse_to_center && last_mouse_distance==FAR && current_mouse_distance==CLOSE)
+    {
+      fps_resetting_mouse_to_center = false;
+      last_mouse_pos = center;
     }
   }
 
@@ -73,8 +80,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
     viewport->update();
   }
 
-  if(mode != Navigation::FPS)
-    last_mouse_pos = current_mouse_pos;
+  last_mouse_pos = current_mouse_pos;
 }
 
 void Navigation::mousePressEvent(QMouseEvent* event)
@@ -184,6 +190,21 @@ glm::ivec2 Navigation::viewport_center() const
   QSize size = viewport->size();
 
   return glm::ivec2(size.width()/2,size.height()/2);
+}
+
+Navigation::distance_t Navigation::distance_to_viewport_center(glm::ivec2 point) const
+{
+  glm::ivec2 center = viewport_center();
+  glm::ivec2 distances = glm::abs(point - center);
+
+  Navigation::distance_t result = CLOSE;
+
+  if(distances.x <= center.x/4 && distances.y <= center.y/4)
+    result = VERY_CLOSE;
+  else if(distances.x > center.x*3/4 || distances.y > center.y*3/4)
+    result = FAR;
+
+  return result;
 }
 
 void Navigation::update_key_force()

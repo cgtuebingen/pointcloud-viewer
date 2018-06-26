@@ -44,6 +44,13 @@ private:
     TURNTABLE_ZOOM,
   };
 
+  enum distance_t
+  {
+    VERY_CLOSE,
+    CLOSE,
+    FAR,
+  };
+
   QWidget* const viewport;
 
   mode_t mode = IDLE;
@@ -55,7 +62,10 @@ private:
 
   glm::ivec2 last_mouse_pos;
 
+  bool fps_resetting_mouse_to_center = true;
+
   glm::ivec2 viewport_center() const;
+  distance_t distance_to_viewport_center(glm::ivec2 point) const;
 
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
