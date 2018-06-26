@@ -1,3 +1,5 @@
+#ifdef USE_ASSIMP
+
 #include <pointcloud/importer/assimp_importer.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
@@ -15,8 +17,8 @@
 
 // see http://assimp.sourceforge.net/lib_html/usage.html
 
-AssimpImporter::AssimpImporter(const std::string& input_file, int64_t total_num_bytes)
-  : AbstractPointCloudImporter(input_file, total_num_bytes)
+AssimpImporter::AssimpImporter(const std::string& input_file)
+  : AbstractPointCloudImporter(input_file)
 {
 }
 
@@ -74,3 +76,5 @@ bool AssimpImporter::import_implementation()
 
   return true;
 }
+
+#endif

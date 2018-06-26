@@ -13,8 +13,8 @@
 
 typedef pcl::io::ply::ply_parser ply_parser;
 
-PlyImporter::PlyImporter(const std::string& input_file, int64_t total_num_bytes)
-  : AbstractPointCloudImporter(input_file, total_num_bytes)
+PlyImporter::PlyImporter(const std::string& input_file)
+  : AbstractPointCloudImporter(input_file)
 {
 }
 

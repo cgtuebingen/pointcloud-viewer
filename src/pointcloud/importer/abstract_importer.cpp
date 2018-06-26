@@ -1,14 +1,31 @@
 #include <pointcloud/importer/abstract_importer.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
+#include <pointcloud/importer/assimp_importer.hpp>
+#include <pointcloud/importer/ply_importer.hpp>
 
 #include <QThread>
+#include <QSharedPointer>
 #include <QAbstractEventDispatcher>
 
 #include <iostream>
 
 AbstractPointCloudImporter::~AbstractPointCloudImporter()
 {
+}
+
+QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerForSuffix(QString suffix, std::string filepath)
+{
+  if(suffix == "ply")
+  {
+    return QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(filepath));
+#ifdef USE_ASSIMP
+  }else if(suffix == "obj")
+  {
+    return QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath));
+#endif
+  }else
+    return QSharedPointer<AbstractPointCloudImporter>();
 }
 
 void AbstractPointCloudImporter::import()
@@ -33,9 +50,9 @@ void AbstractPointCloudImporter::import()
   finished();
 }
 
-AbstractPointCloudImporter::AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes)
+AbstractPointCloudImporter::AbstractPointCloudImporter(const std::string& input_file)
   : input_file(input_file),
-    total_progress(total_num_bytes)
+    total_progress(progress_max())
 {
 }
 

@@ -26,10 +26,12 @@ public:
 
   PointCloud pointcloud;
 
-  AbstractPointCloudImporter(const std::string& input_file, int64_t total_num_bytes);
+  AbstractPointCloudImporter(const std::string& input_file);
   ~AbstractPointCloudImporter();
 
   constexpr static int progress_max(){return 65536;}
+
+  static QSharedPointer<AbstractPointCloudImporter> importerForSuffix(QString suffix, std::string filepath);
 
 public slots:
   void import();
