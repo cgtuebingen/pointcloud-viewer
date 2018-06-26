@@ -1,5 +1,6 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
+#include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
 
@@ -41,7 +42,7 @@ void MainWindow::importPointcloudLayer()
   QStringList files_to_import = QFileDialog::getOpenFileNames(this,
                                                               "Select one or more pointcloud layers to import",
                                                               ".",
-                                                              "Any Supported (*.ply *.obj);;PLY (*.ply);;OBJ (*.obj)");
+                                                              AbstractPointCloudImporter::allSupportedFiletypes());
 
   for(QString file_to_import : files_to_import)
   {

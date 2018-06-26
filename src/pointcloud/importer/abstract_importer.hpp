@@ -32,6 +32,7 @@ public:
   constexpr static int progress_max(){return 65536;}
 
   static QSharedPointer<AbstractPointCloudImporter> importerForSuffix(QString suffix, std::string filepath);
+  static QString allSupportedFiletypes();
 
 public slots:
   void import();

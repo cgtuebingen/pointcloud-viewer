@@ -28,6 +28,15 @@ QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerF
     return QSharedPointer<AbstractPointCloudImporter>();
 }
 
+QString AbstractPointCloudImporter::allSupportedFiletypes()
+{
+#ifdef USE_ASSIMP
+  return "Any Supported (*.ply *.obj);;PLY (*.ply);;OBJ (*.obj)";
+#else
+  return "PLY (*.ply)";
+#endif
+}
+
 void AbstractPointCloudImporter::import()
 {
   this->state = RUNNING;
