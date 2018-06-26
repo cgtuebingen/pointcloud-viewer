@@ -11,7 +11,7 @@ Implementation for loading ply files
 class PlyImporter final : public AbstractPointCloudImporter
 {
 public:
-  PlyImporter(const std::string& input_file, int64_t total_num_bytes);
+  PlyImporter(const std::string& input_file);
 
 protected:
   bool import_implementation() override;
