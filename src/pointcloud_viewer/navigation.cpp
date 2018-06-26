@@ -53,9 +53,9 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
   if(mode == Navigation::FPS)
   {
     const glm::ivec2 center = viewport_center();
+    last_mouse_pos = center;
     if(center == current_mouse_pos)
     {
-      last_mouse_pos = current_mouse_pos;
       return;
     }else
     {
@@ -73,7 +73,8 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
     viewport->update();
   }
 
-  last_mouse_pos = current_mouse_pos;
+  if(mode != Navigation::FPS)
+    last_mouse_pos = current_mouse_pos;
 }
 
 void Navigation::mousePressEvent(QMouseEvent* event)
