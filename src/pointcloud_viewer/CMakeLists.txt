@@ -4,6 +4,10 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Widgets 5.5 REQUIRED)
 
 add_executable(pointcloud_viewer
+  flythrough/flythrough.cpp
+  flythrough/flythrough.hpp
+  flythrough/keypoint.cpp
+  flythrough/keypoint.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
   camera.cpp

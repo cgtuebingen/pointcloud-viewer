@@ -5,6 +5,7 @@
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
+#include <pointcloud_viewer/flythrough/flythrough.hpp>
 
 class MainWindow : public QMainWindow
 {
@@ -18,12 +19,15 @@ public:
 
 private:
   Viewport viewport;
+  Flythrough flythrough;
 
   void initMenuBar();
   void initDocks();
 
   void importPointcloudLayer();
   void openAboutDialog();
+
+  void insertKeypoint();
 };
 
 

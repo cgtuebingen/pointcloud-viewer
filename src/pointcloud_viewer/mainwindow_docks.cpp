@@ -1,14 +1,16 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 
 #include <QDockWidget>
-#include <QListWidget> // TODO remove
+#include <QListView>
 
 void MainWindow::initDocks()
 {
-  QDockWidget* dock = new QDockWidget("Pointcloud Layers", this);
+  QDockWidget* dock = new QDockWidget("Flythrough Keypoints", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
 
-  QListWidget* dummyWidget = new QListWidget;
-  dock->setWidget(dummyWidget);
+  QListView* keypointList = new QListView;
+  keypointList->setModel(&flythrough);
+
+  dock->setWidget(keypointList);
 }
