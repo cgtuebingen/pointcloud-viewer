@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/navigation.hpp>
+#include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
 
@@ -49,18 +50,36 @@ void Navigation::stopFpsNavigation()
 void Navigation::mouseMoveEvent(QMouseEvent* event)
 {
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
-  mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
 
-  mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
+  bool handle_event = event->source() == Qt::MouseEventNotSynthesized;
 
-  if(mode == Navigation::TURNTABLE_ROTATE || mode == Navigation::TURNTABLE_SHIFT || mode == Navigation::TURNTABLE_ZOOM)
+  if(mode == Navigation::FPS)
   {
-    navigate();
-    viewport->update();
+    const glm::ivec2 center = viewport_center();
+
+    if(distance(current_mouse_pos - center, center) == VERY_FAR)
+      this->set_mouse_pos(center);
+
+    if(distance(current_mouse_pos - last_mouse_pos, center) != CLOSE)
+      handle_event = false;
+  }
+
+  if(handle_event)
+  {
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
+
+    mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
+
+    if(mode == Navigation::TURNTABLE_ROTATE || mode == Navigation::TURNTABLE_SHIFT || mode == Navigation::TURNTABLE_ZOOM)
+    {
+      navigate();
+      viewport->update();
+    }
   }
 
   last_mouse_pos = current_mouse_pos;
 
+  event->accept();
 }
 
 void Navigation::mousePressEvent(QMouseEvent* event)
@@ -165,6 +184,33 @@ void Navigation::timerEvent(QTimerEvent* timerEvent)
   ++num_frames_in_fps_mode;
 }
 
+glm::ivec2 Navigation::viewport_center() const
+{
+  QSize size = viewport->size();
+
+  return glm::ivec2(size.width()/2,size.height()/2);
+}
+
+Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 radius) const
+{
+  difference = glm::abs(difference);
+
+  auto is_very_far = [](int value, int radius) {
+    return value > radius*8/10;
+  };
+
+  auto is_far = [](int value, int radius) {
+    return value > radius/2;
+  };
+
+  if(is_very_far(difference.x, radius.x) || is_very_far(difference.y, radius.y))
+    return VERY_FAR;
+  else if(is_far(difference.x, radius.x) || is_far(difference.y, radius.y))
+    return FAR;
+  else
+    return CLOSE;
+}
+
 void Navigation::update_key_force()
 {
   if(glm::length(key_direction) > 0.5f)
@@ -236,4 +282,11 @@ void Navigation::disableMode(Navigation::mode_t mode)
 {
   if(this->mode == mode)
     this->mode = IDLE;
+}
+
+void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)
+{
+  QCursor cursor = viewport->cursor();
+  cursor.setPos(viewport->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
+  viewport->setCursor(cursor);
 }
