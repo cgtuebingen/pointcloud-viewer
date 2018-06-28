@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/navigation.hpp>
+#include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
 
@@ -25,7 +26,7 @@ void Navigation::startFpsNavigation()
     key_speed = 0;
     num_frames_in_fps_mode = 0;
     enableMode(Navigation::FPS);
-    viewport->grabMouse(/*Qt::BlankCursor*/);
+    viewport->grabMouse(Qt::BlankCursor);
     viewport->grabKeyboard();
     viewport->setMouseTracking(true);
   }
@@ -50,37 +51,35 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 {
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
 
+  bool handle_event = event->source() == Qt::MouseEventNotSynthesized;
+
   if(mode == Navigation::FPS)
   {
     const glm::ivec2 center = viewport_center();
 
-    const distance_t last_mouse_distance = distance_to_viewport_center(last_mouse_pos);
-    const distance_t current_mouse_distance = distance_to_viewport_center(current_mouse_pos);
+    if(distance(current_mouse_pos - center, center) == VERY_FAR)
+      this->set_mouse_pos(center);
 
-    if(current_mouse_distance==FAR)
-    {
-      fps_resetting_mouse_to_center = true;
-      set_mouse_pos(center);
-    }
-
-    if(fps_resetting_mouse_to_center && last_mouse_distance==FAR && current_mouse_distance==CLOSE)
-    {
-      fps_resetting_mouse_to_center = false;
-      last_mouse_pos = center;
-    }
+    if(distance(current_mouse_pos - last_mouse_pos, center) != CLOSE)
+      handle_event = false;
   }
 
-  mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
-
-  mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
-
-  if(mode == Navigation::TURNTABLE_ROTATE || mode == Navigation::TURNTABLE_SHIFT || mode == Navigation::TURNTABLE_ZOOM)
+  if(handle_event)
   {
-    navigate();
-    viewport->update();
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
+
+    mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
+
+    if(mode == Navigation::TURNTABLE_ROTATE || mode == Navigation::TURNTABLE_SHIFT || mode == Navigation::TURNTABLE_ZOOM)
+    {
+      navigate();
+      viewport->update();
+    }
   }
 
   last_mouse_pos = current_mouse_pos;
+
+  event->accept();
 }
 
 void Navigation::mousePressEvent(QMouseEvent* event)
@@ -192,19 +191,24 @@ glm::ivec2 Navigation::viewport_center() const
   return glm::ivec2(size.width()/2,size.height()/2);
 }
 
-Navigation::distance_t Navigation::distance_to_viewport_center(glm::ivec2 point) const
+Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 radius) const
 {
-  glm::ivec2 center = viewport_center();
-  glm::ivec2 distances = glm::abs(point - center);
+  difference = glm::abs(difference);
 
-  Navigation::distance_t result = CLOSE;
+  auto is_very_far = [](int value, int radius) {
+    return value > radius*8/10;
+  };
 
-  if(distances.x <= center.x/4 && distances.y <= center.y/4)
-    result = VERY_CLOSE;
-  else if(distances.x > center.x*3/4 || distances.y > center.y*3/4)
-    result = FAR;
+  auto is_far = [](int value, int radius) {
+    return value > radius/2;
+  };
 
-  return result;
+  if(is_very_far(difference.x, radius.x) || is_very_far(difference.y, radius.y))
+    return VERY_FAR;
+  else if(is_far(difference.x, radius.x) || is_far(difference.y, radius.y))
+    return FAR;
+  else
+    return CLOSE;
 }
 
 void Navigation::update_key_force()
