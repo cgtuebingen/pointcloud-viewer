@@ -16,7 +16,7 @@ enum Section
 int PointCloudLayers::rowCount(const QModelIndex& parent) const
 {
   Q_UNUSED(parent);
-  return 0; // TODO
+  return 0;
 }
 
 QVariant PointCloudLayers::data(const QModelIndex& index, int role) const
@@ -27,7 +27,7 @@ QVariant PointCloudLayers::data(const QModelIndex& index, int role) const
   switch(index.column())
   {
   case SECTION_VISIBILITY:
-    return true; // TODO
+    return true;
   default:
     return QVariant();
   }
