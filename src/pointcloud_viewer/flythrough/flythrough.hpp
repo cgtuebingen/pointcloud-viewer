@@ -9,18 +9,28 @@ class Flythrough : public QAbstractListModel
 {
   Q_OBJECT
   Q_PROPERTY(double animationDuration READ animationDuration WRITE setAnimationDuration NOTIFY animationDurationChanged)
+  Q_PROPERTY(double cameraVelocity READ cameraVelocity WRITE setCameraVelocity NOTIFY cameraVelocityChanged)
+  Q_PROPERTY(double pathLength READ pathLength WRITE setPathLength NOTIFY pathLengthChanged)
 public:
+
+  Flythrough();
+
   void insert_keypoint(frame_t frame, int index);
 
   keypoint_t keypoint_at(int index) const;
 
   double animationDuration() const;
+  double cameraVelocity() const;
+  double pathLength() const;
 
 public slots:
   void setAnimationDuration(double animationDuration);
+  void setCameraVelocity(double cameraVelocity);
 
 signals:
   void animationDurationChanged(double animationDuration);
+  void cameraVelocityChanged(double cameraVelocity);
+  void pathLengthChanged(double pathLength);
 
 protected:
   int rowCount(const QModelIndex &parent) const override;
@@ -29,7 +39,17 @@ protected:
 
 private:
   QVector<keypoint_t> _keypoints;
+
   double m_animationDuration = 10.;
+  double m_cameraVelocity = 1.;
+  double m_pathLength = 0.;
+
+private slots:
+  void setPathLength(double pathLength);
+
+  void updatePathLength();
+  void updateCameraVelocits();
+  void updateAnimationDuration();
 };
 
 #endif // POINTCLOUDVIEWER_FLYTHROUGH_FLYTHROUGH_HPP_

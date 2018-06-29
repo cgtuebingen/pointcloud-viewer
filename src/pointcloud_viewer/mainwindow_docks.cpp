@@ -32,12 +32,24 @@ void MainWindow::initKeypointListDocks()
   animationDuration->setDecimals(2);
 
   animationDuration->setValue(flythrough.animationDuration());
-  animationDuration->setMinimum(0.1);
-  animationDuration->setMaximum(3600);
+  animationDuration->setMinimum(0.);
   connect(animationDuration, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           &flythrough, &Flythrough::setAnimationDuration);
   connect(&flythrough, &Flythrough::animationDurationChanged,
           animationDuration, &QDoubleSpinBox::setValue);
+
+  // ---- camera velocity ----
+  QDoubleSpinBox* cameraVelocity = new QDoubleSpinBox;
+  cameraVelocity->setSuffix("s");
+  cameraVelocity->setDecimals(2);
+
+  cameraVelocity->setValue(flythrough.cameraVelocity());
+  cameraVelocity->setMinimum(0.);
+  cameraVelocity->setMaximum(3600);
+  connect(cameraVelocity, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+          &flythrough, &Flythrough::setCameraVelocity);
+  connect(&flythrough, &Flythrough::cameraVelocityChanged,
+          cameraVelocity, &QDoubleSpinBox::setValue);
 
   // ==== layout ====
   QFormLayout* form;
@@ -47,6 +59,7 @@ void MainWindow::initKeypointListDocks()
   animationGroup->setLayout((form = new QFormLayout));
 
   form->addRow("Duration:", animationDuration);
+  form->addRow("Velocity:", cameraVelocity);
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
