@@ -25,6 +25,20 @@ keypoint_t Flythrough::keypoint_at(int index) const
   return _keypoints[index];
 }
 
+double Flythrough::animationDuration() const
+{
+  return m_animationDuration;
+}
+
+void Flythrough::setAnimationDuration(double animationDuration)
+{
+  if (m_animationDuration == animationDuration)
+    return;
+
+  m_animationDuration = animationDuration;
+  emit animationDurationChanged(animationDuration);
+}
+
 int Flythrough::rowCount(const QModelIndex& parent) const
 {
   if(parent.isValid())
