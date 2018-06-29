@@ -37,7 +37,10 @@ void MainWindow::initMenuBar()
 
 void MainWindow::insertKeypoint()
 {
-  flythrough.insert_keypoint(viewport.navigation.camera.frame, std::numeric_limits<int>::max());
+  const int position_after_last = std::numeric_limits<int>::max();
+  int position = position_after_last;
+
+  flythrough.insert_keypoint(viewport.navigation.camera.frame, position);
 }
 
 #include <QFileDialog>
