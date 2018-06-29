@@ -10,6 +10,8 @@ class Flythrough : public QAbstractListModel
 public:
   void insert_keypoint(frame_t frame, int index);
 
+  keypoint_t keypoint_at(int index) const;
+
 protected:
   int rowCount(const QModelIndex &parent) const override;
   QVariant data(const QModelIndex& index, int role) const override;

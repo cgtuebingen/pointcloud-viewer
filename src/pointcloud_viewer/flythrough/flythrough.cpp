@@ -20,6 +20,11 @@ void Flythrough::insert_keypoint(frame_t frame, int index)
   endInsertRows();
 }
 
+keypoint_t Flythrough::keypoint_at(int index) const
+{
+  return _keypoints[index];
+}
+
 int Flythrough::rowCount(const QModelIndex& parent) const
 {
   if(parent.isValid())

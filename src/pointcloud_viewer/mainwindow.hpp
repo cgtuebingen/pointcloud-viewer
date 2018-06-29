@@ -2,6 +2,7 @@
 #define POINTCLOUDVIEWER_MAINWINDOW_HPP_
 
 #include <QMainWindow>
+#include <QListView>
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
@@ -21,13 +22,18 @@ private:
   Viewport viewport;
   Flythrough flythrough;
 
+  QListView* keypointList;
+
   void initMenuBar();
   void initDocks();
+
+  void initKeypointListDocks();
 
   void importPointcloudLayer();
   void openAboutDialog();
 
   void insertKeypoint();
+  void jumpToKeypoint(const QModelIndex& modelIndex);
 };
 
 

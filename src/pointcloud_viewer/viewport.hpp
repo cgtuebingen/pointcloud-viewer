@@ -30,6 +30,8 @@ public:
   Viewport();
   ~Viewport() override;
 
+  void set_camera_frame(const frame_t& frame);
+
   void unload_all_point_clouds();
   point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
 

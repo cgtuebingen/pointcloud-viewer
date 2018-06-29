@@ -26,6 +26,12 @@ Viewport::~Viewport()
   delete visualization;
 }
 
+void Viewport::set_camera_frame(const frame_t& frame)
+{
+  navigation.camera.frame = frame;
+  update();
+}
+
 void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
