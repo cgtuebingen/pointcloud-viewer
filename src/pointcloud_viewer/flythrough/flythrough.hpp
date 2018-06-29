@@ -2,6 +2,7 @@
 #define POINTCLOUDVIEWER_FLYTHROUGH_FLYTHROUGH_HPP_
 
 #include <pointcloud_viewer/flythrough/keypoint.hpp>
+#include <pointcloud_viewer/flythrough/interpolation.hpp>
 
 #include <QAbstractListModel>
 
@@ -14,6 +15,7 @@ class Flythrough : public QAbstractListModel
 public:
 
   Flythrough();
+  ~Flythrough() override;
 
   void insert_keypoint(frame_t frame, int index);
 
@@ -22,6 +24,8 @@ public:
   double animationDuration() const;
   double cameraVelocity() const;
   double pathLength() const;
+
+  frame_t camera_position_for_time(double time) const;
 
 public slots:
   void setAnimationDuration(double animationDuration);
@@ -39,6 +43,7 @@ protected:
 
 private:
   QVector<keypoint_t> _keypoints;
+  Interpolation* interpolation;
 
   double m_animationDuration = 10.;
   double m_cameraVelocity = 1.;

@@ -9,11 +9,18 @@ enum SECTION
 
 Flythrough::Flythrough()
 {
+  interpolation = new LinearInterpolation(&this->_keypoints);
+
   connect(this, &Flythrough::animationDurationChanged, this, &Flythrough::updateCameraVelocits);
   connect(this, &Flythrough::cameraVelocityChanged, this, &Flythrough::updateAnimationDuration);
   connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::updateAnimationDuration);
 
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
+}
+
+Flythrough::~Flythrough()
+{
+  delete interpolation;
 }
 
 void Flythrough::insert_keypoint(frame_t frame, int index)
@@ -47,6 +54,19 @@ double Flythrough::cameraVelocity() const
 double Flythrough::pathLength() const
 {
   return m_pathLength;
+}
+
+frame_t Flythrough::camera_position_for_time(double time, frame_t fallback) const
+{
+  if(_keypoints.isEmpty())
+    return fallback;
+
+  if(time < 0.)
+    return _keypoints.first().frame;
+  if(time > animationDuration())
+    return _keypoints.last().frame;
+
+  return interpolation->frame_for_time(time, animationDuration());
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
@@ -129,11 +149,7 @@ void Flythrough::setPathLength(double pathLength)
 
 void Flythrough::updatePathLength()
 {
-  double pathLength = 0;
-  for(int i=1; i<_keypoints.length(); ++i)
-    pathLength += double(glm::distance<float>(_keypoints[i].frame.position, _keypoints[i-1].frame.position));
-
-  setPathLength(pathLength);
+  setPathLength(interpolation->path_length());
 }
 
 void Flythrough::updateCameraVelocits()
