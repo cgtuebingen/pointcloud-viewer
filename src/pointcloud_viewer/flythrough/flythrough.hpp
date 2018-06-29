@@ -25,7 +25,7 @@ public:
   double cameraVelocity() const;
   double pathLength() const;
 
-  frame_t camera_position_for_time(double time) const;
+  frame_t camera_position_for_time(double time, frame_t fallback) const;
 
 public slots:
   void setAnimationDuration(double animationDuration);
