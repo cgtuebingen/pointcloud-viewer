@@ -23,6 +23,6 @@ add_library(pointcloud STATIC
 target_link_libraries(pointcloud PUBLIC Qt5::Core core_library geometry pcl)
 
 if(ASSIMP_FOUND)
-target_compile_definitions("-DUSE_ASSIMP")
+target_compile_definitions(pointcloud PUBLIC "-DUSE_ASSIMP")
 target_link_libraries(pointcloud PUBLIC assimp)
 endif()
