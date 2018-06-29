@@ -77,6 +77,7 @@ void Viewport::resizeGL(int w, int h)
 void Viewport::paintGL()
 {
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL_CALL(glDepthFunc, GL_LEQUAL);
   GL_CALL(glEnable, GL_DEPTH_TEST);
 
   // Update the global uniforms
