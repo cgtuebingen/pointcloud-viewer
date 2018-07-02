@@ -114,3 +114,10 @@ inline void frame_t::_inverse(glm::vec3* out_position, glm::quat* out_orientatio
   *out_orientation = glm::inverse(in_orientation);
   *out_position = - *out_scale_factor * (*out_orientation * in_position);
 }
+
+inline frame_t mix(frame_t x, frame_t y, float alpha)
+{
+  return frame_t(glm::mix(x.position, y.position, alpha),
+                 glm::mix(x.orientation, y.orientation, alpha),
+                 glm::mix(x.scale_factor, y.scale_factor, alpha));
+}

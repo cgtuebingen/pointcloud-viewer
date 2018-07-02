@@ -52,6 +52,8 @@ struct frame_t final
                        const glm::vec3& in_position, const glm::quat& in_orientation, float in_scale_factor);
 };
 
+frame_t mix(frame_t x, frame_t y, float alpha);
+
 std::ostream& operator<<(std::ostream& stream, const frame_t& frame);
 
 #include <geometry/frame.inl>
