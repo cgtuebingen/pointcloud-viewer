@@ -33,7 +33,7 @@ void MainWindow::initKeypointListDocks()
   animationDuration->setDecimals(2);
 
   animationDuration->setValue(flythrough.animationDuration());
-  animationDuration->setMinimum(0.);
+  animationDuration->setMinimum(0.01);
   connect(animationDuration, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           &flythrough, &Flythrough::setAnimationDuration);
   connect(&flythrough, &Flythrough::animationDurationChanged,
@@ -43,9 +43,10 @@ void MainWindow::initKeypointListDocks()
   QDoubleSpinBox* cameraVelocity = new QDoubleSpinBox;
   cameraVelocity->setSuffix("unit/s");
   cameraVelocity->setDecimals(2);
+  cameraVelocity->setSingleStep(0.1);
 
   cameraVelocity->setValue(flythrough.cameraVelocity());
-  cameraVelocity->setMinimum(0.);
+  cameraVelocity->setMinimum(0.01);
   cameraVelocity->setMaximum(3600);
   connect(cameraVelocity, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           &flythrough, &Flythrough::setCameraVelocity);

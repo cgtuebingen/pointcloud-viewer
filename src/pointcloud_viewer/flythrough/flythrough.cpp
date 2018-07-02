@@ -104,8 +104,12 @@ void Flythrough::setCameraVelocity(double cameraVelocity)
   if(qFuzzyCompare(m_cameraVelocity, cameraVelocity))
     return;
 
+  const double oldCameraVelocity = m_cameraVelocity;
+
   m_cameraVelocity = cameraVelocity;
   emit cameraVelocityChanged(m_cameraVelocity);
+
+  playback._current_time *= oldCameraVelocity / this->cameraVelocity();
 }
 
 int Flythrough::rowCount(const QModelIndex& parent) const
