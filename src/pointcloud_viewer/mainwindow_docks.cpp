@@ -41,7 +41,7 @@ void MainWindow::initKeypointListDocks()
 
   // ---- camera velocity ----
   QDoubleSpinBox* cameraVelocity = new QDoubleSpinBox;
-  cameraVelocity->setSuffix("s");
+  cameraVelocity->setSuffix("unit/s");
   cameraVelocity->setDecimals(2);
 
   cameraVelocity->setValue(flythrough.cameraVelocity());

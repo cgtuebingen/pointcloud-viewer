@@ -52,7 +52,7 @@ private:
   Interpolation* interpolation;
 
   double m_animationDuration = 10.;
-  double m_cameraVelocity = 1.;
+  double m_cameraVelocity = 4.;
   double m_pathLength = 0.;
 
 private slots:

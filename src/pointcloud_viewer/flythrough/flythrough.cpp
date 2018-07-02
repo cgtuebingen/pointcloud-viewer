@@ -15,6 +15,9 @@ Flythrough::Flythrough()
   connect(this, &Flythrough::cameraVelocityChanged, this, &Flythrough::updateAnimationDuration);
   connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::updateAnimationDuration);
 
+  connect(this, &Flythrough::rowsInserted, this, &Flythrough::updatePathLength);
+  connect(this, &Flythrough::rowsMoved, this, &Flythrough::updatePathLength);
+  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
 
   playback._animationDuration = this->m_animationDuration;
@@ -70,7 +73,7 @@ frame_t Flythrough::camera_position_for_time(double time, frame_t fallback) cons
   if(time > animationDuration())
     return _keypoints.last().frame;
 
-  return interpolation->frame_for_time(time, animationDuration());
+  return interpolation->frame_for_time(time, cameraVelocity());
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
