@@ -17,6 +17,8 @@ public slots:
   void play_realtime();
   void play_with_fixed_framerate();
 
+  void stop();
+
   void previous_frame_finished(double duration);
 
   void setFixed_framerate(int fixed_framerate);

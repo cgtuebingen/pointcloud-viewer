@@ -14,8 +14,7 @@ int Playback::fixed_framerate() const
 
 void Playback::play_realtime()
 {
-  if(_mode != IDLE)
-    aborted();
+  stop();
 
   _mode = REALTIME;
   _current_time = 0.;
@@ -26,14 +25,22 @@ void Playback::play_realtime()
 
 void Playback::play_with_fixed_framerate()
 {
-  if(_mode != IDLE)
-    aborted();
+  stop();
 
   _mode = FIXED_FRAMERATE;
   _current_time = 0.;
 
   started();
   request_next_frame(_current_time);
+}
+
+void Playback::stop()
+{
+  if(_mode != IDLE)
+  {
+    _mode = IDLE;
+    aborted();
+  }
 }
 
 void Playback::previous_frame_finished(double duration)

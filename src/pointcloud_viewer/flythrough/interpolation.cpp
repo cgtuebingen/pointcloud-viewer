@@ -24,21 +24,20 @@ double LinearInterpolation::path_length() const
   return pathLength;
 }
 
-frame_t LinearInterpolation::frame_for_time(double time, double cameraVelocity) const
+frame_t LinearInterpolation::frame_for_overcome_distance(double distance) const
 {
-  double prevTime = 0;
+  double prevDistance = 0;
   for(int i=1; i<keypoints.length(); ++i)
   {
     double segmentLength = double(glm::distance<float>(keypoints[i].frame.position, keypoints[i-1].frame.position));
 
-    double timeInTheNextSegment = segmentLength / cameraVelocity;
-
-    double nextTime = prevTime + timeInTheNextSegment;
+    double nextDistance = prevDistance + segmentLength;
 
 
-    if(prevTime<=time && nextTime>=time)
+    if(prevDistance<=distance && nextDistance>=distance)
     {
-      double alpha = glm::clamp((time - prevTime) / timeInTheNextSegment, 0., 1.);
+      double alpha = glm::clamp((distance - prevDistance) / segmentLength
+                                , 0., 1.);
 
       frame_t a = keypoints[i-1].frame;
       frame_t b = keypoints[i].frame;
@@ -46,7 +45,7 @@ frame_t LinearInterpolation::frame_for_time(double time, double cameraVelocity) 
       return mix(a, b, float(alpha));
     }
 
-    prevTime = nextTime;
+    prevDistance = nextDistance;
   }
 
   return keypoints.last().frame;

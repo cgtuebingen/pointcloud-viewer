@@ -73,7 +73,14 @@ frame_t Flythrough::camera_position_for_time(double time, frame_t fallback) cons
   if(time > animationDuration())
     return _keypoints.last().frame;
 
-  return interpolation->frame_for_time(time, cameraVelocity());
+  double distance = cameraVelocity() * time;
+
+  return interpolation->frame_for_overcome_distance(distance);
+}
+
+bool Flythrough::canPlay() const
+{
+  return m_canPlay;
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
@@ -92,7 +99,7 @@ void Flythrough::setAnimationDuration(double animationDuration)
 
 void Flythrough::setCameraVelocity(double cameraVelocity)
 {
-  cameraVelocity = glm::clamp(cameraVelocity, 1.e-5, 1.e10);
+  cameraVelocity = glm::clamp(cameraVelocity, 1.e-2, 1.e10);
 
   if(qFuzzyCompare(m_cameraVelocity, cameraVelocity))
     return;
@@ -147,6 +154,8 @@ void Flythrough::setPathLength(double pathLength)
 {
   pathLength = glm::max(0., pathLength);
 
+  setCanPlay(pathLength > 0.);
+
   if(qFuzzyCompare(m_pathLength, pathLength))
     return;
 
@@ -156,6 +165,12 @@ void Flythrough::setPathLength(double pathLength)
 
 void Flythrough::newCameraPosition(double time)
 {
+  if(Q_UNLIKELY(!canPlay()))
+  {
+    playback.stop();
+    return;
+  }
+
   const frame_t invalid(glm::vec3(0), quat_identity<glm::quat>(), -1.f);
 
   frame_t new_frame = camera_position_for_time(time, invalid);
@@ -179,4 +194,13 @@ void Flythrough::updateAnimationDuration()
 {
   if(pathLength() > 1)
     setAnimationDuration(pathLength() / cameraVelocity());
+}
+
+void Flythrough::setCanPlay(bool canPlay)
+{
+  if (m_canPlay == canPlay)
+    return;
+
+  m_canPlay = canPlay;
+  emit canPlayChanged(m_canPlay);
 }

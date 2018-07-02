@@ -19,7 +19,7 @@ public:
   virtual ~Interpolation();
 
   virtual double path_length() const = 0;
-  virtual frame_t frame_for_time(double time, double cameraVelocity) const = 0;
+  virtual frame_t frame_for_overcome_distance(double distance) const = 0;
 };
 
 class LinearInterpolation : public Interpolation
@@ -28,6 +28,6 @@ public:
   LinearInterpolation(const QVector<keypoint_t>* keypoints);
 
   double path_length() const override;
-  frame_t frame_for_time(double time, double cameraVelocity) const override;
+  frame_t frame_for_overcome_distance(double distance) const override;
 };
 #endif // POINTCLOUDVIEWER_FLYTHROUGH_INTERPOLATION_HPP_

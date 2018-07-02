@@ -15,6 +15,7 @@ class Flythrough : public QAbstractListModel
   Q_PROPERTY(double animationDuration READ animationDuration WRITE setAnimationDuration NOTIFY animationDurationChanged)
   Q_PROPERTY(double cameraVelocity READ cameraVelocity WRITE setCameraVelocity NOTIFY cameraVelocityChanged)
   Q_PROPERTY(double pathLength READ pathLength WRITE setPathLength NOTIFY pathLengthChanged)
+  Q_PROPERTY(bool canPlay READ canPlay WRITE setCanPlay NOTIFY canPlayChanged)
 public:
   Playback playback;
 
@@ -31,6 +32,8 @@ public:
 
   frame_t camera_position_for_time(double time, frame_t fallback) const;
 
+  bool canPlay() const;
+
 public slots:
   void setAnimationDuration(double animationDuration);
   void setCameraVelocity(double cameraVelocity);
@@ -41,6 +44,8 @@ signals:
   void pathLengthChanged(double pathLength);
 
   void set_new_camera_frame(frame_t frame);
+
+  void canPlayChanged(bool canPlay);
 
 protected:
   int rowCount(const QModelIndex &parent) const override;
@@ -55,6 +60,8 @@ private:
   double m_cameraVelocity = 4.;
   double m_pathLength = 0.;
 
+  bool m_canPlay;
+
 private slots:
   void setPathLength(double pathLength);
 
@@ -63,6 +70,8 @@ private slots:
   void updatePathLength();
   void updateCameraVelocits();
   void updateAnimationDuration();
+
+  void setCanPlay(bool canPlay);
 };
 
 #endif // POINTCLOUDVIEWER_FLYTHROUGH_FLYTHROUGH_HPP_
