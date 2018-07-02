@@ -10,6 +10,8 @@ add_executable(pointcloud_viewer
   flythrough/interpolation.hpp
   flythrough/keypoint.cpp
   flythrough/keypoint.hpp
+  flythrough/playback.cpp
+  flythrough/playback.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
   camera.cpp

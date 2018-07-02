@@ -35,6 +35,9 @@ public:
   void unload_all_point_clouds();
   point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
 
+signals:
+  void frame_rendered(double duration);
+
 protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;

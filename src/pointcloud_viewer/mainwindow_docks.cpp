@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QPushButton>
 #include <QGroupBox>
 
 void MainWindow::initDocks()
@@ -51,6 +52,10 @@ void MainWindow::initKeypointListDocks()
   connect(&flythrough, &Flythrough::cameraVelocityChanged,
           cameraVelocity, &QDoubleSpinBox::setValue);
 
+  // ---- play ----
+  QPushButton* play_animation_realtime = new QPushButton("&Play");
+  connect(play_animation_realtime, &QPushButton::clicked, &flythrough.playback, &Playback::play_realtime);
+
   // ==== layout ====
   QFormLayout* form;
 
@@ -60,6 +65,7 @@ void MainWindow::initKeypointListDocks()
 
   form->addRow("Duration:", animationDuration);
   form->addRow("Velocity:", cameraVelocity);
+  form->addRow(play_animation_realtime, new QWidget());
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);

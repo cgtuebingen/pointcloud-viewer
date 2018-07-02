@@ -4,6 +4,8 @@
 
 #include <renderer/gl450/uniforms.hpp>
 
+#include <QElapsedTimer>
+
 Viewport::Viewport()
   : navigation(this)
 {
@@ -76,6 +78,9 @@ void Viewport::resizeGL(int w, int h)
 // Called by Qt everytime the opengl window needs to be repainted
 void Viewport::paintGL()
 {
+  QElapsedTimer timer;
+  timer.start();
+
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   GL_CALL(glDepthFunc, GL_LEQUAL);
   GL_CALL(glEnable, GL_DEPTH_TEST);
@@ -91,6 +96,8 @@ void Viewport::paintGL()
   point_renderer->render_points();
 
   global_uniform->unbind();
+
+  frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }
 
 void Viewport::mouseMoveEvent(QMouseEvent* event)

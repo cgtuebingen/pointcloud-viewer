@@ -5,6 +5,9 @@
 
 #include <QVector>
 
+/**
+Interface for different keypoint interpolation techniques.
+*/
 class Interpolation
 {
 public:

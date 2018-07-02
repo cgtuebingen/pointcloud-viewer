@@ -16,6 +16,10 @@ Flythrough::Flythrough()
   connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::updateAnimationDuration);
 
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
+
+  playback._animationDuration = this->m_animationDuration;
+  connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});
+  connect(&playback, &Playback::request_next_frame, this, &Flythrough::newCameraPosition);
 }
 
 Flythrough::~Flythrough()
@@ -145,6 +149,16 @@ void Flythrough::setPathLength(double pathLength)
 
   m_pathLength = pathLength;
   emit pathLengthChanged(m_pathLength);
+}
+
+void Flythrough::newCameraPosition(double time)
+{
+  const frame_t invalid(glm::vec3(0), quat_identity<glm::quat>(), -1.f);
+
+  frame_t new_frame = camera_position_for_time(time, invalid);
+
+  if(Q_LIKELY(new_frame.scale_factor > 0.f))
+    set_new_camera_frame(new_frame);
 }
 
 void Flythrough::updatePathLength()

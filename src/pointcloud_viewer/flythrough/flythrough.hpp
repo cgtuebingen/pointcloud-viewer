@@ -3,9 +3,12 @@
 
 #include <pointcloud_viewer/flythrough/keypoint.hpp>
 #include <pointcloud_viewer/flythrough/interpolation.hpp>
+#include <pointcloud_viewer/flythrough/playback.hpp>
 
 #include <QAbstractListModel>
 
+/** Contains the path of the camera and allows accessing the camera frame for any point in time.
+*/
 class Flythrough : public QAbstractListModel
 {
   Q_OBJECT
@@ -13,6 +16,7 @@ class Flythrough : public QAbstractListModel
   Q_PROPERTY(double cameraVelocity READ cameraVelocity WRITE setCameraVelocity NOTIFY cameraVelocityChanged)
   Q_PROPERTY(double pathLength READ pathLength WRITE setPathLength NOTIFY pathLengthChanged)
 public:
+  Playback playback;
 
   Flythrough();
   ~Flythrough() override;
@@ -36,6 +40,8 @@ signals:
   void cameraVelocityChanged(double cameraVelocity);
   void pathLengthChanged(double pathLength);
 
+  void set_new_camera_frame(frame_t frame);
+
 protected:
   int rowCount(const QModelIndex &parent) const override;
   QVariant data(const QModelIndex& index, int role) const override;
@@ -51,6 +57,8 @@ private:
 
 private slots:
   void setPathLength(double pathLength);
+
+  void newCameraPosition(double time);
 
   void updatePathLength();
   void updateCameraVelocits();
