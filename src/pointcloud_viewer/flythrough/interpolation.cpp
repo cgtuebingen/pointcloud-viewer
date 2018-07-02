@@ -5,6 +5,16 @@ Interpolation::Interpolation(const QVector<keypoint_t>* keypoints)
 {
 }
 
+Interpolation::~Interpolation()
+{
+}
+
+LinearInterpolation::LinearInterpolation(const QVector<keypoint_t>* keypoints)
+  : Interpolation(keypoints)
+{
+
+}
+
 double LinearInterpolation::path_length() const
 {
   double pathLength = 0;
@@ -33,7 +43,7 @@ frame_t LinearInterpolation::frame_for_time(double time, double cameraVelocity) 
       frame_t a = keypoints[i-1].frame;
       frame_t b = keypoints[i].frame;
 
-      TODO interpolate
+      return mix(a, b, float(alpha));
     }
 
     prevTime = nextTime;

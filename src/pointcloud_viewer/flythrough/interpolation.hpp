@@ -15,8 +15,8 @@ public:
   Interpolation(const QVector<keypoint_t>* keypoints);
   virtual ~Interpolation();
 
-  virtual double path_length() const;
-  virtual frame_t frame_for_time(double time, double cameraVelocity) const;
+  virtual double path_length() const = 0;
+  virtual frame_t frame_for_time(double time, double cameraVelocity) const = 0;
 };
 
 class LinearInterpolation : public Interpolation
