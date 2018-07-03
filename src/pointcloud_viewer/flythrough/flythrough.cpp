@@ -7,6 +7,18 @@ enum SECTION
   INDEX,
 };
 
+Flythrough::Flythrough(const Flythrough& flythrough)
+  : _keypoints(flythrough._keypoints),
+    interpolation_implementation(create_interpolation_implementation_for_enum(interpolation_t(flythrough.m_interpolation))),
+    m_animationDuration(flythrough.m_animationDuration),
+    m_cameraVelocity(flythrough.m_cameraVelocity),
+    m_pathLength(flythrough.m_pathLength),
+    m_canPlay(flythrough.m_canPlay),
+    m_interpolation(flythrough.m_interpolation)
+{
+
+}
+
 Flythrough::Flythrough()
 {
   interpolation_implementation = QSharedPointer<Interpolation>(new LinearInterpolation(&this->_keypoints));
@@ -27,6 +39,11 @@ Flythrough::Flythrough()
 
 Flythrough::~Flythrough()
 {
+}
+
+QSharedPointer<Flythrough> Flythrough::copy() const
+{
+  return QSharedPointer<Flythrough>(new Flythrough(*this));
 }
 
 void Flythrough::insert_keypoint(frame_t frame, int index)
@@ -122,23 +139,7 @@ void Flythrough::setInterpolation(int interpolation)
     return;
 
   m_interpolation = interpolation;
-
-  LinearInterpolation* implementation = nullptr;
-
-  switch(interpolation_t(interpolation))
-  {
-  case INTERPOLATION_LINEAR:
-    implementation = new LinearInterpolation(&this->_keypoints, false);
-    break;
-  case INTERPOLATION_LINEAR_SMOOTHSTEP:
-    implementation = new LinearInterpolation(&this->_keypoints, true);
-    break;
-  }
-
-  Q_ASSERT(implementation != nullptr);
-
-  interpolation_implementation = QSharedPointer<Interpolation>(implementation);
-
+  interpolation_implementation = create_interpolation_implementation_for_enum(interpolation_t(m_interpolation));
   emit interpolationChanged(m_interpolation);
 }
 
@@ -182,6 +183,25 @@ QVariant Flythrough::headerData(int section, Qt::Orientation orientation, int ro
   default:
     return QVariant();
   }
+}
+
+QSharedPointer<const Interpolation> Flythrough::create_interpolation_implementation_for_enum(Flythrough::interpolation_t interpolation) const
+{
+  LinearInterpolation* implementation = nullptr;
+
+  switch(interpolation)
+  {
+  case INTERPOLATION_LINEAR:
+    implementation = new LinearInterpolation(&this->_keypoints, false);
+    break;
+  case INTERPOLATION_LINEAR_SMOOTHSTEP:
+    implementation = new LinearInterpolation(&this->_keypoints, true);
+    break;
+  }
+
+  Q_ASSERT(implementation != nullptr);
+
+  return QSharedPointer<Interpolation>(implementation);
 }
 
 void Flythrough::setPathLength(double pathLength)

@@ -29,8 +29,12 @@ public:
 
   Playback playback;
 
+  Flythrough(const Flythrough& flythrough);
+
   Flythrough();
   ~Flythrough() override;
+
+  QSharedPointer<Flythrough> copy() const;
 
   void insert_keypoint(frame_t frame, int index);
 
@@ -69,7 +73,7 @@ protected:
 
 private:
   QVector<keypoint_t> _keypoints;
-  QSharedPointer<Interpolation> interpolation_implementation;
+  QSharedPointer<const Interpolation> interpolation_implementation;
 
   double m_animationDuration = 10.;
   double m_cameraVelocity = 4.;
@@ -78,6 +82,8 @@ private:
   bool m_canPlay;
 
   int m_interpolation = INTERPOLATION_LINEAR;
+
+  QSharedPointer<const Interpolation> create_interpolation_implementation_for_enum(interpolation_t) const;
 
 private slots:
   void setPathLength(double pathLength);
