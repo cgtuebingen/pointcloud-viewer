@@ -5,6 +5,7 @@
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QPushButton>
+#include <QComboBox>
 #include <QGroupBox>
 
 void MainWindow::initDocks()
@@ -53,6 +54,18 @@ void MainWindow::initKeypointListDocks()
   connect(&flythrough, &Flythrough::cameraVelocityChanged,
           cameraVelocity, &QDoubleSpinBox::setValue);
 
+  // ---- interpolation ----
+  QComboBox* interpolation = new QComboBox;
+  {
+    QMap<int, QString> items;
+    items[Flythrough::INTERPOLATION_LINEAR] = "Linear";
+    items[Flythrough::INTERPOLATION_LINEAR_SMOOTHSTEP] = "Linear Smoothstep";
+    interpolation->addItems(items.values());
+  }
+  interpolation->setCurrentIndex(flythrough.interpolation());
+  connect(interpolation, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), &flythrough, &Flythrough::setInterpolation);
+  connect(&flythrough, &Flythrough::interpolationChanged, interpolation, &QComboBox::setCurrentIndex);
+
   // ---- play ----
   QPushButton* play_animation_realtime = new QPushButton("&Play");
   connect(play_animation_realtime, &QPushButton::clicked, &flythrough.playback, &Playback::play_realtime);
@@ -66,6 +79,7 @@ void MainWindow::initKeypointListDocks()
 
   form->addRow("Duration:", animationDuration);
   form->addRow("Velocity:", cameraVelocity);
+  form->addRow("Interpolation:", interpolation);
   form->addRow(play_animation_realtime, new QWidget());
 
   // -- vbox --

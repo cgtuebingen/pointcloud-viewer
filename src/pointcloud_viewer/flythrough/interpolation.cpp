@@ -9,8 +9,9 @@ Interpolation::~Interpolation()
 {
 }
 
-LinearInterpolation::LinearInterpolation(const QVector<keypoint_t>* keypoints)
-  : Interpolation(keypoints)
+LinearInterpolation::LinearInterpolation(const QVector<keypoint_t>* keypoints, bool smoothstep)
+  : Interpolation(keypoints),
+    smoothstep(smoothstep)
 {
 
 }
@@ -38,6 +39,9 @@ frame_t LinearInterpolation::frame_for_overcome_distance(double distance) const
     {
       double alpha = glm::clamp((distance - prevDistance) / segmentLength
                                 , 0., 1.);
+
+      if(smoothstep)
+        alpha = glm::smoothstep(0., 1., alpha);
 
       frame_t a = keypoints[i-1].frame;
       frame_t b = keypoints[i].frame;

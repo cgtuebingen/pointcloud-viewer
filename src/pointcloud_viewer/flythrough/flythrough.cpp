@@ -9,7 +9,7 @@ enum SECTION
 
 Flythrough::Flythrough()
 {
-  interpolation = new LinearInterpolation(&this->_keypoints);
+  interpolation_implementation = QSharedPointer<Interpolation>(new LinearInterpolation(&this->_keypoints));
 
   connect(this, &Flythrough::animationDurationChanged, this, &Flythrough::updateCameraVelocits);
   connect(this, &Flythrough::cameraVelocityChanged, this, &Flythrough::updateAnimationDuration);
@@ -27,7 +27,6 @@ Flythrough::Flythrough()
 
 Flythrough::~Flythrough()
 {
-  delete interpolation;
 }
 
 void Flythrough::insert_keypoint(frame_t frame, int index)
@@ -75,12 +74,17 @@ frame_t Flythrough::camera_position_for_time(double time, frame_t fallback) cons
 
   double distance = cameraVelocity() * time;
 
-  return interpolation->frame_for_overcome_distance(distance);
+  return interpolation_implementation->frame_for_overcome_distance(distance);
 }
 
 bool Flythrough::canPlay() const
 {
   return m_canPlay;
+}
+
+int Flythrough::interpolation() const
+{
+  return m_interpolation;
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
@@ -110,6 +114,32 @@ void Flythrough::setCameraVelocity(double cameraVelocity)
   emit cameraVelocityChanged(m_cameraVelocity);
 
   playback._current_time *= oldCameraVelocity / this->cameraVelocity();
+}
+
+void Flythrough::setInterpolation(int interpolation)
+{
+  if (m_interpolation == interpolation)
+    return;
+
+  m_interpolation = interpolation;
+
+  LinearInterpolation* implementation = nullptr;
+
+  switch(interpolation_t(interpolation))
+  {
+  case INTERPOLATION_LINEAR:
+    implementation = new LinearInterpolation(&this->_keypoints, false);
+    break;
+  case INTERPOLATION_LINEAR_SMOOTHSTEP:
+    implementation = new LinearInterpolation(&this->_keypoints, true);
+    break;
+  }
+
+  Q_ASSERT(implementation != nullptr);
+
+  interpolation_implementation = QSharedPointer<Interpolation>(implementation);
+
+  emit interpolationChanged(m_interpolation);
 }
 
 int Flythrough::rowCount(const QModelIndex& parent) const
@@ -185,7 +215,7 @@ void Flythrough::newCameraPosition(double time)
 
 void Flythrough::updatePathLength()
 {
-  setPathLength(interpolation->path_length());
+  setPathLength(interpolation_implementation->path_length());
 }
 
 void Flythrough::updateCameraVelocits()

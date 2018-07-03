@@ -25,7 +25,9 @@ public:
 class LinearInterpolation : public Interpolation
 {
 public:
-  LinearInterpolation(const QVector<keypoint_t>* keypoints);
+  LinearInterpolation(const QVector<keypoint_t>* keypoints, bool smoothstep = false);
+
+  const bool smoothstep;
 
   double path_length() const override;
   frame_t frame_for_overcome_distance(double distance) const override;
