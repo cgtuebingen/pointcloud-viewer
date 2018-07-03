@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/mainwindow.hpp>
+#include <pointcloud_viewer/workers/offline_renderer.hpp>
 
 #include <QDockWidget>
 #include <QVBoxLayout>
@@ -70,6 +71,10 @@ void MainWindow::initKeypointListDocks()
   QPushButton* play_animation_realtime = new QPushButton("&Play");
   connect(play_animation_realtime, &QPushButton::clicked, &flythrough.playback, &Playback::play_realtime);
 
+  // ---- render button ----
+  QPushButton* renderButton = new QPushButton("&Render");
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
+
   // ==== layout ====
   QFormLayout* form;
 
@@ -86,6 +91,7 @@ void MainWindow::initKeypointListDocks()
   QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(keypointList);
   vbox->addWidget(animationGroup);
+  vbox->addWidget(renderButton);
 }
 
 void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
@@ -94,4 +100,14 @@ void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
     return;
 
   viewport.set_camera_frame(flythrough.keypoint_at(modelIndex.row()).frame);
+}
+
+void MainWindow::offline_render()
+{
+  RenderSettings renderSettings = ask_for_render_settings();
+
+  if(renderSettings.target_images_files.isEmpty() && renderSettings.target_video_file.isEmpty())
+    return;
+
+  ::render(this, renderSettings);
 }

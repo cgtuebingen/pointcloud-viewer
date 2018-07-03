@@ -34,6 +34,8 @@ private:
 
   void insertKeypoint();
   void jumpToKeypoint(const QModelIndex& modelIndex);
+
+  void offline_render();
 };
 
 
