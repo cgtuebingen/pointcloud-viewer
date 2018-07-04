@@ -36,6 +36,7 @@ void MainWindow::initKeypointListDocks()
 
   animationDuration->setValue(flythrough.animationDuration());
   animationDuration->setMinimum(0.01);
+  animationDuration->setMaximum(3600);
   connect(animationDuration, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           &flythrough, &Flythrough::setAnimationDuration);
   connect(&flythrough, &Flythrough::animationDurationChanged,
