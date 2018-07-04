@@ -7,11 +7,5 @@
 
 class MainWindow;
 
-QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings);
-
-/**
-The function responsible for rendering the animation to a video-file.
-*/
-void render(MainWindow* mainWindow, RenderSettings renderSettings);
 
 #endif // POINTCLOUDVIEWER_WORKERS_OFFLINERENDERER_DIALOG_HPP_

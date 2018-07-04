@@ -19,10 +19,11 @@
 #include <QStandardPaths>
 #include <QProgressBar>
 
-QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
+QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSettings prevSettings)
 {
-  QDialog dialog;
+  QDialog dialog(parent);
 
+  dialog.setWindowModality(Qt::ApplicationModal);
   dialog.setWindowTitle("Render Settings");
 
   QSplitter* splitter = new QSplitter(Qt::Horizontal);
@@ -201,35 +202,60 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   return qMakePair(renderSettings, !use_result);
 }
 
-void render(MainWindow* mainWindow, RenderSettings renderSettings)
+
+void MainWindow::offline_render()
 {
-  const int num_frames = 100;
+  QPair<RenderSettings, bool> result = ask_for_render_settings(this, renderSettings);
 
-  QDialog dialog;
+  renderSettings = result.first;
+  bool was_canceled = result.second;
 
+  if(was_canceled)
+    return;
+
+  OfflineRenderer offlineRenderer(&viewport, flythrough, renderSettings);
+
+  QDialog dialog(this);
+
+  dialog.setWindowModality(Qt::ApplicationModal);
   dialog.setWindowTitle("Rendering Now...");
+
+  QVBoxLayout* root = new QVBoxLayout;
 
   // ==== Progressbar ====
   QProgressBar* progressBar = new QProgressBar;
 
-  progressBar->setMaximum(num_frames);
+  progressBar->setMaximum(offlineRenderer.total_number_frames-1);
+  progressBar->setTextVisible(true);
+  root->addWidget(progressBar, 0);
+
+  // ==== image_preview ====
+  QLabel* rendered_frame = new QLabel("Please wait...");
+  root->addWidget(rendered_frame, 1);
+
+  connect(&offlineRenderer, &OfflineRenderer::rendered_frame, [rendered_frame, progressBar](int frame_index, QImage frame){
+    progressBar->setValue(frame_index);
+    progressBar->setFormat("%v/%m (%p%)");
+    rendered_frame->setPixmap(QPixmap::fromImage(frame.scaledToHeight(384)));
+  });
 
   // ==== Buttons ====
-  QVBoxLayout* root = new QVBoxLayout;
   QDialogButtonBox* buttons = new QDialogButtonBox;
 
   dialog.setLayout(root);
 
-  root->addWidget(progressBar);
-  root->addWidget(buttons);
+  root->addWidget(buttons, 0);
 
   buttons->addButton(QDialogButtonBox::Abort);
 
   QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+  QObject::connect(&offlineRenderer, &OfflineRenderer::finished, &dialog, &QDialog::accept);
+
+  offlineRenderer.start();
 
   if(dialog.exec() != QDialog::Accepted)
   {
-    QMessageBox::warning(mainWindow, "Rendering aborted", "Rendering process was aborted");
+    QMessageBox::warning(this, "Rendering aborted", "Rendering process was aborted");
     return;
   }
 }

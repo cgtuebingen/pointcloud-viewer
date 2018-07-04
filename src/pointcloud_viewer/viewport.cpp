@@ -54,6 +54,27 @@ point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
   return point_cloud_handle_t(handle);
 }
 
+void Viewport::render_points(frame_t camera_frame, std::function<void ()> additional_rendering) const
+{
+  GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL_CALL(glDepthFunc, GL_LEQUAL);
+  GL_CALL(glEnable, GL_DEPTH_TEST);
+
+  Camera camera = navigation.camera;
+  camera.frame = camera_frame;
+
+  // Update the global uniforms
+  GlobalUniform::vertex_data_t global_vertex_data;
+  global_vertex_data.camera_matrix = camera.view_perspective_matrix();
+  global_uniform->write(global_vertex_data);
+  global_uniform->bind();
+
+  point_renderer->render_points();
+  additional_rendering();
+
+  global_uniform->unbind();
+}
+
 // Called by Qt right after the OpenGL context was created
 void Viewport::initializeGL()
 {
@@ -81,21 +102,9 @@ void Viewport::paintGL()
   QElapsedTimer timer;
   timer.start();
 
-  GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  GL_CALL(glDepthFunc, GL_LEQUAL);
-  GL_CALL(glEnable, GL_DEPTH_TEST);
-
-  // Update the global uniforms
-  GlobalUniform::vertex_data_t global_vertex_data;
-  global_vertex_data.camera_matrix = navigation.camera.view_perspective_matrix();
-  global_uniform->write(global_vertex_data);
-  global_uniform->bind();
-
-
-  visualization->render();
-  point_renderer->render_points();
-
-  global_uniform->unbind();
+  render_points(navigation.camera.frame, [this](){
+    visualization->render();
+  });
 
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }

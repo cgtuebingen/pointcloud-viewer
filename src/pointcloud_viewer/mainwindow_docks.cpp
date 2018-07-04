@@ -70,10 +70,14 @@ void MainWindow::initKeypointListDocks()
   // ---- play ----
   QPushButton* play_animation_realtime = new QPushButton("&Play");
   connect(play_animation_realtime, &QPushButton::clicked, &flythrough.playback, &Playback::play_realtime);
+  connect(&flythrough, &Flythrough::canPlayChanged, play_animation_realtime, &QPushButton::setEnabled);
+  play_animation_realtime->setEnabled(flythrough.canPlay());
 
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
   connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
+  connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
+  renderButton->setEnabled(flythrough.canPlay());
 
   // ==== layout ====
   QFormLayout* form;
@@ -100,17 +104,4 @@ void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
     return;
 
   viewport.set_camera_frame(flythrough.keypoint_at(modelIndex.row()).frame);
-}
-
-void MainWindow::offline_render()
-{
-  QPair<RenderSettings, bool> result = ask_for_render_settings(renderSettings);
-
-  renderSettings = result.first;
-  bool was_canceled = result.second;
-
-  if(was_canceled)
-    return;
-
-  ::render(this, renderSettings);
 }

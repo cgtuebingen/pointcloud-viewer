@@ -16,25 +16,14 @@ Flythrough::Flythrough(const Flythrough& flythrough)
     m_canPlay(flythrough.m_canPlay),
     m_interpolation(flythrough.m_interpolation)
 {
-
+  _init_connections();
 }
 
 Flythrough::Flythrough()
 {
   interpolation_implementation = QSharedPointer<Interpolation>(new LinearInterpolation(&this->_keypoints));
 
-  connect(this, &Flythrough::animationDurationChanged, this, &Flythrough::updateCameraVelocits);
-  connect(this, &Flythrough::cameraVelocityChanged, this, &Flythrough::updateAnimationDuration);
-  connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::updateAnimationDuration);
-
-  connect(this, &Flythrough::rowsInserted, this, &Flythrough::updatePathLength);
-  connect(this, &Flythrough::rowsMoved, this, &Flythrough::updatePathLength);
-  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
-  connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
-
-  playback._animationDuration = this->m_animationDuration;
-  connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});
-  connect(&playback, &Playback::request_next_frame, this, &Flythrough::newCameraPosition);
+  _init_connections();
 }
 
 Flythrough::~Flythrough()
@@ -202,6 +191,22 @@ QSharedPointer<const Interpolation> Flythrough::create_interpolation_implementat
   Q_ASSERT(implementation != nullptr);
 
   return QSharedPointer<Interpolation>(implementation);
+}
+
+void Flythrough::_init_connections()
+{
+  connect(this, &Flythrough::animationDurationChanged, this, &Flythrough::updateCameraVelocits);
+  connect(this, &Flythrough::cameraVelocityChanged, this, &Flythrough::updateAnimationDuration);
+  connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::updateAnimationDuration);
+
+  connect(this, &Flythrough::rowsInserted, this, &Flythrough::updatePathLength);
+  connect(this, &Flythrough::rowsMoved, this, &Flythrough::updatePathLength);
+  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
+  connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
+
+  playback._animationDuration = this->m_animationDuration;
+  connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});
+  connect(&playback, &Playback::request_next_frame, this, &Flythrough::newCameraPosition);
 }
 
 void Flythrough::setPathLength(double pathLength)

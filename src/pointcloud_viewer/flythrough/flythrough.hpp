@@ -79,11 +79,13 @@ private:
   double m_cameraVelocity = 4.;
   double m_pathLength = 0.;
 
-  bool m_canPlay;
+  bool m_canPlay = false;
 
   int m_interpolation = INTERPOLATION_LINEAR;
 
   QSharedPointer<const Interpolation> create_interpolation_implementation_for_enum(interpolation_t) const;
+
+  void _init_connections();
 
 private slots:
   void setPathLength(double pathLength);

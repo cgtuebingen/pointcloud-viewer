@@ -3,8 +3,20 @@
 
 #include <QSize>
 #include <QString>
+#include <QObject>
+#include <QSharedPointer>
+
+#include <geometry/frame.hpp>
+
+#include <glhelper/framebufferobject.hpp>
+#include <glhelper/texture2d.hpp>
+
 
 #define VIDEO_OUTPUT 0
+
+
+class Viewport;
+class Flythrough;
 
 struct RenderSettings
 {
@@ -21,6 +33,34 @@ struct RenderSettings
 
 
   static RenderSettings defaultSettings();
+};
+
+class OfflineRenderer : public QObject
+{
+Q_OBJECT
+public:
+  Viewport& viewport;
+  const QSharedPointer<Flythrough> flythrough;
+  const RenderSettings renderSettings;
+  const int total_number_frames;
+
+  OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings);
+
+public slots:
+  void start();
+
+signals:
+  void rendered_frame(int frame_index, const QImage& image);
+  void finished();
+
+private:
+  int frame_index = 0;
+
+  gl::Texture2D result_rgba, result_depth;
+  gl::FramebufferObject framebuffer;
+
+private slots:
+  void render_next_frame(frame_t camera_frame);
 };
 
 #endif // POINTCLOUDVIEWER_WORKERS_OFFLINERENDERER_HPP_
