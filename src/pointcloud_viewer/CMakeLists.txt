@@ -2,7 +2,6 @@
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Widgets 5.5 REQUIRED)
-find_package(Qt5Multimedia 5.5 REQUIRED)
 
 add_executable(pointcloud_viewer
   flythrough/flythrough.cpp
@@ -35,4 +34,4 @@ add_executable(pointcloud_viewer
   visualizations.hpp
 )
 
-target_link_libraries(pointcloud_viewer Qt5::Widgets Qt5::Multimedia glm renderer geometry pointcloud)
+target_link_libraries(pointcloud_viewer Qt5::Widgets glm renderer geometry pointcloud)

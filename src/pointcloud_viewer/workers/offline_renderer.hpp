@@ -1,16 +1,22 @@
 #ifndef POINTCLOUDVIEWER_WORKERS_OFFLINERENDERER_HPP_
 #define POINTCLOUDVIEWER_WORKERS_OFFLINERENDERER_HPP_
 
-#include <QVideoEncoderSettings>
 #include <QPair>
+#include <QSize>
+#include <QString>
+
+#define VIDEO_OUTPUT 0
 
 class MainWindow;
 
 struct RenderSettings
 {
-  QVideoEncoderSettings encoderSettings;
-  QString target_video_file;
+  QSize resolution;
+  int framerate;
 
+#if VIDEO_OUTPUT
+  QString target_video_file;
+#endif
   QString target_images_directory;
 
   static RenderSettings defaultSettings();

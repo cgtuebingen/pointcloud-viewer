@@ -43,10 +43,10 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
   QSpinBox* resolution_width = new QSpinBox();
   resolution_width->setRange(128, 16384);
-  resolution_width->setValue(prevSettings.encoderSettings.resolution().width());
+  resolution_width->setValue(prevSettings.resolution.width());
   QSpinBox* resolution_height = new QSpinBox();
   resolution_height->setRange(128, 16384);
-  resolution_height->setValue(prevSettings.encoderSettings.resolution().height());
+  resolution_height->setValue(prevSettings.resolution.height());
   QWidget* resolutionWidget = new QWidget;
   hbox = new QHBoxLayout;
   hbox->addWidget(resolution_width, 1);
@@ -54,15 +54,15 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   hbox->addWidget(resolution_height, 1);
   resolutionWidget->setLayout(hbox);
 
-  QDoubleSpinBox* framerate = new QDoubleSpinBox();
+  QSpinBox* framerate = new QSpinBox();
   framerate->setRange(1, 250);
-  framerate->setDecimals(1);
-  framerate->setValue(prevSettings.encoderSettings.frameRate());
+  framerate->setValue(prevSettings.framerate);
   framerate->setSuffix(" fps");
 
   form->addRow("&Resolution", resolutionWidget);
   form->addRow("&Framerate", framerate);
 
+#if VIDEO_OUTPUT
   // ==== Video Output ====
 
   group = new QGroupBox("Video Output");
@@ -97,25 +97,13 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   QCheckBox* enableVideoOutput = new QCheckBox("Enable");
   vbox->addWidget(enableVideoOutput);
 
-  QComboBox* encodingMode = new QComboBox;
-  {
-    QMap<int, QString> values;
-    values[QMultimedia::ConstantQualityEncoding] = "Constant Quality";
-    values[QMultimedia::ConstantBitRateEncoding] = "Constant BitRate";
-    values[QMultimedia::AverageBitRateEncoding] = "Average BitRate";
-    values[QMultimedia::TwoPassEncoding] = "Two Pass";
-    encodingMode->addItems(values.values());
-  }
-  form->addRow("&Encoding Mode", encodingMode);
-  formWidget->setEnabled(false);
-
   group->setLayout(vbox);
   splitter->addWidget(group);
 
   enableVideoOutput->setChecked(true);
   QObject::connect(enableVideoOutput, &QCheckBox::toggled, formWidget, &QWidget::setEnabled);
   enableVideoOutput->setChecked(videoFile.isEmpty() == false);
-
+#endif
 
   // ==== Frame Output ====
 
@@ -144,15 +132,17 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   hbox->addWidget(chooseImageDirectory, 0);
   form->addRow(hbox);
 
-  QCheckBox* enableImageOutput = new QCheckBox("Enable");
-  vbox->addWidget(enableImageOutput);
-
   group->setLayout(vbox);
   splitter->addWidget(group);
+
+#if VIDEO_OUTPUT
+  QCheckBox* enableImageOutput = new QCheckBox("Enable");
+  vbox->addWidget(enableImageOutput);
 
   enableImageOutput->setChecked(true);
   QObject::connect(enableImageOutput, &QCheckBox::toggled, formWidget, &QWidget::setEnabled);
   enableImageOutput->setChecked(prevSettings.target_images_directory.isEmpty() == false);
+#endif
 
   // ==== Buttons ====
 
@@ -170,21 +160,25 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   if(dialog.exec() != QDialog::Accepted)
     return qMakePair(prevSettings, true);
 
+  bool use_result = true;
   RenderSettings renderSettings;
 
-  renderSettings.encoderSettings.setResolution(QSize(resolution_width->value(), resolution_height->value()));
-  renderSettings.encoderSettings.setFrameRate(framerate->value());
-  renderSettings.encoderSettings.setEncodingMode(QMultimedia::EncodingMode(encodingMode->currentIndex()));
-
+  renderSettings.resolution = QSize(resolution_width->value(), resolution_height->value());
+  renderSettings.framerate = framerate->value();
+#if 0
   renderSettings.target_video_file = videoFile;
-  renderSettings.target_images_directory = imageDirectory;
-
   if(!enableVideoOutput->isChecked())
-    renderSettings.target_video_file.clear();
-  if(!enableImageOutput->isChecked())
-    renderSettings.target_images_directory.clear();
+    use_result = false;
+#endif
 
-  return qMakePair(renderSettings, false);
+
+  renderSettings.target_images_directory = imageDirectory;
+#if 0
+  if(!enableImageOutput->isChecked())
+    use_result = false;
+#endif
+
+  return qMakePair(renderSettings, !use_result);
 }
 
 void render(MainWindow* mainWindow, RenderSettings renderSettings)
@@ -205,8 +199,8 @@ RenderSettings RenderSettings::defaultSettings()
 {
   RenderSettings renderSettings;
 
-  renderSettings.encoderSettings.setResolution(1920, 1080);
-  renderSettings.encoderSettings.setFrameRate(25);
+  renderSettings.resolution = QSize(1920, 1080);
+  renderSettings.framerate = 25;
 
   return renderSettings;
 }
