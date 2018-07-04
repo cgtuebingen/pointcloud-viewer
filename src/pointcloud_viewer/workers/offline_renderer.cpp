@@ -17,6 +17,7 @@
 #include <QPushButton>
 #include <QFileInfo>
 #include <QStandardPaths>
+#include <QProgressBar>
 
 QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 {
@@ -24,7 +25,6 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
   dialog.setWindowTitle("Render Settings");
 
-  QDialogButtonBox* buttons = new QDialogButtonBox;
   QSplitter* splitter = new QSplitter(Qt::Horizontal);
 
   QGroupBox* group;
@@ -159,6 +159,7 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
   // ==== Buttons ====
 
+  QDialogButtonBox* buttons = new QDialogButtonBox;
   QVBoxLayout* root = new QVBoxLayout;
   dialog.setLayout(root);
   root->addWidget(splitter);
@@ -178,7 +179,7 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
   renderSettings.resolution = QSize(resolution_width->value(), resolution_height->value());
   renderSettings.framerate = framerate->value();
-#if 0
+#if VIDEO_OUTPUT
   renderSettings.target_video_file = videoFile;
   if(!enableVideoOutput->isChecked())
     use_result = false;
@@ -186,9 +187,14 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
 
   renderSettings.target_images_directory = imageDirectory;
-#if 0
+#if VIDEO_OUTPUT
   if(!enableImageOutput->isChecked())
+  {
+    renderSettings.export_images = false;
     use_result = false;
+  }
+#else
+  renderSettings.export_images = true;
 #endif
   renderSettings.image_format = imageFormat->currentData().toString();
 
@@ -197,16 +203,35 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
 
 void render(MainWindow* mainWindow, RenderSettings renderSettings)
 {
+  const int num_frames = 100;
+
   QDialog dialog;
 
   dialog.setWindowTitle("Rendering Now...");
+
+  // ==== Progressbar ====
+  QProgressBar* progressBar = new QProgressBar;
+
+  progressBar->setMaximum(num_frames);
+
+  // ==== Buttons ====
+  QVBoxLayout* root = new QVBoxLayout;
+  QDialogButtonBox* buttons = new QDialogButtonBox;
+
+  dialog.setLayout(root);
+
+  root->addWidget(progressBar);
+  root->addWidget(buttons);
+
+  buttons->addButton(QDialogButtonBox::Abort);
+
+  QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
   if(dialog.exec() != QDialog::Accepted)
   {
     QMessageBox::warning(mainWindow, "Rendering aborted", "Rendering process was aborted");
     return;
   }
-
 }
 
 RenderSettings RenderSettings::defaultSettings()

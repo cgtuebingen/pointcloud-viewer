@@ -20,6 +20,8 @@ struct RenderSettings
 
   QString target_images_directory;
   QString image_format;
+  bool export_images;
+
 
   static RenderSettings defaultSettings();
 };
