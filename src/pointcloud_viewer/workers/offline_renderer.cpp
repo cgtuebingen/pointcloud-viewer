@@ -132,6 +132,19 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   hbox->addWidget(chooseImageDirectory, 0);
   form->addRow(hbox);
 
+  QComboBox* imageFormat = new QComboBox;
+  {
+    QMap<QString, QString> supportedFormats;
+    supportedFormats.insert("png", ".png");
+    supportedFormats.insert("bmp", ".bmp");
+    supportedFormats.insert("ppm", ".ppm");
+
+    for(auto i=supportedFormats.begin(); i!=supportedFormats.end(); ++i)
+      imageFormat->addItem(i.key(), i.value());
+    imageFormat->setCurrentText(supportedFormats.key(prevSettings.image_format, "png"));
+  }
+  form->addRow("Format", imageFormat);
+
   group->setLayout(vbox);
   splitter->addWidget(group);
 
@@ -177,6 +190,7 @@ QPair<RenderSettings, bool> ask_for_render_settings(RenderSettings prevSettings)
   if(!enableImageOutput->isChecked())
     use_result = false;
 #endif
+  renderSettings.image_format = imageFormat->currentData().toString();
 
   return qMakePair(renderSettings, !use_result);
 }
@@ -201,6 +215,7 @@ RenderSettings RenderSettings::defaultSettings()
 
   renderSettings.resolution = QSize(1920, 1080);
   renderSettings.framerate = 25;
+  renderSettings.image_format = ".png";
 
   return renderSettings;
 }

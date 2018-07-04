@@ -17,7 +17,9 @@ struct RenderSettings
 #if VIDEO_OUTPUT
   QString target_video_file;
 #endif
+
   QString target_images_directory;
+  QString image_format;
 
   static RenderSettings defaultSettings();
 };
