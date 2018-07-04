@@ -57,7 +57,7 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
   GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, fbo);
   GL_CALL(glViewport, 0, 0, width, height);
 
-  viewport.render_points(camera_frame, [](){});
+  viewport.render_points(camera_frame, float(width)/float(height), [](){});
 
   GL_CALL(glNamedFramebufferReadBuffer, fbo, GL_COLOR_ATTACHMENT0);
   GL_CALL(glReadPixels, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, frame_content.bits());

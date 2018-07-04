@@ -36,7 +36,7 @@ public:
   void unload_all_point_clouds();
   point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
 
-  void render_points(frame_t camera_frame, std::function<void()> additional_rendering) const;
+  void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
 
 signals:
   void frame_rendered(double duration);
