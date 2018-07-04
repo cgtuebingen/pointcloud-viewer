@@ -104,9 +104,12 @@ void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
 
 void MainWindow::offline_render()
 {
-  RenderSettings renderSettings = ask_for_render_settings();
+  QPair<RenderSettings, bool> result = ask_for_render_settings(renderSettings);
 
-  if(renderSettings.target_images_files.isEmpty() && renderSettings.target_video_file.isEmpty())
+  renderSettings = result.first;
+  bool was_canceled = result.second;
+
+  if(was_canceled)
     return;
 
   ::render(this, renderSettings);

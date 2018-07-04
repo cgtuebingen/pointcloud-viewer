@@ -7,6 +7,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
+#include <pointcloud_viewer/workers/offline_renderer.hpp>
 
 class MainWindow : public QMainWindow
 {
@@ -21,6 +22,8 @@ public:
 private:
   Viewport viewport;
   Flythrough flythrough;
+
+  RenderSettings renderSettings = RenderSettings::defaultSettings();
 
   QListView* keypointList;
 
