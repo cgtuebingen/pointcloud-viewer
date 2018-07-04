@@ -1,4 +1,4 @@
-#include <pointcloud_viewer/workers/offline_renderer.hpp>
+#include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 #include <pointcloud_viewer/mainwindow.hpp>
 
 #include <QDialog>

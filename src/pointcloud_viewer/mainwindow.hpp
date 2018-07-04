@@ -7,7 +7,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
-#include <pointcloud_viewer/workers/offline_renderer.hpp>
+#include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 
 class MainWindow : public QMainWindow
 {

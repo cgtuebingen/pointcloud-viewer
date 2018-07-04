@@ -14,8 +14,8 @@ add_executable(pointcloud_viewer
   flythrough/playback.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
-  workers/offline_renderer.cpp
-  workers/offline_renderer.hpp
+  workers/offline_renderer_dialogs.cpp
+  workers/offline_renderer_dialogs.hpp
   camera.cpp
   camera.hpp
   declarations.hpp
