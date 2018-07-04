@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/viewport.hpp>
+#include <core_library/image.hpp>
 
 #include <QTimer>
 
@@ -61,6 +62,8 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
   GL_CALL(glNamedFramebufferReadBuffer, fbo, GL_COLOR_ATTACHMENT0);
   GL_CALL(glReadPixels, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, frame_content.bits());
   GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, 0);
+
+  flip_image(frame_content);
 
   ++frame_index;
   if(frame_index < total_number_frames)

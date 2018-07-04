@@ -5,6 +5,8 @@ find_package(Qt5Widgets 5.5 REQUIRED)
 add_library(core_library STATIC
   color_palette.cpp
   color_palette.hpp
+  image.cpp
+  image.hpp
   padding.hpp
   print.hpp
   print.inl
