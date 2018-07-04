@@ -76,7 +76,7 @@ private:
   QSharedPointer<const Interpolation> interpolation_implementation;
 
   double m_animationDuration = 10.;
-  double m_cameraVelocity = 4.;
+  double m_cameraVelocity = 4.e-2;
   double m_pathLength = 0.;
 
   bool m_canPlay = false;

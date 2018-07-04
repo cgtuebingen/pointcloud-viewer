@@ -48,12 +48,14 @@ public:
 
 public slots:
   void start();
+  void abort();
 
 signals:
   void rendered_frame(int frame_index, const QImage& image);
   void finished();
 
 private:
+  bool _aborted = false;
   int frame_index = 0;
 
   gl::Texture2D result_rgba, result_depth;

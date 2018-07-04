@@ -248,6 +248,7 @@ void MainWindow::offline_render()
 
   buttons->addButton(QDialogButtonBox::Abort);
 
+  QObject::connect(buttons, &QDialogButtonBox::rejected, &offlineRenderer, &OfflineRenderer::abort);
   QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
   QObject::connect(&offlineRenderer, &OfflineRenderer::finished, &dialog, &QDialog::accept);
 
