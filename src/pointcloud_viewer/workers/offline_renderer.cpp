@@ -49,16 +49,14 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
                        renderSettings.resolution.height(),
                        QImage::Format_RGB888);
 
+  viewport.makeCurrent();
 
   const GLuint fbo = framebuffer.GetInternHandle();
   GL_CALL(glBindBuffer, GL_PIXEL_PACK_BUFFER, 0);
   GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, fbo);
   GL_CALL(glViewport, 0, 0, width, height);
 
-  // TODO: get the points to bing rendered
-  GL_CALL(glClearColor, 1, 0.5, 0, 1);
   viewport.render_points(camera_frame, [](){});
-  GL_CALL(glClearColor, 0, 0., 0, 1);
 
   GL_CALL(glNamedFramebufferReadBuffer, fbo, GL_COLOR_ATTACHMENT0);
   GL_CALL(glReadPixels, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, frame_content.bits());
