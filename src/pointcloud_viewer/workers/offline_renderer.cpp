@@ -24,6 +24,9 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
 
   connect(this->flythrough.data(), &Flythrough::set_new_camera_frame, this, &OfflineRenderer::render_next_frame, Qt::DirectConnection);
   connect(this, &OfflineRenderer::rendered_frame, &this->flythrough->playback, &Playback::previous_frame_finished, Qt::QueuedConnection);
+
+  if(renderSettings.export_images)
+    connect(this, &OfflineRenderer::rendered_frame, this, &OfflineRenderer::save_image);
 }
 
 void OfflineRenderer::start()
@@ -70,4 +73,12 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
     rendered_frame(frame_index-1, frame_content);
   else
     finished();
+}
+
+void OfflineRenderer::save_image(int frame_index, const QImage& image)
+{
+  image.save(QDir(renderSettings.target_images_directory).absoluteFilePath(QString("frame_%0%1").arg(frame_index,
+                                                                                                   5 /* how many digits to expect, for example 2 leads to 04*/,
+                                                                                                   10 /* base */,
+                                                                                                   QChar('0')).arg(renderSettings.image_format)));
 }

@@ -63,6 +63,8 @@ private:
 
 private slots:
   void render_next_frame(frame_t camera_frame);
+
+  void save_image(int frame_index, const QImage& image);
 };
 
 #endif // POINTCLOUDVIEWER_WORKERS_OFFLINERENDERER_HPP_
