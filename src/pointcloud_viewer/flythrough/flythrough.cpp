@@ -39,6 +39,7 @@ QSharedPointer<Flythrough> Flythrough::copy() const
 
 void Flythrough::insert_keypoint(frame_t frame, int index)
 {
+  playback.stop();
   index = glm::clamp(index, 0, _keypoints.length());
 
   keypoint_t keypoint;
@@ -120,6 +121,7 @@ void Flythrough::export_path(QString filepath) const
 
 void Flythrough::import_path(QString filepath)
 {
+  beginResetModel();
   try
   {
     playback.stop();
@@ -141,6 +143,7 @@ void Flythrough::import_path(QString filepath)
   {
     QMessageBox::warning(nullptr, "Couldn't import path", message);
   }
+  endResetModel();
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
