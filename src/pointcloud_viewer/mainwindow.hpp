@@ -2,9 +2,12 @@
 #define POINTCLOUDVIEWER_MAINWINDOW_HPP_
 
 #include <QMainWindow>
+#include <QListView>
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
+#include <pointcloud_viewer/flythrough/flythrough.hpp>
+#include <pointcloud_viewer/workers/offline_renderer.hpp>
 
 class MainWindow : public QMainWindow
 {
@@ -18,12 +21,24 @@ public:
 
 private:
   Viewport viewport;
+  Flythrough flythrough;
+
+  RenderSettings renderSettings = RenderSettings::defaultSettings();
+
+  QListView* keypointList;
 
   void initMenuBar();
   void initDocks();
 
+  void initKeypointListDocks();
+
   void importPointcloudLayer();
   void openAboutDialog();
+
+  void insertKeypoint();
+  void jumpToKeypoint(const QModelIndex& modelIndex);
+
+  void offline_render();
 };
 
 

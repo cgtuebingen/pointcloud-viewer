@@ -11,7 +11,13 @@ void MainWindow::initMenuBar()
   setMenuBar(menuBar);
 
   QMenu* menu_project = menuBar->addMenu("&Project");
-  QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud Layers");
+  QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud");
+
+  QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
+  QAction* action_flythrough_insert_keypoint = menu_flythrough->addAction("&Insert Keypoint");
+
+  action_flythrough_insert_keypoint->setShortcut(QKeySequence(Qt::Key_I));
+  connect(action_flythrough_insert_keypoint, &QAction::triggered, this, &MainWindow::insertKeypoint);
 
   QMenu* menu_view = menuBar->addMenu("&View");
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
@@ -26,6 +32,15 @@ void MainWindow::initMenuBar()
   QMenu* menu_view_application = menuBar->addMenu("&Application");
   QAction* about_action = menu_view_application->addAction("&About");
   connect(about_action, &QAction::triggered, this, &MainWindow::openAboutDialog);
+
+}
+
+void MainWindow::insertKeypoint()
+{
+  const int position_after_last = std::numeric_limits<int>::max();
+  int position = position_after_last;
+
+  flythrough.insert_keypoint(viewport.navigation.camera.frame, position);
 }
 
 #include <QFileDialog>
@@ -39,15 +54,15 @@ void MainWindow::initMenuBar()
 
 void MainWindow::importPointcloudLayer()
 {
-  QStringList files_to_import = QFileDialog::getOpenFileNames(this,
-                                                              "Select one or more pointcloud layers to import",
-                                                              ".",
-                                                              AbstractPointCloudImporter::allSupportedFiletypes());
+  QString file_to_import = QFileDialog::getOpenFileName(this,
+                                                         "Select pointcloud to import",
+                                                         ".",
+                                                         AbstractPointCloudImporter::allSupportedFiletypes());
 
-  for(QString file_to_import : files_to_import)
-  {
-    viewport.load_point_cloud(import_point_cloud(this, file_to_import));
-  }
+  if(file_to_import.isEmpty())
+    return;
+
+  viewport.load_point_cloud(import_point_cloud(this, file_to_import));
 }
 
 extern const QString pcl_notes;
@@ -81,7 +96,6 @@ void MainWindow::openAboutDialog()
 
   aboutDialog.exec();
 }
-
 
 const QString pcl_notes = "The Point Cloud Library (PCL) is used for:\n"
                           "- Loading PLY files";

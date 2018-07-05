@@ -13,6 +13,18 @@ Class responsible for rendering visualizations
 class Visualization
 {
 public:
+  struct settings_t
+  {
+    bool enable_any_visualizations : 1;
+    bool enable_grid : 1;
+    bool enable_axis : 1;
+
+    static settings_t enable_all();
+    static settings_t disable_all();
+  };
+
+  settings_t settings = settings_t::enable_all();
+
   Visualization();
 
   void render();

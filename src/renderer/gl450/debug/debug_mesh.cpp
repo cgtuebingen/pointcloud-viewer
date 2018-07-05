@@ -119,6 +119,7 @@ void DebugMeshRenderer::render(const DebugMesh& mesh)
 void DebugMeshRenderer::end()
 {
   shader_object.Deactivate();
+  vertex_array_object.ResetBinding();
 }
 
 // ======== Painter ============================================================

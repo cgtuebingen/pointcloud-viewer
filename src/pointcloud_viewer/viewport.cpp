@@ -4,6 +4,8 @@
 
 #include <renderer/gl450/uniforms.hpp>
 
+#include <QElapsedTimer>
+
 Viewport::Viewport()
   : navigation(this)
 {
@@ -26,6 +28,12 @@ Viewport::~Viewport()
   delete visualization;
 }
 
+void Viewport::set_camera_frame(const frame_t& frame)
+{
+  navigation.camera.frame = frame;
+  update();
+}
+
 void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
@@ -44,6 +52,28 @@ point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
   this->update();
 
   return point_cloud_handle_t(handle);
+}
+
+void Viewport::render_points(frame_t camera_frame, float aspect, std::function<void ()> additional_rendering) const
+{
+  GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL_CALL(glDepthFunc, GL_LEQUAL);
+  GL_CALL(glEnable, GL_DEPTH_TEST);
+
+  Camera camera = navigation.camera;
+  camera.aspect = aspect;
+  camera.frame = camera_frame;
+
+  // Update the global uniforms
+  GlobalUniform::vertex_data_t global_vertex_data;
+  global_vertex_data.camera_matrix = camera.view_perspective_matrix();
+  global_uniform->write(global_vertex_data);
+  global_uniform->bind();
+
+  point_renderer->render_points();
+  additional_rendering();
+
+  global_uniform->unbind();
 }
 
 // Called by Qt right after the OpenGL context was created
@@ -70,20 +100,14 @@ void Viewport::resizeGL(int w, int h)
 // Called by Qt everytime the opengl window needs to be repainted
 void Viewport::paintGL()
 {
-  GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  GL_CALL(glEnable, GL_DEPTH_TEST);
+  QElapsedTimer timer;
+  timer.start();
 
-  // Update the global uniforms
-  GlobalUniform::vertex_data_t global_vertex_data;
-  global_vertex_data.camera_matrix = navigation.camera.view_perspective_matrix();
-  global_uniform->write(global_vertex_data);
-  global_uniform->bind();
+  render_points(navigation.camera.frame, navigation.camera.aspect, [this](){
+    visualization->render();
+  });
 
-
-  visualization->render();
-  point_renderer->render_points();
-
-  global_uniform->unbind();
+  frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }
 
 void Viewport::mouseMoveEvent(QMouseEvent* event)

@@ -9,6 +9,7 @@
 #include <pointcloud/pointcloud.hpp>
 
 #include <QOpenGLWidget>
+#include <functional>
 #include <unordered_map>
 
 /*
@@ -30,8 +31,15 @@ public:
   Viewport();
   ~Viewport() override;
 
+  void set_camera_frame(const frame_t& frame);
+
   void unload_all_point_clouds();
   point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
+
+  void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
+
+signals:
+  void frame_rendered(double duration);
 
 protected:
   void initializeGL() override;
