@@ -74,6 +74,14 @@ void MainWindow::initKeypointListDocks()
   connect(&flythrough, &Flythrough::canPlayChanged, play_animation_realtime, &QPushButton::setEnabled);
   play_animation_realtime->setEnabled(flythrough.canPlay());
 
+  // ---- background ----
+  QSpinBox* backgroundBrightness = new QSpinBox;
+  backgroundBrightness->setMinimum(0);
+  backgroundBrightness->setMaximum(255);
+  backgroundBrightness->setValue(viewport.backgroundColor());
+  connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
+  connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
+
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
   connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
@@ -92,11 +100,18 @@ void MainWindow::initKeypointListDocks()
   form->addRow("Interpolation:", interpolation);
   form->addRow(play_animation_realtime, new QWidget());
 
+  // -- render style --
+  QGroupBox* renderGroup = new QGroupBox("Render");
+  renderGroup->setLayout((form = new QFormLayout));
+
+  form->addRow("Background:", backgroundBrightness);
+  form->addWidget(renderButton);
+
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(keypointList);
   vbox->addWidget(animationGroup);
-  vbox->addWidget(renderButton);
+  vbox->addWidget(renderGroup);
 }
 
 void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
