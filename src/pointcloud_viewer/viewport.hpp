@@ -25,6 +25,8 @@ enum class point_cloud_handle_t : size_t
 class Viewport final : public QOpenGLWidget
 {
   Q_OBJECT
+  Q_PROPERTY(int backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
+  Q_PROPERTY(float pointSize READ pointSize WRITE setPointSize NOTIFY pointSizeChanged)
 public:
   Navigation navigation;
 
@@ -38,8 +40,18 @@ public:
 
   void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
 
+  int backgroundColor() const;
+  float pointSize() const;
+
+public slots:
+  void setBackgroundColor(int backgroundColor);
+  void setPointSize(float pointSize);
+
 signals:
   void frame_rendered(double duration);
+
+  void backgroundColorChanged(int backgroundColor);
+  void pointSizeChanged(float pointSize);
 
 protected:
   void initializeGL() override;
@@ -63,9 +75,9 @@ private:
 
   std::unordered_map<size_t, PointCloud> point_clouds;
   size_t next_handle = 0;
+  int m_backgroundColor = 0;
+  float m_pointSize = 1;
 };
-
-
 
 
 

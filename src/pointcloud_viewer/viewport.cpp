@@ -17,6 +17,8 @@ Viewport::Viewport()
   format.setRenderableType(QSurfaceFormat::OpenGL);
   format.setDepthBufferSize(24);
 
+  m_backgroundColor = glm::clamp(int(glm::round(glm::vec3(color_palette::grey[0]).g * 255.f)), 0, 255);
+
   setFormat(format);
   setMinimumSize(640, 480);
 }
@@ -56,9 +58,11 @@ point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 
 void Viewport::render_points(frame_t camera_frame, float aspect, std::function<void ()> additional_rendering) const
 {
+  GL_CALL(glClearColor, m_backgroundColor/255.f, m_backgroundColor/255.f, m_backgroundColor/255.f, 1.f);
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   GL_CALL(glDepthFunc, GL_LEQUAL);
   GL_CALL(glEnable, GL_DEPTH_TEST);
+  GL_CALL(glPointSize, m_pointSize);
 
   Camera camera = navigation.camera;
   camera.aspect = aspect;
@@ -76,6 +80,38 @@ void Viewport::render_points(frame_t camera_frame, float aspect, std::function<v
   global_uniform->unbind();
 }
 
+int Viewport::backgroundColor() const
+{
+  return m_backgroundColor;
+}
+
+float Viewport::pointSize() const
+{
+  return m_pointSize;
+}
+
+void Viewport::setBackgroundColor(int backgroundColor)
+{
+  if (m_backgroundColor == backgroundColor)
+    return;
+
+  m_backgroundColor = backgroundColor;
+  emit backgroundColorChanged(m_backgroundColor);
+
+  update();
+}
+
+void Viewport::setPointSize(float pointSize)
+{
+  qWarning("Floating point comparison needs context sanity check");
+  if (qFuzzyCompare(m_pointSize, pointSize))
+    return;
+
+  m_pointSize = pointSize;
+  emit pointSizeChanged(m_pointSize);
+  update();
+}
+
 // Called by Qt right after the OpenGL context was created
 void Viewport::initializeGL()
 {
@@ -85,10 +121,7 @@ void Viewport::initializeGL()
   global_uniform = new GlobalUniform();
   visualization = new Visualization();
 
-//  point_renderer->load_test();
-
-  glm::vec4 bg_color = color_palette::grey[0];
-  GL_CALL(glClearColor, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+  //  point_renderer->load_test();
 }
 
 // Called by Qt everytime the opengl window was resized
