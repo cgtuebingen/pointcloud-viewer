@@ -4,6 +4,7 @@
 #include <core_library/image.hpp>
 
 #include <QTimer>
+#include <QDebug>
 
 
 OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings)
@@ -27,6 +28,13 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
 
   if(renderSettings.export_images)
     connect(this, &OfflineRenderer::rendered_frame, this, &OfflineRenderer::save_image);
+
+  viewport->enable_preview = false;
+}
+
+OfflineRenderer::~OfflineRenderer()
+{
+  viewport.enable_preview = true;
 }
 
 void OfflineRenderer::start()
@@ -65,6 +73,7 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
   GL_CALL(glNamedFramebufferReadBuffer, fbo, GL_COLOR_ATTACHMENT0);
   GL_CALL(glReadPixels, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, frame_content.bits());
   GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, 0);
+  viewport.doneCurrent();
 
   flip_image(frame_content);
 
@@ -77,8 +86,11 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
 
 void OfflineRenderer::save_image(int frame_index, const QImage& image)
 {
-  image.save(QDir(renderSettings.target_images_directory).absoluteFilePath(QString("frame_%0%1").arg(frame_index,
-                                                                                                   5 /* how many digits to expect, for example 2 leads to 04*/,
-                                                                                                   10 /* base */,
-                                                                                                   QChar('0')).arg(renderSettings.image_format)));
+  QString filepath = QDir(renderSettings.target_images_directory).absoluteFilePath(QString("frame_%0%1").arg(frame_index,
+                                                                                                             5 /* how many digits to expect, for example 2 leads to 04*/,
+                                                                                                             10 /* base */,
+                                                                                                             QChar('0')).arg(renderSettings.image_format));
+
+  qDebug() << filepath;
+  image.save(filepath);
 }

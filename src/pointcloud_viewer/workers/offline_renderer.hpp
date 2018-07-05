@@ -45,6 +45,7 @@ public:
   const int total_number_frames;
 
   OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings);
+  ~OfflineRenderer();
 
 public slots:
   void start();
