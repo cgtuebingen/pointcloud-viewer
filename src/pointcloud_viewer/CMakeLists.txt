@@ -6,6 +6,8 @@ find_package(Qt5Widgets 5.5 REQUIRED)
 add_executable(pointcloud_viewer
   flythrough/flythrough.cpp
   flythrough/flythrough.hpp
+  flythrough/flythrough_file.cpp
+  flythrough/flythrough_file.hpp
   flythrough/interpolation.cpp
   flythrough/interpolation.hpp
   flythrough/keypoint.cpp
