@@ -3,6 +3,7 @@
 #include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
+#include <QFileDialog>
 
 void MainWindow::initMenuBar()
 {
@@ -15,9 +16,14 @@ void MainWindow::initMenuBar()
 
   QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
   QAction* action_flythrough_insert_keypoint = menu_flythrough->addAction("&Insert Keypoint");
+  menu_flythrough->addSeparator();
+  QAction* action_flythrough_export_path = menu_flythrough->addAction("&Export Path");
+  QAction* action_flythrough_import_path = menu_flythrough->addAction("&Import Path");
 
   action_flythrough_insert_keypoint->setShortcut(QKeySequence(Qt::Key_I));
   connect(action_flythrough_insert_keypoint, &QAction::triggered, this, &MainWindow::insertKeypoint);
+  connect(action_flythrough_export_path, &QAction::triggered, this, &MainWindow::exportCameraPath);
+  connect(action_flythrough_import_path, &QAction::triggered, this, &MainWindow::importCameraPath);
 
   QMenu* menu_view = menuBar->addMenu("&View");
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
@@ -43,7 +49,32 @@ void MainWindow::insertKeypoint()
   flythrough.insert_keypoint(viewport.navigation.camera.frame, position);
 }
 
-#include <QFileDialog>
+void MainWindow::exportCameraPath()
+{
+  QString file_to_export = QFileDialog::getSaveFileName(this,
+                                                        "Save camera path as",
+                                                        ".",
+                                                        "Camera Path (*.camera_path)");
+
+  if(file_to_export.isEmpty())
+    return;
+
+  flythrough.export_path(file_to_export);
+}
+
+void MainWindow::importCameraPath()
+{
+  QString file_to_import = QFileDialog::getOpenFileName(this,
+                                                        "Import camera path as",
+                                                        ".",
+                                                        "Camera Path (*.camera_path)");
+
+  if(file_to_import.isEmpty())
+    return;
+
+  flythrough.import_path(file_to_import);
+}
+
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDialog>

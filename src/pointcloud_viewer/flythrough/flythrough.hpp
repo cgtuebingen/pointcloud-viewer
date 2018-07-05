@@ -25,6 +25,8 @@ public:
   {
     INTERPOLATION_LINEAR,
     INTERPOLATION_LINEAR_SMOOTHSTEP,
+
+    INTERPOLATION_NUMBER_VALUES,
   };
 
   Playback playback;
@@ -49,6 +51,9 @@ public:
   bool canPlay() const;
 
   int interpolation() const;
+
+  void export_path(QString filepath) const;
+  void import_path(QString filepath);
 
 public slots:
   void setAnimationDuration(double animationDuration);

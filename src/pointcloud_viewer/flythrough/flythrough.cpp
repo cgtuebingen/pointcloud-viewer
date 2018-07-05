@@ -1,6 +1,8 @@
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
+#include <pointcloud_viewer/flythrough/flythrough_file.hpp>
 
 #include <QModelIndex>
+#include <QMessageBox>
 
 enum SECTION
 {
@@ -91,6 +93,54 @@ bool Flythrough::canPlay() const
 int Flythrough::interpolation() const
 {
   return m_interpolation;
+}
+
+void Flythrough::export_path(QString filepath) const
+{
+  try
+  {
+    FlythroughFile flythrough_file;
+
+    flythrough_file.header.animation_duration = this->animationDuration();
+    flythrough_file.header.camera_velocity = this->cameraVelocity();
+    flythrough_file.header.interpolation = this->m_interpolation;
+
+    flythrough_file.keypoint_frames.reserve(this->_keypoints.length());
+
+    for(int i=0; i<_keypoints.length(); ++i)
+      flythrough_file.keypoint_frames << _keypoints[i].frame;
+
+    flythrough_file.export_to_file(filepath);
+
+  }catch(QString message)
+  {
+    QMessageBox::warning(nullptr, "Couldn't export path", message);
+  }
+}
+
+void Flythrough::import_path(QString filepath)
+{
+  try
+  {
+    playback.stop();
+
+    FlythroughFile flythrough_file = FlythroughFile::import_from_file(filepath);
+
+    if(flythrough_file.header.interpolation >= INTERPOLATION_NUMBER_VALUES)
+      throw QString("Invalid file!\n(Invalid interpolation type)");
+
+    this->_keypoints.resize(flythrough_file.keypoint_frames.length());
+    for(int i=0; i<_keypoints.length(); ++i)
+      _keypoints[i].frame = flythrough_file.keypoint_frames[i];
+
+    this->setCameraVelocity(flythrough_file.header.camera_velocity);
+    this->setAnimationDuration(flythrough_file.header.animation_duration);
+
+    this->updatePathLength();
+  }catch(QString message)
+  {
+    QMessageBox::warning(nullptr, "Couldn't import path", message);
+  }
 }
 
 void Flythrough::setAnimationDuration(double animationDuration)
@@ -185,6 +235,10 @@ QSharedPointer<const Interpolation> Flythrough::create_interpolation_implementat
     break;
   case INTERPOLATION_LINEAR_SMOOTHSTEP:
     implementation = new LinearInterpolation(&this->_keypoints, true);
+    break;
+  case INTERPOLATION_NUMBER_VALUES:
+    Q_UNREACHABLE();
+    implementation = new LinearInterpolation(&this->_keypoints, false);
     break;
   }
 
