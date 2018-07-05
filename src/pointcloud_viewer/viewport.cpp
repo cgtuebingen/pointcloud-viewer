@@ -62,6 +62,7 @@ void Viewport::render_points(frame_t camera_frame, float aspect, std::function<v
   GL_CALL(glClear, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   GL_CALL(glDepthFunc, GL_LEQUAL);
   GL_CALL(glEnable, GL_DEPTH_TEST);
+  GL_CALL(glPointSize, m_pointSize);
 
   Camera camera = navigation.camera;
   camera.aspect = aspect;
@@ -84,6 +85,11 @@ int Viewport::backgroundColor() const
   return m_backgroundColor;
 }
 
+float Viewport::pointSize() const
+{
+  return m_pointSize;
+}
+
 void Viewport::setBackgroundColor(int backgroundColor)
 {
   if (m_backgroundColor == backgroundColor)
@@ -92,6 +98,17 @@ void Viewport::setBackgroundColor(int backgroundColor)
   m_backgroundColor = backgroundColor;
   emit backgroundColorChanged(m_backgroundColor);
 
+  update();
+}
+
+void Viewport::setPointSize(float pointSize)
+{
+  qWarning("Floating point comparison needs context sanity check");
+  if (qFuzzyCompare(m_pointSize, pointSize))
+    return;
+
+  m_pointSize = pointSize;
+  emit pointSizeChanged(m_pointSize);
   update();
 }
 
@@ -104,7 +121,7 @@ void Viewport::initializeGL()
   global_uniform = new GlobalUniform();
   visualization = new Visualization();
 
-//  point_renderer->load_test();
+  //  point_renderer->load_test();
 }
 
 // Called by Qt everytime the opengl window was resized

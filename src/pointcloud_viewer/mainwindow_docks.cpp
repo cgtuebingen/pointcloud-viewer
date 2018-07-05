@@ -82,6 +82,14 @@ void MainWindow::initKeypointListDocks()
   connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
   connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
 
+  // ---- background ----
+  QSpinBox* pointSize = new QSpinBox;
+  pointSize->setMinimum(1);
+  pointSize->setMaximum(16);
+  pointSize->setValue(viewport.pointSize());
+  connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
+  connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
+
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
   connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
@@ -105,7 +113,8 @@ void MainWindow::initKeypointListDocks()
   renderGroup->setLayout((form = new QFormLayout));
 
   form->addRow("Background:", backgroundBrightness);
-  form->addWidget(renderButton);
+  form->addRow("Point Size:", pointSize);
+  form->addRow(renderButton);
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
