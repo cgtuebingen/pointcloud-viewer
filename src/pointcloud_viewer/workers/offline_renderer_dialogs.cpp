@@ -18,6 +18,7 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QProgressBar>
+#include <QDebug>
 
 QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSettings prevSettings)
 {
@@ -116,17 +117,19 @@ QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSetti
   formWidget->setLayout(form);
   vbox->addWidget(formWidget, 1);
 
-  QString imageDirectory = prevSettings.target_images_directory.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+"/render_result" : prevSettings.target_images_directory;
+  QString imageDirectory;
   QLabel* imageDirectory_label = new QLabel(".../"+QFileInfo(imageDirectory).fileName());
+  auto set_path = [imageDirectory_label, &imageDirectory](QString path){
+    imageDirectory = path;
+    imageDirectory_label->setText(".../"+QFileInfo(path).dir().dirName()+'/'+QFileInfo(path).fileName());
+  };
+  set_path(prevSettings.target_images_directory.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+"/render_result" : prevSettings.target_images_directory);
   imageDirectory_label->setWordWrap(true);
   QPushButton* chooseImageDirectory = new QPushButton("...");
-  QObject::connect(chooseImageDirectory, &QPushButton::clicked, [&dialog, &imageDirectory, imageDirectory_label](){
+  QObject::connect(chooseImageDirectory, &QPushButton::clicked, [&dialog, &imageDirectory, set_path](){
     QString path = QFileDialog::getExistingDirectory(&dialog, "Image Output directory", imageDirectory);
     if(!path.isEmpty())
-    {
-      imageDirectory = path;
-      imageDirectory_label->setText(".../"+QFileInfo(path).fileName());
-    }
+      set_path(path);
   });
   hbox = new QHBoxLayout;
   hbox->addWidget(imageDirectory_label, 10);
@@ -212,6 +215,13 @@ void MainWindow::offline_render()
 
   if(was_canceled)
     return;
+
+  if(!QDir(renderSettings.target_images_directory).exists() && !QDir(renderSettings.target_images_directory).mkpath("."))
+  {
+    QMessageBox::warning(this, "IO failure", "Could not create the directory\n"+renderSettings.target_images_directory);
+    return;
+  }
+
 
   OfflineRenderer offlineRenderer(&viewport, flythrough, renderSettings);
 

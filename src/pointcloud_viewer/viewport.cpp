@@ -136,9 +136,12 @@ void Viewport::paintGL()
   QElapsedTimer timer;
   timer.start();
 
-  render_points(navigation.camera.frame, navigation.camera.aspect, [this](){
-    visualization->render();
-  });
+  if(enable_preview)
+  {
+    render_points(navigation.camera.frame, navigation.camera.aspect, [this](){
+      visualization->render();
+    });
+  }
 
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }

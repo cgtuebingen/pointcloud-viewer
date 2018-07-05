@@ -29,6 +29,7 @@ class Viewport final : public QOpenGLWidget
   Q_PROPERTY(float pointSize READ pointSize WRITE setPointSize NOTIFY pointSizeChanged)
 public:
   Navigation navigation;
+  bool enable_preview = true;
 
   Viewport();
   ~Viewport() override;
