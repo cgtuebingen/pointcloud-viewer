@@ -3,6 +3,7 @@
 #include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
+#include <QMimeData>
 #include <QFileDialog>
 
 void MainWindow::initMenuBar()
@@ -39,6 +40,22 @@ void MainWindow::initMenuBar()
   QAction* about_action = menu_view_application->addAction("&About");
   connect(about_action, &QAction::triggered, this, &MainWindow::openAboutDialog);
 
+  setAcceptDrops(true);
+
+}
+
+void MainWindow::dropEvent(QDropEvent *ev) {
+  QList<QUrl> urls = ev->mimeData()->urls();
+  foreach (QUrl url, urls) {
+    const QString file_to_import = url.path();
+    if(file_to_import.isEmpty())
+      return;
+    viewport.load_point_cloud(import_point_cloud(this, file_to_import));
+  }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
+  ev->accept();
 }
 
 void MainWindow::insertKeypoint()
