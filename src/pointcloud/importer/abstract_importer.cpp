@@ -1,7 +1,6 @@
 #include <pointcloud/importer/abstract_importer.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
-#include <pointcloud/importer/assimp_importer.hpp>
 #include <pointcloud/importer/ply_importer.hpp>
 
 #include <QThread>
@@ -19,22 +18,13 @@ QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerF
   if(suffix == "ply")
   {
     return QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(filepath));
-#ifdef USE_ASSIMP
-  }else if(suffix == "obj")
-  {
-    return QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath));
-#endif
   }else
     return QSharedPointer<AbstractPointCloudImporter>();
 }
 
 QString AbstractPointCloudImporter::allSupportedFiletypes()
 {
-#ifdef USE_ASSIMP
-  return "Any Supported (*.ply *.obj);;PLY (*.ply);;OBJ (*.obj)";
-#else
   return "PLY (*.ply)";
-#endif
 }
 
 void AbstractPointCloudImporter::import()
@@ -51,6 +41,9 @@ void AbstractPointCloudImporter::import()
   {
     print_error(message.toStdString());
     this->state = RUNTIME_ERROR;
+  }catch(canceled_t)
+  {
+    this->state = CANCELED;
   }catch(...)
   {
     this->state = RUNTIME_ERROR;
@@ -74,16 +67,24 @@ bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
 {
   Q_ASSERT(current_progress <= total_progress);
 
+  auto process_events = [](){
+    QThread* thread = QThread::currentThread();
+    if(thread != nullptr && thread->eventDispatcher() != nullptr)
+      thread->eventDispatcher()->processEvents(QEventLoop::EventLoopExec | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+  };
+
+  process_events();
+
+  if(Q_UNLIKELY(this->state == CANCELED))
+    throw canceled_t();
+
   float86_t progress = float86_t(current_progress) / float86_t(total_progress);
   int discrete_progress_value = int(progress * 65536 + float86_t(0.5));
   discrete_progress_value = glm::clamp(0, 65536, discrete_progress_value);
 
   update_progress(discrete_progress_value);
 
-  QThread* thread = QThread::currentThread();
-
-  if(thread != nullptr && thread->eventDispatcher() != nullptr)
-    thread->eventDispatcher()->processEvents(QEventLoop::EventLoopExec | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+  process_events();
 
   return this->state == RUNNING;
 }

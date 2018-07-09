@@ -47,10 +47,8 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
 
   QProgressDialog progressDialog(QString("Importing Pointcloud \n<%1>").arg(file.fileName()), "&Abort", 0, AbstractPointCloudImporter::progress_max(), parent);
   progressDialog.setWindowModality(Qt::ApplicationModal);
-  progressDialog.setWindowFlags(Qt::Dialog|Qt::FramelessWindowHint);
 
   progressDialog.show();
-  progressDialog.setDisabled(true);
 
   QThread thread;
   importer->moveToThread(&thread);
