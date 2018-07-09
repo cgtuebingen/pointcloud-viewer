@@ -41,3 +41,7 @@ Run with
 6. In the left bar, you can start the Render process by pressing the big Render button
     - It is insensitive as long as there is no camera path
     - Currently, only one image per frame is saved
+    
+## Known Issues
+
+Currently, no optimization technique is applied. When the pointcloud size exceds the available video memory, the application will probably crash. 
