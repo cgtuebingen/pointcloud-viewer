@@ -4,6 +4,11 @@ This tool allows viewing huge point clouds.
 
 ## Build on Ubuntu
 
+Install dependencies
+
+    sudo apt install build-essential cmake
+    sudo apt install qt5-default libboost-all-dev
+
 Clone with
 
     git clone git@github.com:cgtuebingen/pointcloud-viewer.git
