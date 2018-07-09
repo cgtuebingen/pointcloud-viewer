@@ -2,6 +2,30 @@
 
 This tool allows viewing huge point clouds.
 
+## Build on Ubuntu
+
+Install dependencies
+
+    sudo apt install build-essential cmake
+    sudo apt install qt5-default libboost-all-dev
+
+Clone with
+
+    git clone git@github.com:cgtuebingen/pointcloud-viewer.git
+    cd pointcloud-viewer/
+    git submodule update --init
+    
+Compile with
+    
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ../src
+    make -j8
+    
+Run with
+
+    pointcloud_viewer/pointcloud_viewer
+
 ## Typical usage
 
 1. Load a Point Cloud with the menu bar:
@@ -22,3 +46,7 @@ This tool allows viewing huge point clouds.
 6. In the left bar, you can start the Render process by pressing the big Render button
     - It is insensitive as long as there is no camera path
     - Currently, only one image per frame is saved
+    
+## Known Issues
+
+Currently, no optimization technique is applied. When the pointcloud size exceds the available video memory, the application will probably crash. 
