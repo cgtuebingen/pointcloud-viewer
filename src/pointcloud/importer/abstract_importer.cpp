@@ -1,7 +1,6 @@
 #include <pointcloud/importer/abstract_importer.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
-#include <pointcloud/importer/assimp_importer.hpp>
 #include <pointcloud/importer/ply_importer.hpp>
 
 #include <QThread>
@@ -19,22 +18,13 @@ QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerF
   if(suffix == "ply")
   {
     return QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(filepath));
-#ifdef USE_ASSIMP
-  }else if(suffix == "obj")
-  {
-    return QSharedPointer<AbstractPointCloudImporter>(new AssimpImporter(filepath));
-#endif
   }else
     return QSharedPointer<AbstractPointCloudImporter>();
 }
 
 QString AbstractPointCloudImporter::allSupportedFiletypes()
 {
-#ifdef USE_ASSIMP
-  return "Any Supported (*.ply *.obj);;PLY (*.ply);;OBJ (*.obj)";
-#else
   return "PLY (*.ply)";
-#endif
 }
 
 void AbstractPointCloudImporter::import()
