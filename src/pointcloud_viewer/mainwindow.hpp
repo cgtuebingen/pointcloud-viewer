@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QListView>
+#include <QUrl>
+#include <QDropEvent>
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/pointcloud_layers.hpp>
@@ -41,6 +43,11 @@ private:
   void jumpToKeypoint(const QModelIndex& modelIndex);
 
   void offline_render();
+
+protected:
+  void dropEvent(QDropEvent *ev);
+
+  void dragEnterEvent(QDragEnterEvent *ev);
 };
 
 
