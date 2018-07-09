@@ -2,6 +2,25 @@
 
 This tool allows viewing huge point clouds.
 
+## Build on Ubuntu
+
+Clone with
+
+    git clone git@github.com:cgtuebingen/pointcloud-viewer.git
+    cd pointcloud-viewer/
+    git submodule update --init
+    
+Compile with
+    
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ../src
+    make -j8
+    
+Run with
+
+    pointcloud_viewer/pointcloud_viewer
+
 ## Typical usage
 
 1. Load a Point Cloud with the menu bar:
