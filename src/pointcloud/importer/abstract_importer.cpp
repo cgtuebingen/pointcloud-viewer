@@ -51,6 +51,9 @@ void AbstractPointCloudImporter::import()
   {
     print_error(message.toStdString());
     this->state = RUNTIME_ERROR;
+  }catch(canceled_t)
+  {
+    this->state = CANCELED;
   }catch(...)
   {
     this->state = RUNTIME_ERROR;
@@ -74,16 +77,24 @@ bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
 {
   Q_ASSERT(current_progress <= total_progress);
 
+  auto process_events = [](){
+    QThread* thread = QThread::currentThread();
+    if(thread != nullptr && thread->eventDispatcher() != nullptr)
+      thread->eventDispatcher()->processEvents(QEventLoop::EventLoopExec | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+  };
+
+  process_events();
+
+  if(Q_UNLIKELY(this->state == CANCELED))
+    throw canceled_t();
+
   float86_t progress = float86_t(current_progress) / float86_t(total_progress);
   int discrete_progress_value = int(progress * 65536 + float86_t(0.5));
   discrete_progress_value = glm::clamp(0, 65536, discrete_progress_value);
 
   update_progress(discrete_progress_value);
 
-  QThread* thread = QThread::currentThread();
-
-  if(thread != nullptr && thread->eventDispatcher() != nullptr)
-    thread->eventDispatcher()->processEvents(QEventLoop::EventLoopExec | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+  process_events();
 
   return this->state == RUNNING;
 }
