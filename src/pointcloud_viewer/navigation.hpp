@@ -24,6 +24,7 @@ public slots:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
 
+  void wheelEvent(QWheelEvent* event);
   void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseReleaseEvent(QMouseEvent* event);
@@ -65,6 +66,10 @@ private:
   glm::ivec2 viewport_center() const;
   distance_t distance(glm::ivec2 difference, glm::ivec2 radius) const;
 
+  void incr_base_movement_speed(int incr);
+  float base_movement_speed() const;
+
+  int _base_movement_speed = 0;
   frame_t fps_start_frame;
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;

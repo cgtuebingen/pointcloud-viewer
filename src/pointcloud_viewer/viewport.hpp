@@ -59,6 +59,7 @@ protected:
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
+  void wheelEvent(QWheelEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;

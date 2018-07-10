@@ -54,6 +54,14 @@ void Navigation::stopFpsNavigation(bool keepNewFrame)
   }
 }
 
+void Navigation::wheelEvent(QWheelEvent* event)
+{
+  if(mode == Navigation::FPS)
+  {
+    incr_base_movement_speed(event->angleDelta().y());
+  }
+}
+
 void Navigation::mouseMoveEvent(QMouseEvent* event)
 {
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
@@ -238,6 +246,18 @@ Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 ra
     return CLOSE;
 }
 
+void Navigation::incr_base_movement_speed(int incr)
+{
+  _base_movement_speed = glm::clamp(incr+_base_movement_speed, -6000, 6000);
+  PRINT(_base_movement_speed);
+  PRINT(base_movement_speed());
+}
+
+float Navigation::base_movement_speed() const
+{
+  return glm::pow(1.01, float(_base_movement_speed) / 15.f);
+}
+
 void Navigation::update_key_force()
 {
   if(glm::length(key_direction) > 0.5f)
@@ -265,7 +285,7 @@ void Navigation::navigate()
 
     view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
-    view.position += movement;
+    view.position += movement * base_movement_speed();
 //    turntable_origin += movement;
     break;
   }
