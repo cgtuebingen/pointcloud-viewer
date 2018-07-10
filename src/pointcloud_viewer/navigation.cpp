@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/navigation.hpp>
+#include <pointcloud_viewer/camera.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -52,6 +53,17 @@ void Navigation::stopFpsNavigation(bool keepNewFrame)
     viewport->releaseMouse();
     viewport->setMouseTracking(false);
   }
+}
+
+void Navigation::resetCameraLocation()
+{
+  camera.frame = Camera().frame;
+  viewport->update();
+}
+
+void Navigation::resetMovementSpeed()
+{
+  _base_movement_speed = 0;
 }
 
 void Navigation::wheelEvent(QWheelEvent* event)
@@ -248,9 +260,7 @@ Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 ra
 
 void Navigation::incr_base_movement_speed(int incr)
 {
-  _base_movement_speed = glm::clamp(incr+_base_movement_speed, -6000, 6000);
-  PRINT(_base_movement_speed);
-  PRINT(base_movement_speed());
+  _base_movement_speed = glm::clamp(incr+_base_movement_speed, -6000-1200, 6000-1200);
 }
 
 float Navigation::base_movement_speed() const

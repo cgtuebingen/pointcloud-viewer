@@ -24,6 +24,9 @@ public slots:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
 
+  void resetCameraLocation();
+  void resetMovementSpeed();
+
   void wheelEvent(QWheelEvent* event);
   void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
