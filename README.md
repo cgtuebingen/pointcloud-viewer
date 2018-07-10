@@ -36,7 +36,9 @@ Run with
         - hold `middle mouse button` and hold `shift` and move mouse for shifting the camera
         - hold `middle mouse button` and hold `ctrl` and move mouse for zooming the camera
         - **Known issue: origin of the turntable is currently placed unintituively**
-    - Enter FPS mode with `Shift`+`F`, leave with `Esc`
+    - Enter FPS mode with `Shift`+`F`
+        - Leave FPS mode with `Esc` or `Right Mouse Button` resetting the camera
+        - Leave FPS mode with `Return` or `Left Mouse Button` to keep the new camera location
 3. Either import an already created animation with the menu bar:
     > **Flythrough > Import Path**
     

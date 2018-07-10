@@ -21,6 +21,7 @@ void Navigation::startFpsNavigation()
 {
   if(mode == Navigation::IDLE)
   {
+    fps_start_frame = camera.frame;
     fps_timer = startTimer(40);
     key_direction = glm::vec3(0);
     key_speed = 0;
@@ -32,10 +33,16 @@ void Navigation::startFpsNavigation()
   }
 }
 
-void Navigation::stopFpsNavigation()
+void Navigation::stopFpsNavigation(bool keepNewFrame)
 {
   if(mode == Navigation::FPS)
   {
+    if(!keepNewFrame)
+    {
+      camera.frame = fps_start_frame;
+      viewport->update();
+    }
+
     killTimer(fps_timer);
     fps_timer = 0;
     key_direction = glm::vec3(0);
@@ -84,16 +91,27 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
 void Navigation::mousePressEvent(QMouseEvent* event)
 {
-  if(event->button() == Qt::MiddleButton)
+  if(mode == Navigation::FPS)
   {
-    last_mouse_pos = glm::ivec2(event->x(), event->y());
+    if(event->button() == Qt::LeftButton)
+      stopFpsNavigation();
+    if(event->button() == Qt::RightButton)
+      stopFpsNavigation(false);
+  }
 
-    if(event->modifiers() == Qt::NoModifier)
-      enableMode(Navigation::TURNTABLE_ROTATE);
-    else if(event->modifiers() == Qt::ShiftModifier)
-      enableMode(Navigation::TURNTABLE_SHIFT);
-    else if(event->modifiers() == Qt::ControlModifier)
-      enableMode(Navigation::TURNTABLE_ZOOM);
+  if(mode == Navigation::IDLE)
+  {
+    if(event->button() == Qt::MiddleButton)
+    {
+      last_mouse_pos = glm::ivec2(event->x(), event->y());
+
+      if(event->modifiers() == Qt::NoModifier)
+        enableMode(Navigation::TURNTABLE_ROTATE);
+      else if(event->modifiers() == Qt::ShiftModifier)
+        enableMode(Navigation::TURNTABLE_SHIFT);
+      else if(event->modifiers() == Qt::ControlModifier)
+        enableMode(Navigation::TURNTABLE_ZOOM);
+    }
   }
 }
 
@@ -141,12 +159,21 @@ void Navigation::keyPressEvent(QKeyEvent* event)
 {
   if(mode == FPS)
   {
-    if(event->key() == Qt::Key_Escape && event->modifiers() == Qt::NoModifier)
-      stopFpsNavigation();
-    if(event->key() == Qt::Key_F4 && event->modifiers() == Qt::AltModifier)
+    if(event->modifiers() == Qt::NoModifier)
     {
-      stopFpsNavigation();
-      QApplication::quit();
+      if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        stopFpsNavigation();
+      if(event->key() == Qt::Key_Escape)
+        stopFpsNavigation(false);
+    }
+
+    if(event->modifiers() == Qt::AltModifier)
+    {
+      if(event->key() == Qt::Key_F4)
+      {
+        stopFpsNavigation();
+        QApplication::quit();
+      }
     }
 
     key_direction += direction_for_key(event);
