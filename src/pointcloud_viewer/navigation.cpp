@@ -1,5 +1,6 @@
 #include <pointcloud_viewer/navigation.hpp>
 #include <pointcloud_viewer/camera.hpp>
+#include <pointcloud_viewer/viewport.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -7,10 +8,10 @@
 #include <QWidget>
 #include <QApplication>
 
-Navigation::Navigation(QWidget* viewport)
+Navigation::Navigation(Viewport* viewport)
   : viewport(viewport)
 {
-
+  connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
 }
 
 Navigation::~Navigation()
@@ -66,6 +67,12 @@ void Navigation::resetMovementSpeed()
   _base_movement_speed = 0;
 }
 
+void Navigation::updateFrameRenderDuration(double duration)
+{
+  // 0.04 because the timer limits the minimal time between to events to be 40ms anyway
+  _last_frame_duration = glm::clamp(float(duration), 0.04f, 0.1f);
+}
+
 void Navigation::wheelEvent(QWheelEvent* event)
 {
   if(mode == Navigation::FPS)
@@ -93,7 +100,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   if(handle_event)
   {
-    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.075f * _last_frame_duration;
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 

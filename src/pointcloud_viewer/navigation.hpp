@@ -7,6 +7,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 
+class Viewport;
+
 /*
 Handles input events for implementing navigation
 */
@@ -17,7 +19,7 @@ public:
   Camera camera;
   glm::vec3 turntable_origin = glm::vec3(0);
 
-  Navigation(QWidget* viewport);
+  Navigation(Viewport* viewport);
   ~Navigation();
 
 public slots:
@@ -26,6 +28,8 @@ public slots:
 
   void resetCameraLocation();
   void resetMovementSpeed();
+
+  void updateFrameRenderDuration(double duration);
 
   void wheelEvent(QWheelEvent* event);
   void mouseMoveEvent(QMouseEvent* event);
@@ -71,6 +75,8 @@ private:
 
   void incr_base_movement_speed(int incr);
   float base_movement_speed() const;
+
+  float _last_frame_duration = 1/60.f;
 
   int _base_movement_speed = 0;
   frame_t fps_start_frame;
