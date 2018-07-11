@@ -30,6 +30,11 @@ Viewport::~Viewport()
   delete visualization;
 }
 
+aabb_t Viewport::aabb() const
+{
+  return _aabb;
+}
+
 void Viewport::set_camera_frame(const frame_t& frame)
 {
   navigation.camera.frame = frame;
@@ -39,10 +44,13 @@ void Viewport::set_camera_frame(const frame_t& frame)
 void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
+  _aabb = aabb_t::invalid();
 }
 
 point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 {
+  _aabb = point_cloud.aabb;
+
   point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
   PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
 

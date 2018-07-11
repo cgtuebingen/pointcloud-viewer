@@ -130,6 +130,7 @@ void Navigation::mousePressEvent(QMouseEvent* event)
   {
     if(event->button() == Qt::MiddleButton)
     {
+      turntable_origin = find_best_turntable_origin();
       last_mouse_pos = glm::ivec2(event->x(), event->y());
 
       if(event->modifiers() == Qt::NoModifier)
@@ -293,6 +294,31 @@ void Navigation::incr_base_movement_speed(int incr)
 float Navigation::mouse_sensitivity() const
 {
   return glm::pow(1.03f, float(_mouse_sensitivity_value));
+}
+
+glm::vec3 Navigation::find_best_turntable_origin()
+{
+  const aabb_t aabb = viewport->aabb();
+  const glm::vec3 dimensions = (aabb.max_point-aabb.min_point) * glm::vec3(1,1,0.5);
+  const glm::vec3 aabb_center = dimensions*0.5f + aabb.max_point;
+
+  if(!aabb.is_valid())
+    return glm::vec3(0);
+
+  int ortho_dimension = 0;
+  for(int i=1; i<3; ++i)
+    if(dimensions[i]>dimensions[ortho_dimension])
+      ortho_dimension = i;
+
+  glm::vec3 look_direction = camera.frame.transform_direction(glm::vec3(0, 0,-1));
+
+  glm::vec3 origin = aabb_center;
+
+  origin[ortho_dimension] = camera.frame.position[ortho_dimension] + glm::clamp(look_direction[ortho_dimension] * camera.frame.position[ortho_dimension] / look_direction[ortho_dimension], 1.e-4f, 1.e4f);
+
+  origin = glm::clamp(origin, aabb.min_point, aabb.max_point);
+
+  return origin;
 }
 
 float Navigation::base_movement_speed() const

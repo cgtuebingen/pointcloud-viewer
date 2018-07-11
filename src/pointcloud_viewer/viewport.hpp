@@ -34,6 +34,8 @@ public:
   Viewport();
   ~Viewport() override;
 
+  aabb_t aabb() const;
+
   void set_camera_frame(const frame_t& frame);
 
   void unload_all_point_clouds();
@@ -75,6 +77,7 @@ private:
 
   Visualization* visualization;
 
+  aabb_t _aabb = aabb_t::invalid();
   std::unordered_map<size_t, PointCloud> point_clouds;
   size_t next_handle = 0;
   int m_backgroundColor = 0;
