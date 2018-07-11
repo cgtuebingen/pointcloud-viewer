@@ -15,6 +15,8 @@ void MainWindow::initDocks()
   initKeypointListDocks();
 }
 
+void remove_focus_after_enter(QAbstractSpinBox* w);
+
 void MainWindow::initKeypointListDocks()
 {
   QDockWidget* dock = new QDockWidget("Flythrough Keypoints", this);
@@ -77,6 +79,7 @@ void MainWindow::initKeypointListDocks()
 
   // ---- background ----
   QSpinBox* backgroundBrightness = new QSpinBox;
+  remove_focus_after_enter(backgroundBrightness);
   backgroundBrightness->setMinimum(0);
   backgroundBrightness->setMaximum(255);
   backgroundBrightness->setValue(viewport.backgroundColor());
@@ -85,6 +88,7 @@ void MainWindow::initKeypointListDocks()
 
   // ---- background ----
   QSpinBox* pointSize = new QSpinBox;
+  remove_focus_after_enter(pointSize);
   pointSize->setMinimum(1);
   pointSize->setMaximum(16);
   pointSize->setValue(int(viewport.pointSize()));
@@ -99,6 +103,7 @@ void MainWindow::initKeypointListDocks()
 
   // ---- mouse sensitivity ----
   QSpinBox* mouseSensitivity = new QSpinBox;
+  remove_focus_after_enter(mouseSensitivity);
   mouseSensitivity->setMinimum(viewport.navigation.mouse_sensitivity_value_range()[0]);
   mouseSensitivity->setMaximum(viewport.navigation.mouse_sensitivity_value_range()[1]);
 
@@ -146,4 +151,9 @@ void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
     return;
 
   viewport.set_camera_frame(flythrough.keypoint_at(modelIndex.row()).frame);
+}
+
+void remove_focus_after_enter(QAbstractSpinBox* w)
+{
+  QObject::connect(w, &QSpinBox::editingFinished, [w](){w->clearFocus();});
 }
