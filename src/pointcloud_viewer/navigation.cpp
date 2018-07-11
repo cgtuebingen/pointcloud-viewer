@@ -272,7 +272,7 @@ void Navigation::incr_base_movement_speed(int incr)
 
 float Navigation::base_movement_speed() const
 {
-  return glm::pow(1.01, float(_base_movement_speed) / 15.f);
+  return glm::pow(1.01f, float(_base_movement_speed) / 15.f);
 }
 
 void Navigation::update_key_force()
