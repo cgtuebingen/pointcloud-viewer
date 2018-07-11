@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QPushButton>
 #include <QComboBox>
+#include <QSlider>
 #include <QGroupBox>
 
 void MainWindow::initDocks()
@@ -86,7 +87,7 @@ void MainWindow::initKeypointListDocks()
   QSpinBox* pointSize = new QSpinBox;
   pointSize->setMinimum(1);
   pointSize->setMaximum(16);
-  pointSize->setValue(viewport.pointSize());
+  pointSize->setValue(int(viewport.pointSize()));
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
@@ -95,6 +96,15 @@ void MainWindow::initKeypointListDocks()
   connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
   connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
   renderButton->setEnabled(flythrough.canPlay());
+
+  // ---- mouse sensitivity ----
+  QSpinBox* mouseSensitivity = new QSpinBox;
+  mouseSensitivity->setMinimum(viewport.navigation.mouse_sensitivity_value_range()[0]);
+  mouseSensitivity->setMaximum(viewport.navigation.mouse_sensitivity_value_range()[1]);
+
+  mouseSensitivity->setValue(viewport.navigation.mouse_sensitivity_value());
+  connect(mouseSensitivity, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport.navigation, &Navigation::set_mouse_sensitivity_value);
+  connect(&viewport.navigation, &Navigation::mouse_sensitivity_value_changed, mouseSensitivity, &QSpinBox::setValue);
 
   // ==== layout ====
   QFormLayout* form;
@@ -116,11 +126,18 @@ void MainWindow::initKeypointListDocks()
   form->addRow("Point Size:", pointSize);
   form->addRow(renderButton);
 
+  // -- navigation --
+  QGroupBox* navigationGroup = new QGroupBox("Navigation");
+  navigationGroup->setLayout((form = new QFormLayout));
+
+  form->addRow("Mouse Sensitivity:", mouseSensitivity);
+
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(keypointList);
   vbox->addWidget(animationGroup);
   vbox->addWidget(renderGroup);
+  vbox->addWidget(navigationGroup);
 }
 
 void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)

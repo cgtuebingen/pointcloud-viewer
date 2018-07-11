@@ -29,9 +29,13 @@ void MainWindow::initMenuBar()
   QMenu* menu_view = menuBar->addMenu("&View");
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
+  QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
+  QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
 
   action_view_navigation_fps->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_F));
   connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
+  connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
+  connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
 
   import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
   connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);

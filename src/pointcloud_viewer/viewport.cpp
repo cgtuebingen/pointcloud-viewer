@@ -146,6 +146,11 @@ void Viewport::paintGL()
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }
 
+void Viewport::wheelEvent(QWheelEvent* event)
+{
+  navigation.wheelEvent(event);
+}
+
 void Viewport::mouseMoveEvent(QMouseEvent* event)
 {
   navigation.mouseMoveEvent(event);
