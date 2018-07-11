@@ -39,8 +39,15 @@ public slots:
   void keyReleaseEvent(QKeyEvent* event);
   void focusOutEvent(QFocusEvent* event);
 
+  glm::ivec2 mouse_sensitivity_value_range() const;
+  int mouse_sensitivity_value() const;
+  void set_mouse_sensitivity_value(int value);
+
 protected:
   void timerEvent(QTimerEvent* timerEvent);
+
+signals:
+  void mouse_sensitivity_value_changed(int value);
 
 private:
   enum mode_t
@@ -63,6 +70,7 @@ private:
 
   mode_t mode = IDLE;
 
+
   glm::vec3 key_direction = glm::vec3(0.f);
   int key_speed = 0;
   glm::vec3 key_force = glm::vec3(0.f);
@@ -75,10 +83,12 @@ private:
 
   void incr_base_movement_speed(int incr);
   float base_movement_speed() const;
+  float mouse_sensitivity() const;
 
   float _last_frame_duration = 1/60.f;
 
   int _base_movement_speed = 0;
+  int _mouse_sensitivity_value = 0;
   frame_t fps_start_frame;
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;

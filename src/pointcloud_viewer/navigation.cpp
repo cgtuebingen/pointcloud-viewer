@@ -100,7 +100,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   if(handle_event)
   {
-    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.1f * _last_frame_duration;
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.1f * mouse_sensitivity() * _last_frame_duration;
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
@@ -223,6 +223,26 @@ void Navigation::focusOutEvent(QFocusEvent* event)
   stopFpsNavigation();
 }
 
+glm::ivec2 Navigation::mouse_sensitivity_value_range() const
+{
+  return glm::ivec2(-100, 100);
+}
+
+int Navigation::mouse_sensitivity_value() const
+{
+  return _mouse_sensitivity_value;
+}
+
+void Navigation::set_mouse_sensitivity_value(int value)
+{
+  if(_mouse_sensitivity_value == value)
+    return;
+
+  _mouse_sensitivity_value = glm::clamp<int>(value, mouse_sensitivity_value_range()[0], mouse_sensitivity_value_range()[1]);
+
+  mouse_sensitivity_value_changed(value);
+}
+
 void Navigation::timerEvent(QTimerEvent* timerEvent)
 {
   if(timerEvent->timerId() != fps_timer || mode!=FPS)
@@ -268,6 +288,11 @@ Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 ra
 void Navigation::incr_base_movement_speed(int incr)
 {
   _base_movement_speed = glm::clamp(incr+_base_movement_speed, -6000-1200, 6000-1200);
+}
+
+float Navigation::mouse_sensitivity() const
+{
+  return glm::pow(1.03f, float(_mouse_sensitivity_value));
 }
 
 float Navigation::base_movement_speed() const
