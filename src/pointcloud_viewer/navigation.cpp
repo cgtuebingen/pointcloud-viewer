@@ -359,22 +359,25 @@ void Navigation::navigate()
   }
   case TURNTABLE_ROTATE:
   {
+    const float factor = 0.5f;
     view.position -= turntable_origin;
-    view = frame_t(turntable_origin, glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right)) * view;
+    view = frame_t(turntable_origin, glm::angleAxis(factor * -mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(factor * -mouse_force.y, right)) * view;
     break;
   }
   case TURNTABLE_SHIFT:
   {
+    const float factor = 0.5f;
     const glm::vec3 shift = up * mouse_force.y - right * mouse_force.x;
-    view.position += shift;
+    view.position += factor * shift;
     turntable_origin += shift;
     break;
   }
   case TURNTABLE_ZOOM:
   {
+    const float factor = 0.5f;
     glm::vec3 previous_zoom = view.position - turntable_origin;
 
-    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(mouse_force.y));
+    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force.y));
 
     if(zoom_factor * length(previous_zoom) > 1.e-2f)
       view.position = turntable_origin + zoom_factor * previous_zoom;
