@@ -36,7 +36,15 @@ DebugMesh::DebugMesh(DebugMesh&& debugMesh)
   debugMesh.num_vertices = 0;
 }
 
-DebugMesh DebugMesh::turntable_point(float r)
+DebugMesh& DebugMesh::operator=(DebugMesh&& mesh)
+{
+  std::swap(vertex_buffer, mesh.vertex_buffer);
+  std::swap(num_vertices, mesh.num_vertices);
+
+  return *this;
+}
+
+DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r)
 {
   Generator generator;
 
@@ -46,7 +54,7 @@ DebugMesh DebugMesh::turntable_point(float r)
 
     target[dim] = 1;
 
-    generator.push_matrix(glm::vec3(0), target);
+    generator.push_matrix(origin, target);
     generator.add_circle(r, 64);
     generator.add_vertex(0, 0,-r);
     generator.add_vertex(0, 0, r);

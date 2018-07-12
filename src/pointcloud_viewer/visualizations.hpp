@@ -30,6 +30,8 @@ public:
 
   void render();
 
+  void set_turntable_origin(glm::vec3 origin);
+
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;
   typedef renderer::gl450::DebugMesh DebugMesh;
