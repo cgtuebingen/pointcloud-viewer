@@ -46,6 +46,8 @@ public:
   int backgroundColor() const;
   float pointSize() const;
 
+  Visualization& visualization(){return *_visualization;}
+
 public slots:
   void setBackgroundColor(int backgroundColor);
   void setPointSize(float pointSize);
@@ -75,7 +77,7 @@ private:
   PointRenderer* point_renderer = nullptr;
   GlobalUniform* global_uniform = nullptr;
 
-  Visualization* visualization;
+  Visualization* _visualization;
 
   aabb_t _aabb = aabb_t::invalid();
   std::unordered_map<size_t, PointCloud> point_clouds;
