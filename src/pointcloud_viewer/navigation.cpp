@@ -100,7 +100,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   if(handle_event)
   {
-    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.1f * mouse_sensitivity() * _last_frame_duration;
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.4f * mouse_sensitivity() * _last_frame_duration;
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
