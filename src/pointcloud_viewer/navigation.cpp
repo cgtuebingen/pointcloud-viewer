@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/navigation.hpp>
 #include <pointcloud_viewer/camera.hpp>
 #include <pointcloud_viewer/viewport.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -132,6 +133,9 @@ void Navigation::mousePressEvent(QMouseEvent* event)
     {
       turntable_origin = find_best_turntable_origin();
       last_mouse_pos = glm::ivec2(event->x(), event->y());
+
+      viewport->visualization().set_turntable_origin(turntable_origin);
+      viewport->update();
 
       if(event->modifiers() == Qt::NoModifier)
         enableMode(Navigation::TURNTABLE_ROTATE);
@@ -298,23 +302,30 @@ float Navigation::mouse_sensitivity() const
 
 glm::vec3 Navigation::find_best_turntable_origin()
 {
-  const aabb_t aabb = viewport->aabb();
-  const glm::vec3 dimensions = (aabb.max_point-aabb.min_point) * glm::vec3(1,1,0.5);
-  const glm::vec3 aabb_center = dimensions*0.5f + aabb.max_point;
+  aabb_t aabb = viewport->aabb();
+
+  const glm::vec3 dimensions = (aabb.max_point-aabb.min_point) * glm::vec3(1,1,0.25);
+  const glm::vec3 aabb_center = (aabb.max_point - aabb.min_point)*0.5f + aabb.min_point;
 
   if(!aabb.is_valid())
     return glm::vec3(0);
 
   int ortho_dimension = 0;
   for(int i=1; i<3; ++i)
-    if(dimensions[i]>dimensions[ortho_dimension])
+    if(dimensions[i]<dimensions[ortho_dimension])
       ortho_dimension = i;
+  ortho_dimension = 2;
 
-  glm::vec3 look_direction = camera.frame.transform_direction(glm::vec3(0, 0,-1));
+  const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0,-1);
 
-  glm::vec3 origin = aabb_center;
+  glm::vec3 normal(0);
+  normal[ortho_dimension] = 1.f;
 
-  origin[ortho_dimension] = camera.frame.position[ortho_dimension] + glm::clamp(look_direction[ortho_dimension] * camera.frame.position[ortho_dimension] / look_direction[ortho_dimension], 1.e-4f, 1.e4f);
+  glm::vec3 ray_origin = camera.frame.position;
+  ray_origin[ortho_dimension] = glm::clamp(camera.frame.position[ortho_dimension], aabb.min_point[ortho_dimension], aabb.max_point[ortho_dimension]);
+  const glm::vec3 target_point = camera.frame.position + forward * glm::max(0.f, - glm::dot(normal, ray_origin-aabb_center) / glm::dot(normal, forward));
+
+  glm::vec3 origin = glm::mix(target_point, aabb_center, normal);
 
   origin = glm::clamp(origin, aabb.min_point, aabb.max_point);
 
