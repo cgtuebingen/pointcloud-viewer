@@ -18,6 +18,7 @@ public:
     bool enable_any_visualizations : 1;
     bool enable_grid : 1;
     bool enable_axis : 1;
+    bool enable_turntable_center : 1;
 
     static settings_t enable_all();
     static settings_t disable_all();
@@ -37,6 +38,7 @@ private:
 
   DebugMesh world_axis;
   DebugMesh world_grid;
+  DebugMesh turntable_origin;
 };
 
 #endif // POINTCLOUDVIEWER_VISUALIZATIONS_HPP_
