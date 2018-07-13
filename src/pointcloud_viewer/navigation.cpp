@@ -13,6 +13,8 @@ Navigation::Navigation(Viewport* viewport)
   : viewport(viewport)
 {
   connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
+
+  _turntable_origin_relative_to_camera = camera.frame.inverse() * glm::vec3();
 }
 
 Navigation::~Navigation()
@@ -133,9 +135,6 @@ void Navigation::mousePressEvent(QMouseEvent* event)
     {
       turntable_origin = find_best_turntable_origin();
       last_mouse_pos = glm::ivec2(event->x(), event->y());
-
-      viewport->visualization().set_turntable_origin(turntable_origin);
-      viewport->update();
 
       if(event->modifiers() == Qt::NoModifier)
         enableMode(Navigation::TURNTABLE_ROTATE);
@@ -304,32 +303,12 @@ glm::vec3 Navigation::find_best_turntable_origin()
 {
   aabb_t aabb = viewport->aabb();
 
-  const glm::vec3 dimensions = (aabb.max_point-aabb.min_point) * glm::vec3(1,1,0.25);
-  const glm::vec3 aabb_center = (aabb.max_point - aabb.min_point)*0.5f + aabb.min_point;
+  glm::vec3 v = camera.frame * _turntable_origin_relative_to_camera;
 
-  if(!aabb.is_valid())
-    return glm::vec3(0);
+  if(aabb.is_valid())
+    v = glm::clamp(v, aabb.min_point, aabb.max_point);
 
-  int ortho_dimension = 0;
-  for(int i=1; i<3; ++i)
-    if(dimensions[i]<dimensions[ortho_dimension])
-      ortho_dimension = i;
-  ortho_dimension = 2;
-
-  const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0,-1);
-
-  glm::vec3 normal(0);
-  normal[ortho_dimension] = 1.f;
-
-  glm::vec3 ray_origin = camera.frame.position;
-  ray_origin[ortho_dimension] = glm::clamp(camera.frame.position[ortho_dimension], aabb.min_point[ortho_dimension], aabb.max_point[ortho_dimension]);
-  const glm::vec3 target_point = camera.frame.position + forward * glm::max(0.f, - glm::dot(normal, ray_origin-aabb_center) / glm::dot(normal, forward));
-
-  glm::vec3 origin = glm::mix(target_point, aabb_center, normal);
-
-  origin = glm::clamp(origin, aabb.min_point, aabb.max_point);
-
-  return origin;
+  return v;
 }
 
 float Navigation::base_movement_speed() const
@@ -398,19 +377,41 @@ void Navigation::navigate()
     break;
   }
 
+  if(mode != TURNTABLE_ZOOM)
+  {
+    viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+    viewport->update();
+  }
+
   mouse_force = glm::vec2(0);
 }
 
 void Navigation::enableMode(Navigation::mode_t mode)
 {
   if(this->mode == IDLE)
+  {
     this->mode = mode;
+  }
 }
 
 void Navigation::disableMode(Navigation::mode_t mode)
 {
   if(this->mode == mode)
+  {
+    switch(this->mode)
+    {
+    case TURNTABLE_ZOOM:
+      _turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
+      break;
+    case FPS:
+    case TURNTABLE_SHIFT:
+    case IDLE:
+    case TURNTABLE_ROTATE:
+      break;
+    }
+
     this->mode = IDLE;
+  }
 }
 
 void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)

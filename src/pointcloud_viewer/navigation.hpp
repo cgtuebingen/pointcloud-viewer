@@ -94,6 +94,7 @@ private:
   int num_frames_in_fps_mode = 0;
 
   glm::vec3 find_best_turntable_origin();
+  glm::vec3 _turntable_origin_relative_to_camera;
 
   void update_key_force();
 
