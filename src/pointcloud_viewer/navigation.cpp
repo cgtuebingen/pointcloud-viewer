@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/navigation.hpp>
 #include <pointcloud_viewer/camera.hpp>
 #include <pointcloud_viewer/viewport.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -12,6 +13,8 @@ Navigation::Navigation(Viewport* viewport)
   : viewport(viewport)
 {
   connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
+
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
 }
 
 Navigation::~Navigation()
@@ -59,6 +62,10 @@ void Navigation::stopFpsNavigation(bool keepNewFrame)
 void Navigation::resetCameraLocation()
 {
   camera.frame = Camera().frame;
+
+  turntable_origin = glm::vec3(0);
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
+
   viewport->update();
 }
 
@@ -100,7 +107,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   if(handle_event)
   {
-    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.1f * mouse_sensitivity() * _last_frame_duration;
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.4f * mouse_sensitivity() * _last_frame_duration;
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
@@ -130,7 +137,11 @@ void Navigation::mousePressEvent(QMouseEvent* event)
   {
     if(event->button() == Qt::MiddleButton)
     {
+      turntable_origin = find_best_turntable_origin();
       last_mouse_pos = glm::ivec2(event->x(), event->y());
+
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
 
       if(event->modifiers() == Qt::NoModifier)
         enableMode(Navigation::TURNTABLE_ROTATE);
@@ -295,6 +306,18 @@ float Navigation::mouse_sensitivity() const
   return glm::pow(1.03f, float(_mouse_sensitivity_value));
 }
 
+glm::vec3 Navigation::find_best_turntable_origin()
+{
+  aabb_t aabb = viewport->aabb();
+
+  glm::vec3 v = camera.frame * _turntable_origin_relative_to_camera;
+
+  if(aabb.is_valid())
+    v = glm::clamp(v, aabb.min_point, aabb.max_point);
+
+  return v;
+}
+
 float Navigation::base_movement_speed() const
 {
   return glm::pow(1.01f, float(_base_movement_speed) / 15.f);
@@ -333,22 +356,25 @@ void Navigation::navigate()
   }
   case TURNTABLE_ROTATE:
   {
+    const float factor = 0.5f;
     view.position -= turntable_origin;
-    view = frame_t(turntable_origin, glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right)) * view;
+    view = frame_t(turntable_origin, glm::angleAxis(factor * -mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(factor * -mouse_force.y, right)) * view;
     break;
   }
   case TURNTABLE_SHIFT:
   {
+    const float factor = 0.5f;
     const glm::vec3 shift = up * mouse_force.y - right * mouse_force.x;
-    view.position += shift;
+    view.position += factor * shift;
     turntable_origin += shift;
     break;
   }
   case TURNTABLE_ZOOM:
   {
+    const float factor = 0.5f;
     glm::vec3 previous_zoom = view.position - turntable_origin;
 
-    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(mouse_force.y));
+    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force.y));
 
     if(zoom_factor * length(previous_zoom) > 1.e-2f)
       view.position = turntable_origin + zoom_factor * previous_zoom;
@@ -364,13 +390,35 @@ void Navigation::navigate()
 void Navigation::enableMode(Navigation::mode_t mode)
 {
   if(this->mode == IDLE)
+  {
     this->mode = mode;
+  }
 }
 
 void Navigation::disableMode(Navigation::mode_t mode)
 {
   if(this->mode == mode)
+  {
+    switch(this->mode)
+    {
+    case TURNTABLE_ZOOM:
+      _turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
+      break;
+    case FPS:
+    case TURNTABLE_SHIFT:
+    case IDLE:
+    case TURNTABLE_ROTATE:
+      break;
+    }
+
+    if(mode != TURNTABLE_ZOOM)
+    {
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
+    }
+
     this->mode = IDLE;
+  }
 }
 
 void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)

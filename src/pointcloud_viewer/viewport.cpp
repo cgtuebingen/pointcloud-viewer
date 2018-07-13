@@ -27,7 +27,12 @@ Viewport::~Viewport()
 {
   delete global_uniform;
   delete point_renderer;
-  delete visualization;
+  delete _visualization;
+}
+
+aabb_t Viewport::aabb() const
+{
+  return _aabb;
 }
 
 void Viewport::set_camera_frame(const frame_t& frame)
@@ -39,10 +44,13 @@ void Viewport::set_camera_frame(const frame_t& frame)
 void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
+  _aabb = aabb_t::invalid();
 }
 
 point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 {
+  _aabb = point_cloud.aabb;
+
   point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
   PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
 
@@ -119,7 +127,7 @@ void Viewport::initializeGL()
 
   point_renderer = new PointRenderer();
   global_uniform = new GlobalUniform();
-  visualization = new Visualization();
+  _visualization = new Visualization();
 
   //  point_renderer->load_test();
 }
@@ -139,7 +147,7 @@ void Viewport::paintGL()
   if(enable_preview)
   {
     render_points(navigation.camera.frame, navigation.camera.aspect, [this](){
-      visualization->render();
+      visualization().render();
     });
   }
 

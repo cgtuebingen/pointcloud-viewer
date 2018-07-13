@@ -66,7 +66,7 @@ private:
     VERY_FAR,
   };
 
-  QWidget* const viewport;
+  Viewport* const viewport;
 
   mode_t mode = IDLE;
 
@@ -92,6 +92,9 @@ private:
   frame_t fps_start_frame;
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
+
+  glm::vec3 find_best_turntable_origin();
+  glm::vec3 _turntable_origin_relative_to_camera;
 
   void update_key_force();
 
