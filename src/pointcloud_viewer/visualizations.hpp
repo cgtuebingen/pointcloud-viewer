@@ -4,6 +4,8 @@
 #include <renderer/gl450/point_renderer.hpp>
 #include <renderer/gl450/debug/debug_mesh.hpp>
 
+#include <pointcloud_viewer/flythrough/keypoint.hpp>
+
 /**
 Class responsible for rendering visualizations
 
@@ -32,6 +34,7 @@ public:
   void render();
 
   void set_turntable_origin(glm::vec3 origin);
+  void set_path(const QVector<keypoint_t>& keypoints, int selected_point);
 
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;

@@ -30,6 +30,11 @@ void Visualization::set_turntable_origin(glm::vec3 origin)
   turntable_origin = DebugMesh::turntable_point(origin);
 }
 
+void Visualization::set_path(const QVector<keypoint_t>& keypoints, int selected_point)
+{
+  camera_path = DebugMesh::path(keypoints.length(), [&keypoints, selected_point](int i){return keypoints[i].frame;});
+}
+
 Visualization::settings_t Visualization::settings_t::enable_all()
 {
   settings_t settings;
