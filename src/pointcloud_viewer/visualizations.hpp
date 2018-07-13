@@ -21,10 +21,11 @@ public:
     bool enable_turntable_center : 1;
 
     static settings_t enable_all();
+    static settings_t default_settings();
     static settings_t disable_all();
   };
 
-  settings_t settings = settings_t::enable_all();
+  settings_t settings = settings_t::default_settings();
 
   Visualization();
 

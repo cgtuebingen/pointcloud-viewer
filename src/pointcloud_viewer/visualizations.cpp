@@ -39,6 +39,15 @@ Visualization::settings_t Visualization::settings_t::enable_all()
   return settings;
 }
 
+Visualization::settings_t Visualization::settings_t::default_settings()
+{
+  settings_t settings = enable_all();
+
+  settings.enable_turntable_center = false;
+
+  return settings;
+}
+
 Visualization::settings_t Visualization::settings_t::disable_all()
 {
   settings_t settings;
