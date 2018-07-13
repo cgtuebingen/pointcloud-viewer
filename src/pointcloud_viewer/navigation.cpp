@@ -14,7 +14,7 @@ Navigation::Navigation(Viewport* viewport)
 {
   connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
 
-  _turntable_origin_relative_to_camera = camera.frame.inverse() * glm::vec3();
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
 }
 
 Navigation::~Navigation()
@@ -62,6 +62,10 @@ void Navigation::stopFpsNavigation(bool keepNewFrame)
 void Navigation::resetCameraLocation()
 {
   camera.frame = Camera().frame;
+
+  turntable_origin = glm::vec3(0);
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
+
   viewport->update();
 }
 
