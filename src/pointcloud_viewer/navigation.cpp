@@ -140,6 +140,9 @@ void Navigation::mousePressEvent(QMouseEvent* event)
       turntable_origin = find_best_turntable_origin();
       last_mouse_pos = glm::ivec2(event->x(), event->y());
 
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
+
       if(event->modifiers() == Qt::NoModifier)
         enableMode(Navigation::TURNTABLE_ROTATE);
       else if(event->modifiers() == Qt::ShiftModifier)
@@ -381,12 +384,6 @@ void Navigation::navigate()
     break;
   }
 
-  if(mode != TURNTABLE_ZOOM)
-  {
-    viewport->visualization().set_turntable_origin(find_best_turntable_origin());
-    viewport->update();
-  }
-
   mouse_force = glm::vec2(0);
 }
 
@@ -412,6 +409,12 @@ void Navigation::disableMode(Navigation::mode_t mode)
     case IDLE:
     case TURNTABLE_ROTATE:
       break;
+    }
+
+    if(mode != TURNTABLE_ZOOM)
+    {
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
     }
 
     this->mode = IDLE;
