@@ -3,7 +3,7 @@
 
 #include <QListView>
 
-class KeypointList : public QListView
+class KeypointList final : public QListView
 {
   Q_OBJECT
 public:
@@ -15,6 +15,9 @@ signals:
 
 protected:
   void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
+
+private:
+  void customContextMenu(QPoint& pos);
 };
 
 #endif // POINTCLOUDVIEWER_KEYPOINTLIST_HPP_
