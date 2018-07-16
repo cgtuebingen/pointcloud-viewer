@@ -125,7 +125,11 @@ DebugMesh DebugMesh::path(int path_length, std::function<frame_t (int)> frame_fo
     }
 
     generator.push_matrix(frame.to_mat4());
-    generator.next_attribute.color = selection==i ? highlight_color : default_color;
+    if(selection == i)
+    {
+      generator.next_attribute.color = highlight_color;
+      generator.add_sphere(0.5f, 64);
+    }
     generator.add_axis(glm::bvec3(true), 0.1f, 0.01f);
     generator.next_attribute.color = default_color;
     generator.pop_matrix();
