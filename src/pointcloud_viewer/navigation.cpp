@@ -182,6 +182,10 @@ inline glm::vec3 direction_for_key(QKeyEvent* event)
     key_direction.x += 1.f;
   if(event->key() == Qt::Key_Right)
     key_direction.x += 1.f;
+  if(event->key() == Qt::Key_Space)
+    key_direction.z += 1.f;
+  if(event->key() == Qt::Key_Control)
+    key_direction.z -= 1.f;
   return key_direction;
 }
 
@@ -346,7 +350,7 @@ void Navigation::navigate()
   {
   case FPS:
   {
-    const glm::vec3 movement = forward * key_force.y + right * key_force.x;
+    const glm::vec3 movement =  up * key_force.z + forward * key_force.y + right * key_force.x;
 
     view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
