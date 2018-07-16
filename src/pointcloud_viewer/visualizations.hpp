@@ -21,6 +21,7 @@ public:
     bool enable_grid : 1;
     bool enable_axis : 1;
     bool enable_turntable_center : 1;
+    bool enable_camera_path : 1;
 
     static settings_t enable_all();
     static settings_t default_settings();
@@ -45,6 +46,7 @@ private:
   DebugMesh world_axis;
   DebugMesh world_grid;
   DebugMesh turntable_origin;
+  DebugMesh camera_path;
 };
 
 #endif // POINTCLOUDVIEWER_VISUALIZATIONS_HPP_

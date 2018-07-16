@@ -56,6 +56,11 @@ keypoint_t Flythrough::keypoint_at(int index) const
   return _keypoints[index];
 }
 
+const QVector<keypoint_t>& Flythrough::all_keypoints() const
+{
+  return _keypoints;
+}
+
 double Flythrough::animationDuration() const
 {
   return m_animationDuration;
@@ -260,6 +265,12 @@ void Flythrough::_init_connections()
   connect(this, &Flythrough::rowsMoved, this, &Flythrough::updatePathLength);
   connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
+
+  connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::pathChanged);
+  connect(this, &Flythrough::rowsInserted, this, &Flythrough::pathChanged);
+  connect(this, &Flythrough::rowsMoved, this, &Flythrough::pathChanged);
+  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::pathChanged);
+  connect(this, &Flythrough::dataChanged, this, &Flythrough::pathChanged);
 
   playback._animationDuration = this->m_animationDuration;
   connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});

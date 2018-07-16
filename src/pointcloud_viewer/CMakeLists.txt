@@ -23,6 +23,8 @@ add_executable(pointcloud_viewer
   camera.cpp
   camera.hpp
   declarations.hpp
+  keypoint_list.cpp
+  keypoint_list.hpp
   main.cpp
   mainwindow.cpp
   mainwindow_docks.cpp

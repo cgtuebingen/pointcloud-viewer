@@ -1,5 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/keypoint_list.hpp>
 
 #include <QDockWidget>
 #include <QVBoxLayout>
@@ -27,10 +29,16 @@ void MainWindow::initKeypointListDocks()
   dock->setWidget(root);
 
   // ---- keypoint list ----
-  keypointList = new QListView;
+  keypointList = new KeypointList;
   keypointList->setModel(&flythrough);
 
   connect(keypointList, &QListView::doubleClicked, this, &MainWindow::jumpToKeypoint);
+  auto update_path_visualization = [this](){
+    viewport.visualization().set_path(flythrough.all_keypoints(), keypointList->currentIndex().row());
+    viewport.update();
+  };
+  connect(keypointList, &KeypointList::currentKeypointChanged, update_path_visualization);
+  connect(&flythrough, &Flythrough::pathChanged, update_path_visualization);
 
   // ---- animation duration ----
   QDoubleSpinBox* animationDuration = new QDoubleSpinBox;
