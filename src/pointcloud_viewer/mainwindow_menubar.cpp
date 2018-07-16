@@ -51,6 +51,7 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     if(file_to_import.isEmpty())
       return;
     viewport.load_point_cloud(import_point_cloud(this, file_to_import));
+    return;
   }
 }
 
