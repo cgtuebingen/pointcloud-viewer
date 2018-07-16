@@ -41,6 +41,7 @@ public:
   void insert_keypoint(frame_t frame, int index);
 
   keypoint_t keypoint_at(int index) const;
+  const QVector<keypoint_t>& all_keypoints() const;
 
   double animationDuration() const;
   double cameraVelocity() const;
@@ -64,6 +65,7 @@ signals:
   void animationDurationChanged(double animationDuration);
   void cameraVelocityChanged(double cameraVelocity);
   void pathLengthChanged(double pathLength);
+  void pathChanged();
 
   void set_new_camera_frame(frame_t frame);
 

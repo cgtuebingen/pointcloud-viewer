@@ -11,6 +11,8 @@
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
+class KeypointList;
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
@@ -27,7 +29,7 @@ private:
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 
-  QListView* keypointList;
+  KeypointList* keypointList;
 
   void initMenuBar();
   void initDocks();

@@ -18,6 +18,12 @@ namespace renderer {
 namespace gl450 {
 
 
+DebugMesh::DebugMesh()
+  : vertex_buffer(),
+    num_vertices(0)
+{
+}
+
 DebugMesh::DebugMesh(const vertex_t* vertices, int num_vertices)
   : vertex_buffer(int(sizeof(vertex_t))*num_vertices, gl::Buffer::UsageFlag::IMMUTABLE, vertices),
     num_vertices(num_vertices)
@@ -68,23 +74,7 @@ DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
 {
   Generator generator;
 
-  const int brightness = 1;
-  const glm::vec3 colors[] = {color_palette::red[brightness],
-                             color_palette::green[brightness],
-                             color_palette::blue[brightness]};
-
-  for(int dim=0; dim<3; ++dim)
-  {
-    if(axis[dim])
-    {
-      glm::vec3 target(0);
-
-      target[dim] = length;
-
-      generator.next_attribute.color = colors[dim];
-      generator.add_arrow(glm::vec3(0), target, tip_length);
-    }
-  }
+  generator.add_axis(axis, length, tip_length, true);
 
   return generator.to_mesh();
 }
@@ -105,6 +95,46 @@ DebugMesh DebugMesh::grid(int repetition_per_side, float cell_size, glm::vec3 co
     generator.add_vertex(origin+axis_1*offset-half_axis_2);
     generator.add_vertex(origin+axis_2*offset+half_axis_1);
     generator.add_vertex(origin+axis_2*offset-half_axis_1);
+  }
+
+  return generator.to_mesh();
+}
+
+DebugMesh DebugMesh::path(int path_length, std::function<frame_t (int)> frame_for_index, int selection)
+{
+  if(path_length == 0)
+    return DebugMesh();
+
+  Generator generator;
+
+  frame_t prev_frame;
+
+  const glm::vec3 highlight_color = color_palette::orange[1];
+  const glm::vec3 default_color = glm::mix(highlight_color, glm::vec3(color_palette::grey[3]), 0.5f);
+
+  generator.next_attribute.color = default_color;
+
+  for(int i=0; i<path_length; ++i)
+  {
+    frame_t frame = frame_for_index(i);
+
+    if(i>0)
+    {
+      generator.add_vertex(prev_frame.position);
+      generator.add_vertex(frame.position);
+    }
+
+    generator.push_matrix(frame.to_mat4());
+    if(selection == i)
+    {
+      generator.next_attribute.color = highlight_color;
+      generator.add_sphere(0.5f, 64);
+    }
+    generator.add_axis(glm::bvec3(true), 0.1f, 0.01f);
+    generator.next_attribute.color = default_color;
+    generator.pop_matrix();
+
+    prev_frame = frame;
   }
 
   return generator.to_mesh();
@@ -140,6 +170,9 @@ void DebugMeshRenderer::begin()
 
 void DebugMeshRenderer::render(const DebugMesh& mesh)
 {
+  if(mesh.num_vertices == 0)
+    return;
+
   mesh.vertex_buffer.BindVertexBuffer(DEBUG_MESH_VERTEX_BUFFER_BINDING, 0, GLsizei(vertex_array_object.GetVertexStride(DEBUG_MESH_VERTEX_BUFFER_BINDING)));
   GL_CALL(glDrawArrays, GL_LINES, 0, mesh.num_vertices);
 }
@@ -182,6 +215,28 @@ void DebugMesh::Generator::end_strip()
   }
 
   this->strip_index = -1;
+}
+
+void DebugMesh::Generator::add_axis(glm::bvec3 axis, float length, float tip_length, bool rgb)
+{
+  const int brightness = 1;
+  const glm::vec3 colors[] = {color_palette::red[brightness],
+                             color_palette::green[brightness],
+                             color_palette::blue[brightness]};
+
+  for(int dim=0; dim<3; ++dim)
+  {
+    if(axis[dim])
+    {
+      glm::vec3 target(0);
+
+      target[dim] = length;
+
+      if(rgb)
+        next_attribute.color = colors[dim];
+      add_arrow(glm::vec3(0), target, tip_length);
+    }
+  }
 }
 
 

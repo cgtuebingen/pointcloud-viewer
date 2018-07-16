@@ -1,5 +1,6 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
@@ -12,9 +13,14 @@ void MainWindow::initMenuBar()
   menuBar->setVisible(true);
   setMenuBar(menuBar);
 
+  // ======== Project ==================================================================================================
   QMenu* menu_project = menuBar->addMenu("&Project");
   QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud");
 
+  import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
+  connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);
+
+  // ======== Flythrough ===============================================================================================
   QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
   QAction* action_flythrough_insert_keypoint = menu_flythrough->addAction("&Insert Keypoint");
   menu_flythrough->addSeparator();
@@ -26,7 +32,10 @@ void MainWindow::initMenuBar()
   connect(action_flythrough_export_path, &QAction::triggered, this, &MainWindow::exportCameraPath);
   connect(action_flythrough_import_path, &QAction::triggered, this, &MainWindow::importCameraPath);
 
+  // ======== View =====================================================================================================
   QMenu* menu_view = menuBar->addMenu("&View");
+
+  // -------- Navigation -----------------------------------------------------------------------------------------------
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
@@ -37,9 +46,40 @@ void MainWindow::initMenuBar()
   connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
   connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
 
-  import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
-  connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);
+  // -------- Visualization --------------------------------------------------------------------------------------------
+  QMenu* menu_view_visualization = menu_view->addMenu("&Visualization");
+  QAction* action_view_visualization_camerapath = menu_view_visualization->addAction("&Camera Path");
+  QAction* action_view_visualization_grid = menu_view_visualization->addAction("&Grid");
+  QAction* action_view_visualization_axis = menu_view_visualization->addAction("&Axis");
+#ifndef NDEBUG
+  menu_view_visualization->addSeparator();
+  QAction* action_view_visualization_debug_turntable_center = menu_view_visualization->addAction("&Axis");
+#endif
 
+  Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
+
+#define TOGGLE(item, var) \
+  item->setCheckable(true); \
+  item->setChecked(current_settings.var); \
+  connect(item, &QAction::toggled, [this, item](){viewport.visualization().settings.var = item->isChecked(); viewport.update();});
+
+  action_view_visualization_camerapath->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_1));
+  TOGGLE(action_view_visualization_camerapath, enable_camera_path);
+
+  action_view_visualization_grid->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_2));
+  TOGGLE(action_view_visualization_grid, enable_grid);
+
+  action_view_visualization_axis->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_3));
+  TOGGLE(action_view_visualization_axis, enable_axis);
+
+#ifndef NDEBUG
+  action_view_visualization_debug_turntable_center->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_1));
+  TOGGLE(action_view_visualization_debug_turntable_center, enable_turntable_center);
+#endif
+
+#undef TOGGLE
+
+  // ======== Application ==============================================================================================
   QMenu* menu_view_application = menuBar->addMenu("&Application");
   QAction* about_action = menu_view_application->addAction("&About");
   connect(about_action, &QAction::triggered, this, &MainWindow::openAboutDialog);
