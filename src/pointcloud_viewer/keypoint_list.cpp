@@ -16,6 +16,9 @@ KeypointList::KeypointList()
 
   context_menu = new QMenu(this);
   context_menu->addAction(action_delete_keypoint);
+
+  // This allows executing the action by shortcut
+  this->addAction(action_delete_keypoint);
 }
 
 KeypointList::~KeypointList()
