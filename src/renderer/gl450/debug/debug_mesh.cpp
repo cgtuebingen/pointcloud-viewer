@@ -128,9 +128,17 @@ DebugMesh DebugMesh::path(int path_length, std::function<frame_t (int)> frame_fo
     if(selection == i)
     {
       generator.next_attribute.color = highlight_color;
-      generator.add_sphere(0.5f, 64);
+      for(int i=0; i < 5; i++)
+      {
+        generator.push_matrix(glm::vec3(0,0, 0.1f * i));
+        generator.add_circle(0.5f - 0.1f*i, 64);
+        generator.pop_matrix();
+      }
+      generator.add_axis();
+    }else
+    {
+      generator.add_axis(glm::bvec3(true), 0.1f, 0.01f, false);
     }
-    generator.add_axis(glm::bvec3(true), 0.1f, 0.01f);
     generator.next_attribute.color = default_color;
     generator.pop_matrix();
 
