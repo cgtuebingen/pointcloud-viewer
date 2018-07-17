@@ -40,6 +40,8 @@ public:
 
   void insert_keypoint(frame_t frame, int index);
   void delete_keypoint(int index);
+  void move_keypoint_up(int index);
+  void move_keypoint_down(int index);
 
   keypoint_t keypoint_at(int index) const;
   const QVector<keypoint_t>& all_keypoints() const;

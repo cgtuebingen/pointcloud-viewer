@@ -39,6 +39,8 @@ void MainWindow::initKeypointListDocks()
   };
   connect(keypointList, &KeypointList::currentKeypointChanged, update_path_visualization);
   connect(keypointList, &KeypointList::on_delete_keypoint, &flythrough, &Flythrough::delete_keypoint);
+  connect(keypointList, &KeypointList::on_move_keypoint_up, &flythrough, &Flythrough::move_keypoint_up);
+  connect(keypointList, &KeypointList::on_move_keypoint_down, &flythrough, &Flythrough::move_keypoint_down);
   connect(&flythrough, &Flythrough::pathChanged, update_path_visualization);
 
   // ---- animation duration ----
