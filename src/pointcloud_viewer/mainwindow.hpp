@@ -39,7 +39,6 @@ private:
   void importPointcloudLayer();
   void openAboutDialog();
 
-  void insertKeypoint();
   void exportCameraPath();
   void importCameraPath();
   void jumpToKeypoint(const QModelIndex& modelIndex);

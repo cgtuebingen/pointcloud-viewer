@@ -9,6 +9,10 @@ KeypointList::KeypointList()
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, &KeypointList::customContextMenuRequested, this, &KeypointList::customContextMenu);
 
+  action_flythrough_insert_keypoint = new QAction("&Insert Keypoint", this);
+  action_flythrough_insert_keypoint->setShortcut(QKeySequence(Qt::Key_I));
+  connect(action_flythrough_insert_keypoint, &QAction::triggered, this, &KeypointList::insert_keypoint);
+
   action_delete_keypoint = new QAction("&Delete Keypoint", this);
   action_delete_keypoint->setShortcut(Qt::Key_Delete);
   action_delete_keypoint->setEnabled(false);
@@ -25,12 +29,15 @@ KeypointList::KeypointList()
   connect(action_move_keypoint_down, &QAction::triggered, this, &KeypointList::move_keypoint_down);
 
   context_menu = new QMenu(this);
+  context_menu->addAction(action_flythrough_insert_keypoint);
+  context_menu->addSeparator();
   context_menu->addAction(action_delete_keypoint);
   context_menu->addSeparator();
   context_menu->addAction(action_move_keypoint_up);
   context_menu->addAction(action_move_keypoint_down);
 
   // This allows executing the action by shortcut
+  this->addAction(action_flythrough_insert_keypoint);
   this->addAction(action_delete_keypoint);
   this->addAction(action_move_keypoint_up);
   this->addAction(action_move_keypoint_down);
@@ -67,6 +74,14 @@ KeypointList::item_digest_t KeypointList::digest(QModelIndex index) const
   digest.is_last = index.sibling(index.row()+1, index.column()).isValid() == false;
 
   return digest;
+}
+
+void KeypointList::insert_keypoint()
+{
+  QModelIndex index = currentIndex();
+  KeypointList::item_digest_t digst = this->digest(index);
+
+  on_insert_keypoint(index.row() + 1);
 }
 
 void KeypointList::delete_keypoint()

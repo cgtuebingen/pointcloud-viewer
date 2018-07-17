@@ -13,6 +13,7 @@ public:
 signals:
   void currentKeypointChanged();
 
+  void on_insert_keypoint(int index);
   void on_delete_keypoint(int index);
   void on_move_keypoint_up(int index);
   void on_move_keypoint_down(int index);
@@ -29,6 +30,7 @@ private:
   };
 
   QMenu* context_menu;
+  QAction* action_flythrough_insert_keypoint;
   QAction* action_delete_keypoint;
   QAction* action_move_keypoint_up;
   QAction* action_move_keypoint_down;
@@ -38,6 +40,7 @@ private:
   item_digest_t digest(QModelIndex index) const;
 
 private slots:
+  void insert_keypoint();
   void delete_keypoint();
   void move_keypoint_up();
   void move_keypoint_down();

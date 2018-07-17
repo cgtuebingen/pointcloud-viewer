@@ -41,6 +41,10 @@ void MainWindow::initKeypointListDocks()
   connect(keypointList, &KeypointList::on_delete_keypoint, &flythrough, &Flythrough::delete_keypoint);
   connect(keypointList, &KeypointList::on_move_keypoint_up, &flythrough, &Flythrough::move_keypoint_up);
   connect(keypointList, &KeypointList::on_move_keypoint_down, &flythrough, &Flythrough::move_keypoint_down);
+  connect(keypointList, &KeypointList::on_insert_keypoint, [this](int index) {
+    flythrough.insert_keypoint(this->viewport.navigation.camera.frame, index);
+    keypointList->setCurrentIndex(flythrough.index(index, 0));
+  });
   connect(&flythrough, &Flythrough::pathChanged, update_path_visualization);
 
   // ---- animation duration ----
