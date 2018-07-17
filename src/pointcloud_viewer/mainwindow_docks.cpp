@@ -38,6 +38,7 @@ void MainWindow::initKeypointListDocks()
     viewport.update();
   };
   connect(keypointList, &KeypointList::currentKeypointChanged, update_path_visualization);
+  connect(keypointList, &KeypointList::on_delete_keypoint, &flythrough, &Flythrough::delete_keypoint);
   connect(&flythrough, &Flythrough::pathChanged, update_path_visualization);
 
   // ---- animation duration ----

@@ -20,7 +20,6 @@ KeypointList::KeypointList()
 
 KeypointList::~KeypointList()
 {
-
 }
 
 void KeypointList::currentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -41,5 +40,10 @@ void KeypointList::customContextMenu(const QPoint& pos)
 
 void KeypointList::delete_keypoint()
 {
-  print("Delete Keypoint");
+  QModelIndex index = currentIndex();
+
+  if(!index.isValid())
+    return;
+
+  on_delete_keypoint(index.row());
 }

@@ -13,6 +13,8 @@ public:
 signals:
   void currentKeypointChanged();
 
+  void on_delete_keypoint(int index);
+
 protected:
   void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 

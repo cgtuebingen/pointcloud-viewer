@@ -51,6 +51,16 @@ void Flythrough::insert_keypoint(frame_t frame, int index)
   endInsertRows();
 }
 
+void Flythrough::delete_keypoint(int index)
+{
+  if(index < 0 || index >= _keypoints.length())
+    return;
+
+  beginRemoveRows(QModelIndex(), index, index+1);
+  _keypoints.removeAt(index);
+  endRemoveRows();
+}
+
 keypoint_t Flythrough::keypoint_at(int index) const
 {
   return _keypoints[index];
