@@ -17,7 +17,13 @@ protected:
   void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
 private:
-  void customContextMenu(QPoint& pos);
+  void customContextMenu(const QPoint& pos);
+
+  QMenu* context_menu;
+  QAction* action_delete_keypoint;
+
+private slots:
+  void delete_keypoint();
 };
 
 #endif // POINTCLOUDVIEWER_KEYPOINTLIST_HPP_
