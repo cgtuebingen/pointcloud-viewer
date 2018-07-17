@@ -22,13 +22,9 @@ void MainWindow::initMenuBar()
 
   // ======== Flythrough ===============================================================================================
   QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
-  QAction* action_flythrough_insert_keypoint = menu_flythrough->addAction("&Insert Keypoint");
-  menu_flythrough->addSeparator();
   QAction* action_flythrough_export_path = menu_flythrough->addAction("&Export Path");
   QAction* action_flythrough_import_path = menu_flythrough->addAction("&Import Path");
 
-  action_flythrough_insert_keypoint->setShortcut(QKeySequence(Qt::Key_I));
-  connect(action_flythrough_insert_keypoint, &QAction::triggered, this, &MainWindow::insertKeypoint);
   connect(action_flythrough_export_path, &QAction::triggered, this, &MainWindow::exportCameraPath);
   connect(action_flythrough_import_path, &QAction::triggered, this, &MainWindow::importCameraPath);
 
@@ -101,14 +97,6 @@ void MainWindow::dropEvent(QDropEvent *ev) {
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
   ev->accept();
-}
-
-void MainWindow::insertKeypoint()
-{
-  const int position_after_last = std::numeric_limits<int>::max();
-  int position = position_after_last;
-
-  flythrough.insert_keypoint(viewport.navigation.camera.frame, position);
 }
 
 void MainWindow::exportCameraPath()

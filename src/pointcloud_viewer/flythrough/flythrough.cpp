@@ -51,6 +51,35 @@ void Flythrough::insert_keypoint(frame_t frame, int index)
   endInsertRows();
 }
 
+void Flythrough::delete_keypoint(int index)
+{
+  Q_ASSERT(index >= 0 && index < _keypoints.length());
+
+  beginRemoveRows(QModelIndex(), index, index);
+  _keypoints.removeAt(index);
+  endRemoveRows();
+}
+
+void Flythrough::move_keypoint_up(int index)
+{
+  Q_ASSERT(index > 0 && index < _keypoints.length());
+
+  if(!beginMoveRows(QModelIndex(), index, index,  QModelIndex(), index-1))
+    return;
+  std::swap(_keypoints[index], _keypoints[index-1]);
+  endMoveRows();
+}
+
+void Flythrough::move_keypoint_down(int index)
+{
+  Q_ASSERT(index >= 0 && index < _keypoints.length()-1);
+
+  if(!beginMoveRows(QModelIndex(), index, index,  QModelIndex(), index+2))
+    return;
+  std::swap(_keypoints[index], _keypoints[index+1]);
+  endMoveRows();
+}
+
 keypoint_t Flythrough::keypoint_at(int index) const
 {
   return _keypoints[index];

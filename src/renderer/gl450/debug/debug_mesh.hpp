@@ -96,7 +96,7 @@ public:
   void begin_strip(strip_t close);
   void end_strip();
 
-  void add_axis(glm::bvec3 axis = glm::bvec3(true), float length=1.f, float tip_length=0.1f, bool rgb=false);
+  void add_axis(glm::bvec3 axis = glm::bvec3(true), float length=1.f, float tip_length=0.1f, bool rgb=true);
 
   void add_vertex(const glm::vec3& position);
   void add_vertex(const glm::vec2& position, float z=0);
