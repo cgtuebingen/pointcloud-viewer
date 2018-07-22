@@ -112,7 +112,7 @@ void MainWindow::initKeypointListDocks()
 
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
-  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
   connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
   renderButton->setEnabled(flythrough.canPlay());
 

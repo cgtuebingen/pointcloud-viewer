@@ -8,13 +8,15 @@ void MainWindow::handleApplicationArguments()
 {
   const QStringList arguments = qApp->arguments();
 
+  bool background = false;
+
   for(int argument_index=1; argument_index<arguments.length(); ++argument_index)
   {
     const QString argument = arguments[argument_index];
 
     if(argument == "--background")
     {
-      // TODO
+      background = true;
     }else if(argument == "--data")
     {
       if(argument_index+1 == arguments.length())
@@ -68,5 +70,11 @@ void MainWindow::handleApplicationArguments()
       qDebug() << "Unexpected argument " << argument;
       std::exit(-1);
     }
+  }
+
+  if(background == true)
+  {
+    offline_render();
+    std::exit(0);
   }
 }

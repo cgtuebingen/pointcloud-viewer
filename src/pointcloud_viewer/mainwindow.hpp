@@ -44,6 +44,7 @@ private:
   void importCameraPath();
   void jumpToKeypoint(const QModelIndex& modelIndex);
 
+  void offline_render_with_ui();
   void offline_render();
 
 protected:

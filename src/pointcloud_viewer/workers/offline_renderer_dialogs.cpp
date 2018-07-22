@@ -206,11 +206,11 @@ QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSetti
 }
 
 
-void MainWindow::offline_render()
+void MainWindow::offline_render_with_ui()
 {
   QPair<RenderSettings, bool> result = ask_for_render_settings(this, renderSettings);
 
-  renderSettings = result.first;
+  this->renderSettings = result.first;
   bool was_canceled = result.second;
 
   if(was_canceled)
@@ -222,7 +222,12 @@ void MainWindow::offline_render()
     return;
   }
 
+  offline_render();
+}
 
+
+void MainWindow::offline_render()
+{
   OfflineRenderer offlineRenderer(&viewport, flythrough, renderSettings);
 
   QDialog dialog(this);
