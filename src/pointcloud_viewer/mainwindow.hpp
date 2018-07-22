@@ -31,6 +31,7 @@ private:
 
   KeypointList* keypointList;
 
+  void handleApplicationArguments();
   void initMenuBar();
   void initDocks();
 
