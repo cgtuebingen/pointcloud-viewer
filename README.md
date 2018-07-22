@@ -39,6 +39,10 @@ Run with
     - Enter FPS mode with `Shift`+`F`
         - Leave FPS mode with `Esc` or `Right Mouse Button` resetting the camera
         - Leave FPS mode with `Return` or `Left Mouse Button` to keep the new camera location
+        - Move the camera up and down with `E` and `Q`
+        - Change movement speed with the mouse wheel
+        - Tilt the camera by scrolling the mouse wheel while holding `Ctrl` (hold `Ctrl`+`Shift` for faster tilting).
+            - Reset the tilt of the camera by pressing `Ctrl`+`Middle Mouse Button`
 3. Either import an already created animation with the menu bar:
     > **Flythrough > Import Path**
     

@@ -81,6 +81,9 @@ private:
   glm::ivec2 viewport_center() const;
   distance_t distance(glm::ivec2 difference, glm::ivec2 radius) const;
 
+  void tilt_camera(double factor);
+  void reset_camera_tilt();
+
   void incr_base_movement_speed(int incr);
   float base_movement_speed() const;
   float mouse_sensitivity() const;
