@@ -88,6 +88,8 @@ void Navigation::wheelEvent(QWheelEvent* event)
       incr_base_movement_speed(event->angleDelta().y());
     else if(event->modifiers() == Qt::CTRL)
       tilt_camera(event->angleDelta().y());
+    else if(event->modifiers() == Qt::CTRL+Qt::SHIFT)
+      tilt_camera(event->angleDelta().y() * 4.);
   }
 }
 
@@ -311,7 +313,7 @@ Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 ra
 void Navigation::tilt_camera(double factor)
 {
   const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0, -1);
-  const float angle = float(factor * 0.2 / (120. * glm::pi<double>()));
+  const float angle = float(factor * 0.1 / (120. * glm::pi<double>()));
 
   glm::quat rotation = glm::angleAxis(angle, forward);
 
