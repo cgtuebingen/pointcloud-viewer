@@ -79,3 +79,17 @@ std::ostream& operator<<(std::ostream& stream, const frame_t& frame)
 {
   return stream << "frame_t(position: " << frame.position << ", orientation: " << frame.orientation << ", scale: " << frame.scale_factor << ")";
 }
+
+glm::quat remove_tilt(glm::quat q)
+{
+  glm::vec3 euler = glm::eulerAngles(q);
+  euler.y = 0.f;
+  return glm::rotate(quat_identity<glm::quat>(), euler);
+}
+
+frame_t remove_tilt(frame_t frame)
+{
+  frame.orientation = remove_tilt(frame.orientation);
+
+  return frame;
+}
