@@ -130,6 +130,10 @@ void Viewport::initializeGL()
   _visualization = new Visualization();
 
   //  point_renderer->load_test();
+
+  makeCurrent();
+  openGlContextCreated();
+  doneCurrent();
 }
 
 // Called by Qt everytime the opengl window was resized

@@ -58,6 +58,8 @@ signals:
   void backgroundColorChanged(int backgroundColor);
   void pointSizeChanged(float pointSize);
 
+  void openGlContextCreated();
+
 protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
