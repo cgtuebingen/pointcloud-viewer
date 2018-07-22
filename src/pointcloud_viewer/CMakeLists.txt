@@ -27,6 +27,7 @@ add_executable(pointcloud_viewer
   keypoint_list.hpp
   main.cpp
   mainwindow.cpp
+  mainwindow_arguments.cpp
   mainwindow_docks.cpp
   mainwindow_menubar.cpp
   mainwindow.hpp
