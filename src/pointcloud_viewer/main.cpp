@@ -15,5 +15,6 @@ int main(int argc, char** argv)
 
   mainwindow.show();
 
-  application.exec();
+  if(mainwindow.noninteractive == false)
+    application.exec();
 }

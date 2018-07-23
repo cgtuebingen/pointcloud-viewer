@@ -8,8 +8,6 @@ void MainWindow::handleApplicationArguments()
 {
   const QStringList arguments = qApp->arguments();
 
-  bool noninteractive = false;
-
   for(int argument_index=1; argument_index<arguments.length(); ++argument_index)
   {
     const QString argument = arguments[argument_index];
@@ -77,7 +75,7 @@ void MainWindow::handleApplicationArguments()
 
   if(noninteractive == true)
   {
+    this->hide();
     offline_render();
-    std::exit(0);
   }
 }

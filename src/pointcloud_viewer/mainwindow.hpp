@@ -19,6 +19,7 @@ Q_OBJECT
 
 public:
   PointCloudLayers pointCloudLayer;
+  bool noninteractive = false;
 
   MainWindow();
   ~MainWindow();
