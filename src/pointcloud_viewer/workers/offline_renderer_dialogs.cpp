@@ -226,9 +226,21 @@ void MainWindow::offline_render_with_ui()
 }
 
 
-void MainWindow::offline_render()
+bool MainWindow::offline_render()
 {
   OfflineRenderer offlineRenderer(&viewport, flythrough, renderSettings);
+
+  QFileInfo target_image_dir(renderSettings.target_images_directory);
+  if(target_image_dir.isDir() == false && target_image_dir.dir().mkpath(target_image_dir.fileName()) == false)
+  {
+    QMessageBox::warning(nullptr, "IO error", QString("Couldn't create target directory\n\n%0").arg(target_image_dir.absolutePath()));
+    return false;
+  }
+  if(target_image_dir.isWritable() == false)
+  {
+    QMessageBox::warning(nullptr, "IO error", QString("The image target dir\n\n%0\n\nis not writable").arg(target_image_dir.absolutePath()));
+    return false;
+  }
 
   QDialog dialog(this);
 
@@ -265,6 +277,7 @@ void MainWindow::offline_render()
 
   QObject::connect(buttons, &QDialogButtonBox::rejected, &offlineRenderer, &OfflineRenderer::abort);
   QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+  QObject::connect(&offlineRenderer, &OfflineRenderer::aborted, &dialog, &QDialog::reject);
   QObject::connect(&offlineRenderer, &OfflineRenderer::finished, &dialog, &QDialog::accept);
 
   offlineRenderer.start();
@@ -272,8 +285,10 @@ void MainWindow::offline_render()
   if(dialog.exec() != QDialog::Accepted)
   {
     QMessageBox::warning(this, "Rendering aborted", "Rendering process was aborted");
-    return;
+    return false;
   }
+
+  return true;
 }
 
 RenderSettings RenderSettings::defaultSettings()

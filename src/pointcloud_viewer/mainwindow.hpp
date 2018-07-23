@@ -45,7 +45,7 @@ private:
   void jumpToKeypoint(const QModelIndex& modelIndex);
 
   void offline_render_with_ui();
-  void offline_render();
+  bool offline_render();
 
 protected:
   void dropEvent(QDropEvent *ev);

@@ -53,6 +53,7 @@ void MainWindow::handleApplicationArguments()
       const QString path = arguments[argument_index];
 
       renderSettings.target_images_directory = QDir(path).absolutePath();
+      renderSettings.export_images = true;
     }else if(argument == "--help")
     {
       qDebug() << "Usage: pointcloud_viewer [ARGUMENTS]\n"

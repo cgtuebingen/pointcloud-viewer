@@ -55,6 +55,8 @@ signals:
   void rendered_frame(int frame_index, const QImage& image);
   void finished();
 
+  void aborted();
+
 private:
   bool _aborted = false;
   int frame_index = 0;

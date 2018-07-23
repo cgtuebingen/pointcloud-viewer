@@ -5,6 +5,7 @@
 
 #include <QTimer>
 #include <QDebug>
+#include <QMessageBox>
 
 
 OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings)
@@ -46,7 +47,11 @@ void OfflineRenderer::start()
 
 void OfflineRenderer::abort()
 {
+  if(_aborted == true)
+    return;
+
   _aborted = true;
+  aborted();
 }
 
 void OfflineRenderer::render_next_frame(frame_t camera_frame)
@@ -86,10 +91,12 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
 
 void OfflineRenderer::save_image(int frame_index, const QImage& image)
 {
-  QString filepath = QDir(renderSettings.target_images_directory).absoluteFilePath(QString("frame_%0%1").arg(frame_index,
-                                                                                                             5 /* how many digits to expect, for example 2 leads to 04*/,
-                                                                                                             10 /* base */,
-                                                                                                             QChar('0')).arg(renderSettings.image_format));
+  QDir target_image_dir(renderSettings.target_images_directory);
+
+  QString filepath = target_image_dir.absoluteFilePath(QString("frame_%0%1").arg(frame_index,
+                                                                                 5 /* how many digits to expect, for example 2 leads to 04*/,
+                                                                                 10 /* base */,
+                                                                                 QChar('0')).arg(renderSettings.image_format));
 
   qDebug() << filepath;
   image.save(filepath);
