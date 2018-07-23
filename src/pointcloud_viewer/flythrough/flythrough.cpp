@@ -295,6 +295,11 @@ void Flythrough::_init_connections()
   connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
 
+  connect(this, &Flythrough::rowsInserted, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::rowsMoved, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::dataChanged, this, &Flythrough::updateCanPlay);
+
   connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::pathChanged);
   connect(this, &Flythrough::rowsInserted, this, &Flythrough::pathChanged);
   connect(this, &Flythrough::rowsMoved, this, &Flythrough::pathChanged);
@@ -309,8 +314,6 @@ void Flythrough::_init_connections()
 void Flythrough::setPathLength(double pathLength)
 {
   pathLength = glm::max(0., pathLength);
-
-  setCanPlay(pathLength > 0.);
 
   if(qFuzzyCompare(m_pathLength, pathLength))
     return;
@@ -333,6 +336,11 @@ void Flythrough::newCameraPosition(double time)
 
   if(Q_LIKELY(new_frame.scale_factor > 0.f))
     set_new_camera_frame(new_frame);
+}
+
+void Flythrough::updateCanPlay()
+{
+  setCanPlay(_keypoints.isEmpty() == false);
 }
 
 void Flythrough::updatePathLength()

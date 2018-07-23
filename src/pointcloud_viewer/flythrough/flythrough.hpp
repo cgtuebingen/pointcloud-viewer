@@ -102,6 +102,7 @@ private slots:
 
   void newCameraPosition(double time);
 
+  void updateCanPlay();
   void updatePathLength();
   void updateCameraVelocits();
   void updateAnimationDuration();
