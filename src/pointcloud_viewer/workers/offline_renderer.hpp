@@ -48,6 +48,8 @@ public:
   OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings);
   ~OfflineRenderer();
 
+  bool was_aborted() const;
+
 public slots:
   void start();
   void abort();
@@ -56,7 +58,7 @@ signals:
   void rendered_frame(int frame_index, const QImage& image);
   void finished();
 
-  void aborted();
+  void on_aborted();
 
 private:
   bool _aborted = false;

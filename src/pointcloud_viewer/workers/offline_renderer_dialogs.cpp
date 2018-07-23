@@ -277,18 +277,20 @@ bool MainWindow::offline_render()
 
   QObject::connect(buttons, &QDialogButtonBox::rejected, &offlineRenderer, &OfflineRenderer::abort);
   QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-  QObject::connect(&offlineRenderer, &OfflineRenderer::aborted, &dialog, &QDialog::reject);
+  QObject::connect(&offlineRenderer, &OfflineRenderer::on_aborted, [&dialog](){
+    dialog.done(-1);
+  });
   QObject::connect(&offlineRenderer, &OfflineRenderer::finished, &dialog, &QDialog::accept);
 
   offlineRenderer.start();
 
-  if(dialog.exec() != QDialog::Accepted)
+  if(offlineRenderer.was_aborted()==false && dialog.exec() != QDialog::Accepted && dialog.result()==QDialogButtonBox::Abort)
   {
     QMessageBox::warning(this, "Rendering aborted", "Rendering process was aborted");
     return false;
   }
 
-  return true;
+  return !offlineRenderer.was_aborted();
 }
 
 RenderSettings RenderSettings::defaultSettings()

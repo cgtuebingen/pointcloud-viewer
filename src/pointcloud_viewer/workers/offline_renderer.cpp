@@ -25,6 +25,7 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
   this->flythrough->playback.setFixed_framerate(renderSettings.framerate);
 
   connect(this->flythrough.data(), &Flythrough::set_new_camera_frame, this, &OfflineRenderer::render_next_frame, Qt::DirectConnection);
+  connect(&this->flythrough->playback, &Playback::aborted, this, &OfflineRenderer::abort, Qt::DirectConnection);
   connect(this, &OfflineRenderer::rendered_frame, &this->flythrough->playback, &Playback::previous_frame_finished, Qt::QueuedConnection);
 
   if(renderSettings.export_images)
@@ -36,6 +37,11 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
 OfflineRenderer::~OfflineRenderer()
 {
   viewport.enable_preview = true;
+}
+
+bool OfflineRenderer::was_aborted() const
+{
+  return _aborted;
 }
 
 void OfflineRenderer::start()
@@ -51,7 +57,7 @@ void OfflineRenderer::abort()
     return;
 
   _aborted = true;
-  aborted();
+  on_aborted();
 }
 
 void OfflineRenderer::render_next_frame(frame_t camera_frame)
