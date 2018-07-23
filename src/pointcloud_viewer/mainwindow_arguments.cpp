@@ -8,15 +8,15 @@ void MainWindow::handleApplicationArguments()
 {
   const QStringList arguments = qApp->arguments();
 
-  bool background = false;
+  bool noninteractive = false;
 
   for(int argument_index=1; argument_index<arguments.length(); ++argument_index)
   {
     const QString argument = arguments[argument_index];
 
-    if(argument == "--background")
+    if(argument == "--non-interactive")
     {
-      background = true;
+      noninteractive = true;
     }else if(argument == "--data")
     {
       if(argument_index+1 == arguments.length())
@@ -59,8 +59,10 @@ void MainWindow::handleApplicationArguments()
       qDebug() << "Usage: pointcloud_viewer [ARGUMENTS]\n"
                   "\n"
                   "--help               Show this helptext and exits immediately                   \n"
-                  "--background         Hides the gui. Used for using this software as command-line\n"
-                  "                     tool.                                                      \n"
+                  "--non-interactive    Hides the main window an immediately starts rendering. Used\n"
+                  "                     for using this software as command-line tool.              \n"
+                  "                     (Import and render dialog will appear nevertheless but     \n"
+                  "                     don't require manual input)                                \n"
                   "--data <FILE>        Pointcloud file to load                                    \n"
                   "--camera-path <FILE> The path of the camera                                     \n"
                   "--output_dir <DIR>   Where to save the rendered files                           \n"
@@ -73,7 +75,7 @@ void MainWindow::handleApplicationArguments()
     }
   }
 
-  if(background == true)
+  if(noninteractive == true)
   {
     offline_render();
     std::exit(0);
