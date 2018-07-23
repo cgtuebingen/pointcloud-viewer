@@ -297,6 +297,7 @@ RenderSettings RenderSettings::defaultSettings()
 
   renderSettings.resolution = QSize(1920, 1080);
   renderSettings.framerate = 25;
+  renderSettings.first_index = 0;
   renderSettings.image_format = ".png";
 
   return renderSettings;

@@ -93,7 +93,7 @@ void OfflineRenderer::save_image(int frame_index, const QImage& image)
 {
   QDir target_image_dir(renderSettings.target_images_directory);
 
-  QString filepath = target_image_dir.absoluteFilePath(QString("frame_%0%1").arg(frame_index,
+  QString filepath = target_image_dir.absoluteFilePath(QString("frame_%0%1").arg(frame_index + renderSettings.first_index,
                                                                                  5 /* how many digits to expect, for example 2 leads to 04*/,
                                                                                  10 /* base */,
                                                                                  QChar('0')).arg(renderSettings.image_format));
