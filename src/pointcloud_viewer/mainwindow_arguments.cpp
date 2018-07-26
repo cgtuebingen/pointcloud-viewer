@@ -8,6 +8,11 @@ void MainWindow::handleApplicationArguments()
 {
   const QStringList arguments = qApp->arguments();
 
+  auto abort = [this](){
+    this->hide();
+    this->noninteractive = true;
+  };
+
   for(int argument_index=1; argument_index<arguments.length(); ++argument_index)
   {
     const QString argument = arguments[argument_index];
@@ -26,7 +31,15 @@ void MainWindow::handleApplicationArguments()
 
       const QString path = arguments[argument_index];
 
-      viewport.load_point_cloud(import_point_cloud(this, path));
+      PointCloud point_cloud = import_point_cloud(this, path);
+
+      if(Q_UNLIKELY(!point_cloud.is_valid))
+      {
+        abort();
+        return;
+      }
+
+      viewport.load_point_cloud(std::move(point_cloud));
     }else if(argument == "--camera-path")
     {
       if(argument_index+1 == arguments.length())
