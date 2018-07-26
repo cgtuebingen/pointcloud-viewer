@@ -77,7 +77,7 @@ Playback::Playback()
 
 void Playback::_reqest_next_frame(double time)
 {
-  if(time > _animationDuration && _current_time <= _animationDuration)
+  if((time > _animationDuration && _current_time <= _animationDuration) || (time>0 && ony_one_frame))
   {
     _current_time = time;
     _mode = IDLE;

@@ -309,6 +309,8 @@ void Flythrough::_init_connections()
   playback._animationDuration = this->m_animationDuration;
   connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});
   connect(&playback, &Playback::request_next_frame, this, &Flythrough::newCameraPosition);
+
+  updateCanPlay();
 }
 
 void Flythrough::setPathLength(double pathLength)
@@ -340,6 +342,7 @@ void Flythrough::newCameraPosition(double time)
 
 void Flythrough::updateCanPlay()
 {
+  playback.ony_one_frame = _keypoints.length() < 2;
   setCanPlay(_keypoints.isEmpty() == false);
 }
 
