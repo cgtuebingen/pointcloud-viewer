@@ -8,6 +8,7 @@
 
 #include <QWidget>
 #include <QApplication>
+#include <QSettings>
 
 Navigation::Navigation(Viewport* viewport)
   : viewport(viewport)
@@ -15,11 +16,17 @@ Navigation::Navigation(Viewport* viewport)
   connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
 
   _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
+
+  QSettings settings;
+  _mouse_sensitivity_value = settings.value("Navigation/mouseSensitivity", 0).value<int>();
 }
 
 Navigation::~Navigation()
 {
   stopFpsNavigation();
+
+  QSettings settings;
+  settings.setValue("Navigation/mouseSensitivity", int(_mouse_sensitivity_value));
 }
 
 void Navigation::startFpsNavigation()
