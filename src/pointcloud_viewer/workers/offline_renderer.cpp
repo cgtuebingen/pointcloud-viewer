@@ -12,7 +12,6 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
   : viewport(*viewport),
     flythrough(flythrough.copy()),
     renderSettings(renderSettings),
-    total_number_frames(int(glm::round(flythrough.animationDuration() * renderSettings.framerate))),
     result_rgba(renderSettings.resolution.width(),
                 renderSettings.resolution.height(),
                 gl::TextureFormat::RGB8),
@@ -26,6 +25,7 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
 
   connect(this->flythrough.data(), &Flythrough::set_new_camera_frame, this, &OfflineRenderer::render_next_frame, Qt::DirectConnection);
   connect(&this->flythrough->playback, &Playback::aborted, this, &OfflineRenderer::abort, Qt::DirectConnection);
+  connect(&this->flythrough->playback, &Playback::end_reached, this, &OfflineRenderer::finished, Qt::DirectConnection);
   connect(this, &OfflineRenderer::rendered_frame, &this->flythrough->playback, &Playback::previous_frame_finished, Qt::QueuedConnection);
 
   if(renderSettings.export_images)
@@ -62,7 +62,7 @@ void OfflineRenderer::abort()
 
 void OfflineRenderer::render_next_frame(frame_t camera_frame)
 {
-  if(frame_index >= total_number_frames || _aborted)
+  if(_aborted)
     return;
 
   const int width = renderSettings.resolution.width();
@@ -89,10 +89,7 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
   flip_image(frame_content);
 
   ++frame_index;
-  if(frame_index < total_number_frames)
-    rendered_frame(frame_index-1, frame_content);
-  else
-    finished();
+  rendered_frame(frame_index-1, frame_content);
 }
 
 void OfflineRenderer::save_image(int frame_index, const QImage& image)

@@ -252,7 +252,7 @@ bool MainWindow::offline_render()
   // ==== Progressbar ====
   QProgressBar* progressBar = new QProgressBar;
 
-  progressBar->setMaximum(offlineRenderer.total_number_frames-1);
+  progressBar->setMaximum(offlineRenderer.flythrough->playback.totalNumberFramesForFixedFramerate());
   progressBar->setTextVisible(true);
   root->addWidget(progressBar, 0);
 

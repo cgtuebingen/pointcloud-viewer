@@ -342,7 +342,7 @@ void Flythrough::newCameraPosition(double time)
 
 void Flythrough::updateCanPlay()
 {
-  playback.ony_one_frame = _keypoints.length() < 2;
+  playback.only_one_frame = _keypoints.length() < 2;
   setCanPlay(_keypoints.isEmpty() == false);
 }
 

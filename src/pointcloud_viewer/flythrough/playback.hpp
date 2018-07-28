@@ -10,10 +10,12 @@ class Playback : public QObject
   Q_OBJECT
   Q_PROPERTY(int fixed_framerate READ fixed_framerate WRITE setFixed_framerate NOTIFY fixed_framerateChanged)
 public:
-  bool ony_one_frame = false;
+  bool only_one_frame = false;
 
   double current_time() const;
   int fixed_framerate() const;
+
+  int totalNumberFramesForFixedFramerate() const;
 
 public slots:
   void play_realtime();
