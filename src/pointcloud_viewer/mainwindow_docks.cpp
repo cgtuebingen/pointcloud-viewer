@@ -98,6 +98,7 @@ void MainWindow::initKeypointListDocks()
   backgroundBrightness->setMinimum(0);
   backgroundBrightness->setMaximum(255);
   backgroundBrightness->setValue(viewport.backgroundColor());
+  backgroundBrightness->setToolTip("The brightness of the gray in the background (default: 54)");
   connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
   connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
 
@@ -107,12 +108,13 @@ void MainWindow::initKeypointListDocks()
   pointSize->setMinimum(1);
   pointSize->setMaximum(16);
   pointSize->setValue(int(viewport.pointSize()));
+  pointSize->setToolTip("The size of a sprite to draw a point in pixels (default: 1)");
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
-  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
   connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
   renderButton->setEnabled(flythrough.canPlay());
 

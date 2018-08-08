@@ -5,6 +5,7 @@
 #include <renderer/gl450/uniforms.hpp>
 
 #include <QElapsedTimer>
+#include <QSettings>
 
 Viewport::Viewport()
   : navigation(this)
@@ -21,6 +22,10 @@ Viewport::Viewport()
 
   setFormat(format);
   setMinimumSize(640, 480);
+
+  QSettings settings;
+  m_pointSize = settings.value("Rendering/pointSize", 1.f).value<int>();
+  m_backgroundColor = settings.value("Rendering/backgroundColor", m_backgroundColor).value<int>();
 }
 
 Viewport::~Viewport()
@@ -28,6 +33,10 @@ Viewport::~Viewport()
   delete global_uniform;
   delete point_renderer;
   delete _visualization;
+
+  QSettings settings;
+  settings.setValue("Rendering/pointSize", int(m_pointSize));
+  settings.setValue("Rendering/backgroundColor", m_backgroundColor);
 }
 
 aabb_t Viewport::aabb() const
@@ -93,7 +102,7 @@ int Viewport::backgroundColor() const
   return m_backgroundColor;
 }
 
-float Viewport::pointSize() const
+int Viewport::pointSize() const
 {
   return m_pointSize;
 }
@@ -109,10 +118,9 @@ void Viewport::setBackgroundColor(int backgroundColor)
   update();
 }
 
-void Viewport::setPointSize(float pointSize)
+void Viewport::setPointSize(int pointSize)
 {
-  qWarning("Floating point comparison needs context sanity check");
-  if (qFuzzyCompare(m_pointSize, pointSize))
+  if (m_pointSize == pointSize)
     return;
 
   m_pointSize = pointSize;
@@ -130,6 +138,10 @@ void Viewport::initializeGL()
   _visualization = new Visualization();
 
   //  point_renderer->load_test();
+
+  makeCurrent();
+  openGlContextCreated();
+  doneCurrent();
 }
 
 // Called by Qt everytime the opengl window was resized

@@ -19,6 +19,7 @@ Q_OBJECT
 
 public:
   PointCloudLayers pointCloudLayer;
+  bool noninteractive = false;
 
   MainWindow();
   ~MainWindow();
@@ -31,6 +32,7 @@ private:
 
   KeypointList* keypointList;
 
+  void handleApplicationArguments();
   void initMenuBar();
   void initDocks();
 
@@ -43,7 +45,8 @@ private:
   void importCameraPath();
   void jumpToKeypoint(const QModelIndex& modelIndex);
 
-  void offline_render();
+  void offline_render_with_ui();
+  bool offline_render();
 
 protected:
   void dropEvent(QDropEvent *ev);

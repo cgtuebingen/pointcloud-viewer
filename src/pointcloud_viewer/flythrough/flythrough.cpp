@@ -173,6 +173,7 @@ void Flythrough::import_path(QString filepath)
     this->setAnimationDuration(flythrough_file.header.animation_duration);
 
     this->updatePathLength();
+    this->updateCanPlay();
   }catch(QString message)
   {
     QMessageBox::warning(nullptr, "Couldn't import path", message);
@@ -295,6 +296,11 @@ void Flythrough::_init_connections()
   connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updatePathLength);
   connect(this, &Flythrough::dataChanged, this, &Flythrough::updatePathLength);
 
+  connect(this, &Flythrough::rowsInserted, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::rowsMoved, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::rowsRemoved, this, &Flythrough::updateCanPlay);
+  connect(this, &Flythrough::dataChanged, this, &Flythrough::updateCanPlay);
+
   connect(this, &Flythrough::pathLengthChanged, this, &Flythrough::pathChanged);
   connect(this, &Flythrough::rowsInserted, this, &Flythrough::pathChanged);
   connect(this, &Flythrough::rowsMoved, this, &Flythrough::pathChanged);
@@ -304,13 +310,13 @@ void Flythrough::_init_connections()
   playback._animationDuration = this->m_animationDuration;
   connect(this, &Flythrough::animationDurationChanged, this, [this](){playback._animationDuration = this->m_animationDuration;});
   connect(&playback, &Playback::request_next_frame, this, &Flythrough::newCameraPosition);
+
+  updateCanPlay();
 }
 
 void Flythrough::setPathLength(double pathLength)
 {
   pathLength = glm::max(0., pathLength);
-
-  setCanPlay(pathLength > 0.);
 
   if(qFuzzyCompare(m_pathLength, pathLength))
     return;
@@ -333,6 +339,12 @@ void Flythrough::newCameraPosition(double time)
 
   if(Q_LIKELY(new_frame.scale_factor > 0.f))
     set_new_camera_frame(new_frame);
+}
+
+void Flythrough::updateCanPlay()
+{
+  playback.only_one_frame = _keypoints.length() < 2;
+  setCanPlay(_keypoints.isEmpty() == false);
 }
 
 void Flythrough::updatePathLength()
