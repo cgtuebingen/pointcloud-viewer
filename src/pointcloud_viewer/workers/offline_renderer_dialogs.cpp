@@ -202,6 +202,7 @@ QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSetti
   renderSettings.export_images = true;
 #endif
   renderSettings.image_format = imageFormat->currentData().toString();
+  renderSettings.first_index = prevSettings.first_index;
 
   return qMakePair(renderSettings, !use_result);
 }
