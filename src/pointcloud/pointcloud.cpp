@@ -34,6 +34,7 @@ void PointCloud::clear()
 {
   coordinate_color.clear();
   user_data.clear();
+  kdtree_index.clear();
 
   aabb.min_point = glm::vec3(std::numeric_limits<float>::max());
   aabb.max_point = glm::vec3(-std::numeric_limits<float>::max());
@@ -80,4 +81,9 @@ void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_ty
     user_data.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes);
     break;
   }
+}
+
+void PointCloud::build_ks_tree()
+{
+  kdtree_index.build(coordinate_color.data(), 4*4);
 }

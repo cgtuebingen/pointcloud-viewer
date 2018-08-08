@@ -13,6 +13,8 @@ add_library(pointcloud STATIC
  buffer.cpp
  buffer.hpp
  convert_values.hpp
+ kdtree_index.cpp
+ kdtree_index.hpp
  pointcloud.cpp
  pointcloud.hpp
 )
