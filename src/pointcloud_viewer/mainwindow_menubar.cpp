@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/version_text.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
@@ -170,8 +171,10 @@ void MainWindow::openAboutDialog()
     layout->addSpacing(22);
   };
 
-  layout->addWidget(new QLabel("Dependencies:"));
+  layout->addWidget(new QLabel("Version " + version_text()));
   layout->addSpacing(22);
+  layout->addWidget(new QLabel("Dependencies:"));
+  layout->addSpacing(12);
 
   add_note(pcl_notes, pcl_license);
 
