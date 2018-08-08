@@ -307,6 +307,10 @@ RenderSettings RenderSettings::defaultSettings()
   renderSettings.framerate = settings.value("RenderSettings/framerate", 25).toInt();
   renderSettings.first_index = settings.value("RenderSettings/first_index", 0).toInt();
   renderSettings.image_format = settings.value("RenderSettings/image_format", ".png").toString();;
+  renderSettings.target_images_directory = settings.value("RenderSettings/target_images_directory", QString()).toString();;
+
+  if(!QDir(renderSettings.target_images_directory).exists())
+    renderSettings.target_images_directory.clear();
 
   return renderSettings;
 }
@@ -319,4 +323,5 @@ void RenderSettings::storeSettings()
   settings.setValue("RenderSettings/framerate", this->framerate);
   settings.setValue("RenderSettings/first_index", this->first_index);
   settings.setValue("RenderSettings/image_format", this->image_format);
+  settings.setValue("RenderSettings/target_images_directory", this->target_images_directory);
 }
