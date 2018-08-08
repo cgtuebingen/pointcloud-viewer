@@ -173,6 +173,7 @@ void Flythrough::import_path(QString filepath)
     this->setAnimationDuration(flythrough_file.header.animation_duration);
 
     this->updatePathLength();
+    this->updateCanPlay();
   }catch(QString message)
   {
     QMessageBox::warning(nullptr, "Couldn't import path", message);
