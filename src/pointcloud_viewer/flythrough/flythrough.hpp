@@ -39,8 +39,12 @@ public:
   QSharedPointer<Flythrough> copy() const;
 
   void insert_keypoint(frame_t frame, int index);
+  void delete_keypoint(int index);
+  void move_keypoint_up(int index);
+  void move_keypoint_down(int index);
 
   keypoint_t keypoint_at(int index) const;
+  const QVector<keypoint_t>& all_keypoints() const;
 
   double animationDuration() const;
   double cameraVelocity() const;
@@ -64,6 +68,7 @@ signals:
   void animationDurationChanged(double animationDuration);
   void cameraVelocityChanged(double cameraVelocity);
   void pathLengthChanged(double pathLength);
+  void pathChanged();
 
   void set_new_camera_frame(frame_t frame);
 
@@ -97,6 +102,7 @@ private slots:
 
   void newCameraPosition(double time);
 
+  void updateCanPlay();
   void updatePathLength();
   void updateCameraVelocits();
   void updateAnimationDuration();

@@ -5,6 +5,7 @@
 #include <renderer/gl450/uniforms.hpp>
 
 #include <QElapsedTimer>
+#include <QSettings>
 
 Viewport::Viewport()
   : navigation(this)
@@ -21,13 +22,26 @@ Viewport::Viewport()
 
   setFormat(format);
   setMinimumSize(640, 480);
+
+  QSettings settings;
+  m_pointSize = settings.value("Rendering/pointSize", 1.f).value<int>();
+  m_backgroundColor = settings.value("Rendering/backgroundColor", m_backgroundColor).value<int>();
 }
 
 Viewport::~Viewport()
 {
   delete global_uniform;
   delete point_renderer;
-  delete visualization;
+  delete _visualization;
+
+  QSettings settings;
+  settings.setValue("Rendering/pointSize", int(m_pointSize));
+  settings.setValue("Rendering/backgroundColor", m_backgroundColor);
+}
+
+aabb_t Viewport::aabb() const
+{
+  return _aabb;
 }
 
 void Viewport::set_camera_frame(const frame_t& frame)
@@ -39,10 +53,13 @@ void Viewport::set_camera_frame(const frame_t& frame)
 void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
+  _aabb = aabb_t::invalid();
 }
 
 point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
 {
+  _aabb = point_cloud.aabb;
+
   point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
   PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
 
@@ -85,7 +102,7 @@ int Viewport::backgroundColor() const
   return m_backgroundColor;
 }
 
-float Viewport::pointSize() const
+int Viewport::pointSize() const
 {
   return m_pointSize;
 }
@@ -101,10 +118,9 @@ void Viewport::setBackgroundColor(int backgroundColor)
   update();
 }
 
-void Viewport::setPointSize(float pointSize)
+void Viewport::setPointSize(int pointSize)
 {
-  qWarning("Floating point comparison needs context sanity check");
-  if (qFuzzyCompare(m_pointSize, pointSize))
+  if (m_pointSize == pointSize)
     return;
 
   m_pointSize = pointSize;
@@ -119,9 +135,13 @@ void Viewport::initializeGL()
 
   point_renderer = new PointRenderer();
   global_uniform = new GlobalUniform();
-  visualization = new Visualization();
+  _visualization = new Visualization();
 
   //  point_renderer->load_test();
+
+  makeCurrent();
+  openGlContextCreated();
+  doneCurrent();
 }
 
 // Called by Qt everytime the opengl window was resized
@@ -139,11 +159,16 @@ void Viewport::paintGL()
   if(enable_preview)
   {
     render_points(navigation.camera.frame, navigation.camera.aspect, [this](){
-      visualization->render();
+      visualization().render();
     });
   }
 
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
+}
+
+void Viewport::wheelEvent(QWheelEvent* event)
+{
+  navigation.wheelEvent(event);
 }
 
 void Viewport::mouseMoveEvent(QMouseEvent* event)

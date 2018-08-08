@@ -1,5 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/version_text.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
 
 #include <QMenuBar>
@@ -12,30 +14,69 @@ void MainWindow::initMenuBar()
   menuBar->setVisible(true);
   setMenuBar(menuBar);
 
+  // ======== Project ==================================================================================================
   QMenu* menu_project = menuBar->addMenu("&Project");
   QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud");
-
-  QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
-  QAction* action_flythrough_insert_keypoint = menu_flythrough->addAction("&Insert Keypoint");
-  menu_flythrough->addSeparator();
-  QAction* action_flythrough_export_path = menu_flythrough->addAction("&Export Path");
-  QAction* action_flythrough_import_path = menu_flythrough->addAction("&Import Path");
-
-  action_flythrough_insert_keypoint->setShortcut(QKeySequence(Qt::Key_I));
-  connect(action_flythrough_insert_keypoint, &QAction::triggered, this, &MainWindow::insertKeypoint);
-  connect(action_flythrough_export_path, &QAction::triggered, this, &MainWindow::exportCameraPath);
-  connect(action_flythrough_import_path, &QAction::triggered, this, &MainWindow::importCameraPath);
-
-  QMenu* menu_view = menuBar->addMenu("&View");
-  QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
-  QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
-
-  action_view_navigation_fps->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_F));
-  connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
 
   import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
   connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);
 
+  // ======== Flythrough ===============================================================================================
+  QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
+  QAction* action_flythrough_export_path = menu_flythrough->addAction("&Export Path");
+  QAction* action_flythrough_import_path = menu_flythrough->addAction("&Import Path");
+
+  connect(action_flythrough_export_path, &QAction::triggered, this, &MainWindow::exportCameraPath);
+  connect(action_flythrough_import_path, &QAction::triggered, this, &MainWindow::importCameraPath);
+
+  // ======== View =====================================================================================================
+  QMenu* menu_view = menuBar->addMenu("&View");
+
+  // -------- Navigation -----------------------------------------------------------------------------------------------
+  QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
+  QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
+  QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
+  QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
+
+  action_view_navigation_fps->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_F));
+  connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
+  connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
+  connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
+
+  // -------- Visualization --------------------------------------------------------------------------------------------
+  QMenu* menu_view_visualization = menu_view->addMenu("&Visualization");
+  QAction* action_view_visualization_camerapath = menu_view_visualization->addAction("&Camera Path");
+  QAction* action_view_visualization_grid = menu_view_visualization->addAction("&Grid");
+  QAction* action_view_visualization_axis = menu_view_visualization->addAction("&Axis");
+#ifndef NDEBUG
+  menu_view_visualization->addSeparator();
+  QAction* action_view_visualization_debug_turntable_center = menu_view_visualization->addAction("&Axis");
+#endif
+
+  Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
+
+#define TOGGLE(item, var) \
+  item->setCheckable(true); \
+  item->setChecked(current_settings.var); \
+  connect(item, &QAction::toggled, [this, item](){viewport.visualization().settings.var = item->isChecked(); viewport.update();});
+
+  action_view_visualization_camerapath->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_1));
+  TOGGLE(action_view_visualization_camerapath, enable_camera_path);
+
+  action_view_visualization_grid->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_2));
+  TOGGLE(action_view_visualization_grid, enable_grid);
+
+  action_view_visualization_axis->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_3));
+  TOGGLE(action_view_visualization_axis, enable_axis);
+
+#ifndef NDEBUG
+  action_view_visualization_debug_turntable_center->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_1));
+  TOGGLE(action_view_visualization_debug_turntable_center, enable_turntable_center);
+#endif
+
+#undef TOGGLE
+
+  // ======== Application ==============================================================================================
   QMenu* menu_view_application = menuBar->addMenu("&Application");
   QAction* about_action = menu_view_application->addAction("&About");
   connect(about_action, &QAction::triggered, this, &MainWindow::openAboutDialog);
@@ -51,19 +92,12 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     if(file_to_import.isEmpty())
       return;
     viewport.load_point_cloud(import_point_cloud(this, file_to_import));
+    return;
   }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
   ev->accept();
-}
-
-void MainWindow::insertKeypoint()
-{
-  const int position_after_last = std::numeric_limits<int>::max();
-  int position = position_after_last;
-
-  flythrough.insert_keypoint(viewport.navigation.camera.frame, position);
 }
 
 void MainWindow::exportCameraPath()
@@ -137,8 +171,10 @@ void MainWindow::openAboutDialog()
     layout->addSpacing(22);
   };
 
-  layout->addWidget(new QLabel("Dependencies:"));
+  layout->addWidget(new QLabel("Version " + version_text()));
   layout->addSpacing(22);
+  layout->addWidget(new QLabel("Dependencies:"));
+  layout->addSpacing(12);
 
   add_note(pcl_notes, pcl_license);
 

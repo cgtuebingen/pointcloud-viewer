@@ -10,6 +10,7 @@ typedef data_type_t::BASE_TYPE BASE_TYPE;
 
 PointCloud::PointCloud()
 {
+  is_valid = false;
 }
 
 PointCloud::PointCloud(PointCloud&& other)
@@ -22,6 +23,7 @@ PointCloud& PointCloud::operator=(PointCloud&& other)
 {
   std::swap(this->aabb, other.aabb);
   std::swap(this->num_points, other.num_points);
+  std::swap(this->is_valid, other.is_valid);
   this->coordinate_color = std::move(other.coordinate_color);
   this->user_data = std::move(other.user_data);
 
@@ -40,6 +42,7 @@ void PointCloud::clear()
 void PointCloud::resize(size_t num_points)
 {
   this->num_points = num_points;
+  this->is_valid = true;
 
   coordinate_color.resize(num_points * 4*4);
   user_data.resize(num_points * 4*4);

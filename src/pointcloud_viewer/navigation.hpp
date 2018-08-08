@@ -7,6 +7,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 
+class Viewport;
+
 /*
 Handles input events for implementing navigation
 */
@@ -17,13 +19,19 @@ public:
   Camera camera;
   glm::vec3 turntable_origin = glm::vec3(0);
 
-  Navigation(QWidget* viewport);
+  Navigation(Viewport* viewport);
   ~Navigation();
 
 public slots:
   void startFpsNavigation();
-  void stopFpsNavigation();
+  void stopFpsNavigation(bool keepNewFrame=true);
 
+  void resetCameraLocation();
+  void resetMovementSpeed();
+
+  void updateFrameRenderDuration(double duration);
+
+  void wheelEvent(QWheelEvent* event);
   void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseReleaseEvent(QMouseEvent* event);
@@ -31,8 +39,15 @@ public slots:
   void keyReleaseEvent(QKeyEvent* event);
   void focusOutEvent(QFocusEvent* event);
 
+  glm::ivec2 mouse_sensitivity_value_range() const;
+  int mouse_sensitivity_value() const;
+  void set_mouse_sensitivity_value(int value);
+
 protected:
   void timerEvent(QTimerEvent* timerEvent);
+
+signals:
+  void mouse_sensitivity_value_changed(int value);
 
 private:
   enum mode_t
@@ -51,9 +66,10 @@ private:
     VERY_FAR,
   };
 
-  QWidget* const viewport;
+  Viewport* const viewport;
 
   mode_t mode = IDLE;
+
 
   glm::vec3 key_direction = glm::vec3(0.f);
   int key_speed = 0;
@@ -65,8 +81,23 @@ private:
   glm::ivec2 viewport_center() const;
   distance_t distance(glm::ivec2 difference, glm::ivec2 radius) const;
 
+  void tilt_camera(double factor);
+  void reset_camera_tilt();
+
+  void incr_base_movement_speed(int incr);
+  float base_movement_speed() const;
+  float mouse_sensitivity() const;
+
+  float _last_frame_duration = 1/60.f;
+
+  int _base_movement_speed = 0;
+  int _mouse_sensitivity_value = 0;
+  frame_t fps_start_frame;
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
+
+  glm::vec3 find_best_turntable_origin();
+  glm::vec3 _turntable_origin_relative_to_camera;
 
   void update_key_force();
 

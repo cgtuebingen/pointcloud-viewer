@@ -5,13 +5,13 @@
 
 #include <QTimer>
 #include <QDebug>
+#include <QMessageBox>
 
 
 OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings)
   : viewport(*viewport),
     flythrough(flythrough.copy()),
     renderSettings(renderSettings),
-    total_number_frames(int(glm::round(flythrough.animationDuration() * renderSettings.framerate))),
     result_rgba(renderSettings.resolution.width(),
                 renderSettings.resolution.height(),
                 gl::TextureFormat::RGB8),
@@ -24,6 +24,8 @@ OfflineRenderer::OfflineRenderer(Viewport* viewport, const Flythrough& flythroug
   this->flythrough->playback.setFixed_framerate(renderSettings.framerate);
 
   connect(this->flythrough.data(), &Flythrough::set_new_camera_frame, this, &OfflineRenderer::render_next_frame, Qt::DirectConnection);
+  connect(&this->flythrough->playback, &Playback::aborted, this, &OfflineRenderer::abort, Qt::DirectConnection);
+  connect(&this->flythrough->playback, &Playback::end_reached, this, &OfflineRenderer::finished, Qt::DirectConnection);
   connect(this, &OfflineRenderer::rendered_frame, &this->flythrough->playback, &Playback::previous_frame_finished, Qt::QueuedConnection);
 
   if(renderSettings.export_images)
@@ -37,6 +39,11 @@ OfflineRenderer::~OfflineRenderer()
   viewport.enable_preview = true;
 }
 
+bool OfflineRenderer::was_aborted() const
+{
+  return _aborted;
+}
+
 void OfflineRenderer::start()
 {
   _aborted = false;
@@ -46,12 +53,16 @@ void OfflineRenderer::start()
 
 void OfflineRenderer::abort()
 {
+  if(_aborted == true)
+    return;
+
   _aborted = true;
+  on_aborted();
 }
 
 void OfflineRenderer::render_next_frame(frame_t camera_frame)
 {
-  if(frame_index >= total_number_frames || _aborted)
+  if(_aborted)
     return;
 
   const int width = renderSettings.resolution.width();
@@ -78,18 +89,17 @@ void OfflineRenderer::render_next_frame(frame_t camera_frame)
   flip_image(frame_content);
 
   ++frame_index;
-  if(frame_index < total_number_frames)
-    rendered_frame(frame_index-1, frame_content);
-  else
-    finished();
+  rendered_frame(frame_index-1, frame_content);
 }
 
 void OfflineRenderer::save_image(int frame_index, const QImage& image)
 {
-  QString filepath = QDir(renderSettings.target_images_directory).absoluteFilePath(QString("frame_%0%1").arg(frame_index,
-                                                                                                             5 /* how many digits to expect, for example 2 leads to 04*/,
-                                                                                                             10 /* base */,
-                                                                                                             QChar('0')).arg(renderSettings.image_format));
+  QDir target_image_dir(renderSettings.target_images_directory);
+
+  QString filepath = target_image_dir.absoluteFilePath(QString("frame_%0%1").arg(frame_index + renderSettings.first_index,
+                                                                                 5 /* how many digits to expect, for example 2 leads to 04*/,
+                                                                                 10 /* base */,
+                                                                                 QChar('0')).arg(renderSettings.image_format));
 
   qDebug() << filepath;
   image.save(filepath);

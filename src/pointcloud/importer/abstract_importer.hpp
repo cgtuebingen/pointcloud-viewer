@@ -21,6 +21,8 @@ public:
     CANCELED,
   };
 
+  enum class canceled_t{};
+
   const std::string input_file;
   state_t state = IDLE;
 

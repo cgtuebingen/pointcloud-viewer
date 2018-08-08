@@ -11,12 +11,15 @@
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
+class KeypointList;
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 
 public:
   PointCloudLayers pointCloudLayer;
+  bool noninteractive = false;
 
   MainWindow();
   ~MainWindow();
@@ -27,8 +30,9 @@ private:
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 
-  QListView* keypointList;
+  KeypointList* keypointList;
 
+  void handleApplicationArguments();
   void initMenuBar();
   void initDocks();
 
@@ -37,12 +41,12 @@ private:
   void importPointcloudLayer();
   void openAboutDialog();
 
-  void insertKeypoint();
   void exportCameraPath();
   void importCameraPath();
   void jumpToKeypoint(const QModelIndex& modelIndex);
 
-  void offline_render();
+  void offline_render_with_ui();
+  bool offline_render();
 
 protected:
   void dropEvent(QDropEvent *ev);

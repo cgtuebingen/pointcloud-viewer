@@ -18,6 +18,7 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QProgressBar>
+#include <QSettings>
 #include <QDebug>
 
 QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSettings prevSettings)
@@ -201,20 +202,23 @@ QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSetti
   renderSettings.export_images = true;
 #endif
   renderSettings.image_format = imageFormat->currentData().toString();
+  renderSettings.first_index = prevSettings.first_index;
 
   return qMakePair(renderSettings, !use_result);
 }
 
 
-void MainWindow::offline_render()
+void MainWindow::offline_render_with_ui()
 {
   QPair<RenderSettings, bool> result = ask_for_render_settings(this, renderSettings);
 
-  renderSettings = result.first;
+  this->renderSettings = result.first;
   bool was_canceled = result.second;
 
   if(was_canceled)
     return;
+
+  this->renderSettings.storeSettings();
 
   if(!QDir(renderSettings.target_images_directory).exists() && !QDir(renderSettings.target_images_directory).mkpath("."))
   {
@@ -222,8 +226,25 @@ void MainWindow::offline_render()
     return;
   }
 
+  offline_render();
+}
 
+
+bool MainWindow::offline_render()
+{
   OfflineRenderer offlineRenderer(&viewport, flythrough, renderSettings);
+
+  QFileInfo target_image_dir(renderSettings.target_images_directory);
+  if(target_image_dir.isDir() == false && target_image_dir.dir().mkpath(target_image_dir.fileName()) == false)
+  {
+    QMessageBox::warning(nullptr, "IO error", QString("Couldn't create target directory\n\n%0").arg(target_image_dir.absolutePath()));
+    return false;
+  }
+  if(target_image_dir.isWritable() == false)
+  {
+    QMessageBox::warning(nullptr, "IO error", QString("The image target dir\n\n%0\n\nis not writable").arg(target_image_dir.absolutePath()));
+    return false;
+  }
 
   QDialog dialog(this);
 
@@ -235,7 +256,7 @@ void MainWindow::offline_render()
   // ==== Progressbar ====
   QProgressBar* progressBar = new QProgressBar;
 
-  progressBar->setMaximum(offlineRenderer.total_number_frames-1);
+  progressBar->setMaximum(offlineRenderer.flythrough->playback.totalNumberFramesForFixedFramerate());
   progressBar->setTextVisible(true);
   root->addWidget(progressBar, 0);
 
@@ -260,24 +281,47 @@ void MainWindow::offline_render()
 
   QObject::connect(buttons, &QDialogButtonBox::rejected, &offlineRenderer, &OfflineRenderer::abort);
   QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+  QObject::connect(&offlineRenderer, &OfflineRenderer::on_aborted, [&dialog](){
+    dialog.done(-1);
+  });
   QObject::connect(&offlineRenderer, &OfflineRenderer::finished, &dialog, &QDialog::accept);
 
   offlineRenderer.start();
 
-  if(dialog.exec() != QDialog::Accepted)
+  if(offlineRenderer.was_aborted()==false && dialog.exec() != QDialog::Accepted && dialog.result()==QDialogButtonBox::Abort)
   {
     QMessageBox::warning(this, "Rendering aborted", "Rendering process was aborted");
-    return;
+    return false;
   }
+
+  return !offlineRenderer.was_aborted();
 }
 
 RenderSettings RenderSettings::defaultSettings()
 {
+  QSettings settings;
+
   RenderSettings renderSettings;
 
-  renderSettings.resolution = QSize(1920, 1080);
-  renderSettings.framerate = 25;
-  renderSettings.image_format = ".png";
+  renderSettings.resolution = settings.value("RenderSettings/resolution", QSize(1920, 1080)).toSize();
+  renderSettings.framerate = settings.value("RenderSettings/framerate", 25).toInt();
+  renderSettings.first_index = settings.value("RenderSettings/first_index", 0).toInt();
+  renderSettings.image_format = settings.value("RenderSettings/image_format", ".png").toString();;
+  renderSettings.target_images_directory = settings.value("RenderSettings/target_images_directory", QString()).toString();;
+
+  if(!QDir(renderSettings.target_images_directory).exists())
+    renderSettings.target_images_directory.clear();
 
   return renderSettings;
+}
+
+void RenderSettings::storeSettings()
+{
+  QSettings settings;
+
+  settings.setValue("RenderSettings/resolution", this->resolution);
+  settings.setValue("RenderSettings/framerate", this->framerate);
+  settings.setValue("RenderSettings/first_index", this->first_index);
+  settings.setValue("RenderSettings/image_format", this->image_format);
+  settings.setValue("RenderSettings/target_images_directory", this->target_images_directory);
 }

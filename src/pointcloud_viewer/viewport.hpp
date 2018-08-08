@@ -26,13 +26,15 @@ class Viewport final : public QOpenGLWidget
 {
   Q_OBJECT
   Q_PROPERTY(int backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
-  Q_PROPERTY(float pointSize READ pointSize WRITE setPointSize NOTIFY pointSizeChanged)
+  Q_PROPERTY(int pointSize READ pointSize WRITE setPointSize NOTIFY pointSizeChanged)
 public:
   Navigation navigation;
   bool enable_preview = true;
 
   Viewport();
   ~Viewport() override;
+
+  aabb_t aabb() const;
 
   void set_camera_frame(const frame_t& frame);
 
@@ -42,23 +44,28 @@ public:
   void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
 
   int backgroundColor() const;
-  float pointSize() const;
+  int pointSize() const;
+
+  Visualization& visualization(){return *_visualization;}
 
 public slots:
   void setBackgroundColor(int backgroundColor);
-  void setPointSize(float pointSize);
+  void setPointSize(int pointSize);
 
 signals:
   void frame_rendered(double duration);
 
   void backgroundColorChanged(int backgroundColor);
-  void pointSizeChanged(float pointSize);
+  void pointSizeChanged(int pointSize);
+
+  void openGlContextCreated();
 
 protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
+  void wheelEvent(QWheelEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
@@ -72,12 +79,13 @@ private:
   PointRenderer* point_renderer = nullptr;
   GlobalUniform* global_uniform = nullptr;
 
-  Visualization* visualization;
+  Visualization* _visualization;
 
+  aabb_t _aabb = aabb_t::invalid();
   std::unordered_map<size_t, PointCloud> point_clouds;
   size_t next_handle = 0;
   int m_backgroundColor = 0;
-  float m_pointSize = 1;
+  int m_pointSize = 1;
 };
 
 

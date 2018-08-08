@@ -30,9 +30,11 @@ struct RenderSettings
   QString target_images_directory;
   QString image_format;
   bool export_images;
+  int first_index;
 
 
   static RenderSettings defaultSettings();
+  void storeSettings();
 };
 
 class OfflineRenderer : public QObject
@@ -42,10 +44,11 @@ public:
   Viewport& viewport;
   const QSharedPointer<Flythrough> flythrough;
   const RenderSettings renderSettings;
-  const int total_number_frames;
 
   OfflineRenderer(Viewport* viewport, const Flythrough& flythrough, const RenderSettings& renderSettings);
   ~OfflineRenderer();
+
+  bool was_aborted() const;
 
 public slots:
   void start();
@@ -54,6 +57,8 @@ public slots:
 signals:
   void rendered_frame(int frame_index, const QImage& image);
   void finished();
+
+  void on_aborted();
 
 private:
   bool _aborted = false;

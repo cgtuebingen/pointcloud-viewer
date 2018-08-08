@@ -1,26 +1,39 @@
 #include <pointcloud_viewer/navigation.hpp>
+#include <pointcloud_viewer/camera.hpp>
+#include <pointcloud_viewer/viewport.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
 
 #include <QWidget>
 #include <QApplication>
+#include <QSettings>
 
-Navigation::Navigation(QWidget* viewport)
+Navigation::Navigation(Viewport* viewport)
   : viewport(viewport)
 {
+  connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
 
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
+
+  QSettings settings;
+  _mouse_sensitivity_value = settings.value("Navigation/mouseSensitivity", 0).value<int>();
 }
 
 Navigation::~Navigation()
 {
   stopFpsNavigation();
+
+  QSettings settings;
+  settings.setValue("Navigation/mouseSensitivity", int(_mouse_sensitivity_value));
 }
 
 void Navigation::startFpsNavigation()
 {
   if(mode == Navigation::IDLE)
   {
+    fps_start_frame = camera.frame;
     fps_timer = startTimer(40);
     key_direction = glm::vec3(0);
     key_speed = 0;
@@ -32,10 +45,16 @@ void Navigation::startFpsNavigation()
   }
 }
 
-void Navigation::stopFpsNavigation()
+void Navigation::stopFpsNavigation(bool keepNewFrame)
 {
   if(mode == Navigation::FPS)
   {
+    if(!keepNewFrame)
+    {
+      camera.frame = fps_start_frame;
+      viewport->update();
+    }
+
     killTimer(fps_timer);
     fps_timer = 0;
     key_direction = glm::vec3(0);
@@ -44,6 +63,40 @@ void Navigation::stopFpsNavigation()
     viewport->releaseKeyboard();
     viewport->releaseMouse();
     viewport->setMouseTracking(false);
+  }
+}
+
+void Navigation::resetCameraLocation()
+{
+  camera.frame = Camera().frame;
+
+  turntable_origin = glm::vec3(0);
+  _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
+
+  viewport->update();
+}
+
+void Navigation::resetMovementSpeed()
+{
+  _base_movement_speed = 0;
+}
+
+void Navigation::updateFrameRenderDuration(double duration)
+{
+  // 0.04 because the timer limits the minimal time between to events to be 40ms anyway
+  _last_frame_duration = glm::clamp(float(duration), 0.04f, 0.1f);
+}
+
+void Navigation::wheelEvent(QWheelEvent* event)
+{
+  if(mode == Navigation::FPS)
+  {
+    if(event->modifiers() == Qt::NoModifier)
+      incr_base_movement_speed(event->angleDelta().y());
+    else if(event->modifiers() == Qt::CTRL)
+      tilt_camera(event->angleDelta().y());
+    else if(event->modifiers() == Qt::CTRL+Qt::SHIFT)
+      tilt_camera(event->angleDelta().y() * 4.);
   }
 }
 
@@ -66,7 +119,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   if(handle_event)
   {
-    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.01f;
+    mouse_force = glm::vec2(current_mouse_pos - last_mouse_pos) * 0.4f * mouse_sensitivity() * _last_frame_duration;
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
@@ -84,16 +137,36 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
 void Navigation::mousePressEvent(QMouseEvent* event)
 {
-  if(event->button() == Qt::MiddleButton)
+  if(mode == Navigation::FPS)
   {
-    last_mouse_pos = glm::ivec2(event->x(), event->y());
+    if(event->button() == Qt::LeftButton)
+      stopFpsNavigation();
+    if(event->button() == Qt::RightButton)
+      stopFpsNavigation(false);
+    if(event->button() == Qt::MiddleButton)
+    {
+      if(event->modifiers() == Qt::CTRL)
+        reset_camera_tilt();
+    }
+  }
 
-    if(event->modifiers() == Qt::NoModifier)
-      enableMode(Navigation::TURNTABLE_ROTATE);
-    else if(event->modifiers() == Qt::ShiftModifier)
-      enableMode(Navigation::TURNTABLE_SHIFT);
-    else if(event->modifiers() == Qt::ControlModifier)
-      enableMode(Navigation::TURNTABLE_ZOOM);
+  if(mode == Navigation::IDLE)
+  {
+    if(event->button() == Qt::MiddleButton)
+    {
+      turntable_origin = find_best_turntable_origin();
+      last_mouse_pos = glm::ivec2(event->x(), event->y());
+
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
+
+      if(event->modifiers() == Qt::NoModifier)
+        enableMode(Navigation::TURNTABLE_ROTATE);
+      else if(event->modifiers() == Qt::ShiftModifier)
+        enableMode(Navigation::TURNTABLE_SHIFT);
+      else if(event->modifiers() == Qt::ControlModifier)
+        enableMode(Navigation::TURNTABLE_ZOOM);
+    }
   }
 }
 
@@ -126,6 +199,10 @@ inline glm::vec3 direction_for_key(QKeyEvent* event)
     key_direction.x += 1.f;
   if(event->key() == Qt::Key_Right)
     key_direction.x += 1.f;
+  if(event->key() == Qt::Key_E)
+    key_direction.z += 1.f;
+  if(event->key() == Qt::Key_Q)
+    key_direction.z -= 1.f;
   return key_direction;
 }
 
@@ -141,12 +218,21 @@ void Navigation::keyPressEvent(QKeyEvent* event)
 {
   if(mode == FPS)
   {
-    if(event->key() == Qt::Key_Escape && event->modifiers() == Qt::NoModifier)
-      stopFpsNavigation();
-    if(event->key() == Qt::Key_F4 && event->modifiers() == Qt::AltModifier)
+    if(event->modifiers() == Qt::NoModifier)
     {
-      stopFpsNavigation();
-      QApplication::quit();
+      if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        stopFpsNavigation();
+      if(event->key() == Qt::Key_Escape)
+        stopFpsNavigation(false);
+    }
+
+    if(event->modifiers() == Qt::AltModifier)
+    {
+      if(event->key() == Qt::Key_F4)
+      {
+        stopFpsNavigation();
+        QApplication::quit();
+      }
     }
 
     key_direction += direction_for_key(event);
@@ -167,6 +253,26 @@ void Navigation::focusOutEvent(QFocusEvent* event)
   Q_UNUSED(event);
 
   stopFpsNavigation();
+}
+
+glm::ivec2 Navigation::mouse_sensitivity_value_range() const
+{
+  return glm::ivec2(-100, 100);
+}
+
+int Navigation::mouse_sensitivity_value() const
+{
+  return _mouse_sensitivity_value;
+}
+
+void Navigation::set_mouse_sensitivity_value(int value)
+{
+  if(_mouse_sensitivity_value == value)
+    return;
+
+  _mouse_sensitivity_value = glm::clamp<int>(value, mouse_sensitivity_value_range()[0], mouse_sensitivity_value_range()[1]);
+
+  mouse_sensitivity_value_changed(value);
 }
 
 void Navigation::timerEvent(QTimerEvent* timerEvent)
@@ -211,6 +317,50 @@ Navigation::distance_t Navigation::distance(glm::ivec2 difference, glm::ivec2 ra
     return CLOSE;
 }
 
+void Navigation::tilt_camera(double factor)
+{
+  const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0, -1);
+  const float angle = float(factor * 0.1 / (120. * glm::pi<double>()));
+
+  glm::quat rotation = glm::angleAxis(angle, forward);
+
+  camera.frame.orientation = rotation * camera.frame.orientation;
+  viewport->update();
+}
+
+void Navigation::reset_camera_tilt()
+{
+  camera.frame = remove_tilt(camera.frame);
+  viewport->update();
+}
+
+void Navigation::incr_base_movement_speed(int incr)
+{
+  _base_movement_speed = glm::clamp(incr+_base_movement_speed, -6000-1200, 6000-1200);
+}
+
+float Navigation::mouse_sensitivity() const
+{
+  return glm::pow(1.03f, float(_mouse_sensitivity_value));
+}
+
+glm::vec3 Navigation::find_best_turntable_origin()
+{
+  aabb_t aabb = viewport->aabb();
+
+  glm::vec3 v = camera.frame * _turntable_origin_relative_to_camera;
+
+  if(aabb.is_valid())
+    v = glm::clamp(v, aabb.min_point, aabb.max_point);
+
+  return v;
+}
+
+float Navigation::base_movement_speed() const
+{
+  return glm::pow(1.01f, float(_base_movement_speed) / 15.f);
+}
+
 void Navigation::update_key_force()
 {
   if(glm::length(key_direction) > 0.5f)
@@ -234,32 +384,35 @@ void Navigation::navigate()
   {
   case FPS:
   {
-    const glm::vec3 movement = forward * key_force.y + right * key_force.x;
+    const glm::vec3 movement =  up * key_force.z + forward * key_force.y + right * key_force.x;
 
     view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
 
-    view.position += movement;
+    view.position += movement * base_movement_speed();
 //    turntable_origin += movement;
     break;
   }
   case TURNTABLE_ROTATE:
   {
+    const float factor = 0.5f;
     view.position -= turntable_origin;
-    view = frame_t(turntable_origin, glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right)) * view;
+    view = frame_t(turntable_origin, glm::angleAxis(factor * -mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(factor * -mouse_force.y, right)) * view;
     break;
   }
   case TURNTABLE_SHIFT:
   {
+    const float factor = 0.5f;
     const glm::vec3 shift = up * mouse_force.y - right * mouse_force.x;
-    view.position += shift;
+    view.position += factor * shift;
     turntable_origin += shift;
     break;
   }
   case TURNTABLE_ZOOM:
   {
+    const float factor = 0.5f;
     glm::vec3 previous_zoom = view.position - turntable_origin;
 
-    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(mouse_force.y));
+    float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force.y));
 
     if(zoom_factor * length(previous_zoom) > 1.e-2f)
       view.position = turntable_origin + zoom_factor * previous_zoom;
@@ -275,13 +428,35 @@ void Navigation::navigate()
 void Navigation::enableMode(Navigation::mode_t mode)
 {
   if(this->mode == IDLE)
+  {
     this->mode = mode;
+  }
 }
 
 void Navigation::disableMode(Navigation::mode_t mode)
 {
   if(this->mode == mode)
+  {
+    switch(this->mode)
+    {
+    case TURNTABLE_ZOOM:
+      _turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
+      break;
+    case FPS:
+    case TURNTABLE_SHIFT:
+    case IDLE:
+    case TURNTABLE_ROTATE:
+      break;
+    }
+
+    if(mode != TURNTABLE_ZOOM)
+    {
+      viewport->visualization().set_turntable_origin(find_best_turntable_origin());
+      viewport->update();
+    }
+
     this->mode = IDLE;
+  }
 }
 
 void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)

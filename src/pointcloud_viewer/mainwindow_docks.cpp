@@ -1,5 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/keypoint_list.hpp>
 
 #include <QDockWidget>
 #include <QVBoxLayout>
@@ -7,12 +9,15 @@
 #include <QFormLayout>
 #include <QPushButton>
 #include <QComboBox>
+#include <QSlider>
 #include <QGroupBox>
 
 void MainWindow::initDocks()
 {
   initKeypointListDocks();
 }
+
+void remove_focus_after_enter(QAbstractSpinBox* w);
 
 void MainWindow::initKeypointListDocks()
 {
@@ -24,10 +29,23 @@ void MainWindow::initKeypointListDocks()
   dock->setWidget(root);
 
   // ---- keypoint list ----
-  keypointList = new QListView;
+  keypointList = new KeypointList;
   keypointList->setModel(&flythrough);
 
   connect(keypointList, &QListView::doubleClicked, this, &MainWindow::jumpToKeypoint);
+  auto update_path_visualization = [this](){
+    viewport.visualization().set_path(flythrough.all_keypoints(), keypointList->currentIndex().row());
+    viewport.update();
+  };
+  connect(keypointList, &KeypointList::currentKeypointChanged, update_path_visualization);
+  connect(keypointList, &KeypointList::on_delete_keypoint, &flythrough, &Flythrough::delete_keypoint);
+  connect(keypointList, &KeypointList::on_move_keypoint_up, &flythrough, &Flythrough::move_keypoint_up);
+  connect(keypointList, &KeypointList::on_move_keypoint_down, &flythrough, &Flythrough::move_keypoint_down);
+  connect(keypointList, &KeypointList::on_insert_keypoint, [this](int index) {
+    flythrough.insert_keypoint(this->viewport.navigation.camera.frame, index);
+    keypointList->setCurrentIndex(flythrough.index(index, 0));
+  });
+  connect(&flythrough, &Flythrough::pathChanged, update_path_visualization);
 
   // ---- animation duration ----
   QDoubleSpinBox* animationDuration = new QDoubleSpinBox;
@@ -76,25 +94,39 @@ void MainWindow::initKeypointListDocks()
 
   // ---- background ----
   QSpinBox* backgroundBrightness = new QSpinBox;
+  remove_focus_after_enter(backgroundBrightness);
   backgroundBrightness->setMinimum(0);
   backgroundBrightness->setMaximum(255);
   backgroundBrightness->setValue(viewport.backgroundColor());
+  backgroundBrightness->setToolTip("The brightness of the gray in the background (default: 54)");
   connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
   connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
 
   // ---- background ----
   QSpinBox* pointSize = new QSpinBox;
+  remove_focus_after_enter(pointSize);
   pointSize->setMinimum(1);
   pointSize->setMaximum(16);
-  pointSize->setValue(viewport.pointSize());
+  pointSize->setValue(int(viewport.pointSize()));
+  pointSize->setToolTip("The size of a sprite to draw a point in pixels (default: 1)");
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
   // ---- render button ----
   QPushButton* renderButton = new QPushButton("&Render");
-  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render);
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
   connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
   renderButton->setEnabled(flythrough.canPlay());
+
+  // ---- mouse sensitivity ----
+  QSpinBox* mouseSensitivity = new QSpinBox;
+  remove_focus_after_enter(mouseSensitivity);
+  mouseSensitivity->setMinimum(viewport.navigation.mouse_sensitivity_value_range()[0]);
+  mouseSensitivity->setMaximum(viewport.navigation.mouse_sensitivity_value_range()[1]);
+
+  mouseSensitivity->setValue(viewport.navigation.mouse_sensitivity_value());
+  connect(mouseSensitivity, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport.navigation, &Navigation::set_mouse_sensitivity_value);
+  connect(&viewport.navigation, &Navigation::mouse_sensitivity_value_changed, mouseSensitivity, &QSpinBox::setValue);
 
   // ==== layout ====
   QFormLayout* form;
@@ -116,11 +148,18 @@ void MainWindow::initKeypointListDocks()
   form->addRow("Point Size:", pointSize);
   form->addRow(renderButton);
 
+  // -- navigation --
+  QGroupBox* navigationGroup = new QGroupBox("Navigation");
+  navigationGroup->setLayout((form = new QFormLayout));
+
+  form->addRow("Mouse Sensitivity:", mouseSensitivity);
+
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(keypointList);
   vbox->addWidget(animationGroup);
   vbox->addWidget(renderGroup);
+  vbox->addWidget(navigationGroup);
 }
 
 void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
@@ -129,4 +168,9 @@ void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
     return;
 
   viewport.set_camera_frame(flythrough.keypoint_at(modelIndex.row()).frame);
+}
+
+void remove_focus_after_enter(QAbstractSpinBox* w)
+{
+  QObject::connect(w, &QSpinBox::editingFinished, [w](){w->clearFocus();});
 }

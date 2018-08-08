@@ -28,6 +28,7 @@ public:
   Buffer coordinate_color, user_data;
   aabb_t aabb;
   size_t num_points;
+  bool is_valid;
 
   PointCloud();
   PointCloud(PointCloud&& other);

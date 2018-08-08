@@ -23,8 +23,11 @@ add_executable(pointcloud_viewer
   camera.cpp
   camera.hpp
   declarations.hpp
+  keypoint_list.cpp
+  keypoint_list.hpp
   main.cpp
   mainwindow.cpp
+  mainwindow_arguments.cpp
   mainwindow_docks.cpp
   mainwindow_menubar.cpp
   mainwindow.hpp
@@ -32,6 +35,8 @@ add_executable(pointcloud_viewer
   navigation.hpp
   pointcloud_layers.cpp
   pointcloud_layers.hpp
+  version_text.cpp
+  version_text.hpp
   viewport.cpp
   viewport.hpp
   visualizations.cpp

@@ -142,8 +142,8 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
         convert_component<value_type, float32_t>::convert_normalized(&value, &z);
         ((*new_vertex_z)++)->coordinate.z = z;
 
-        aabb.max_point.y = glm::max(z, aabb.max_point.z);
-        aabb.min_point.y = glm::min(z, aabb.min_point.z);
+        aabb.max_point.z = glm::max(z, aabb.max_point.z);
+        aabb.min_point.z = glm::min(z, aabb.min_point.z);
       };
 
     print_error("Warning: Property ", property_name, " ignored! Data components are currently not supported.");
