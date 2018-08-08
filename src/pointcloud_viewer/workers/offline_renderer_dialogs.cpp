@@ -18,6 +18,7 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QProgressBar>
+#include <QSettings>
 #include <QDebug>
 
 QPair<RenderSettings, bool> ask_for_render_settings(QWidget* parent, RenderSettings prevSettings)
@@ -216,6 +217,8 @@ void MainWindow::offline_render_with_ui()
   if(was_canceled)
     return;
 
+  this->renderSettings.storeSettings();
+
   if(!QDir(renderSettings.target_images_directory).exists() && !QDir(renderSettings.target_images_directory).mkpath("."))
   {
     QMessageBox::warning(this, "IO failure", "Could not create the directory\n"+renderSettings.target_images_directory);
@@ -295,12 +298,24 @@ bool MainWindow::offline_render()
 
 RenderSettings RenderSettings::defaultSettings()
 {
+  QSettings settings;
+
   RenderSettings renderSettings;
 
-  renderSettings.resolution = QSize(1920, 1080);
-  renderSettings.framerate = 25;
-  renderSettings.first_index = 0;
-  renderSettings.image_format = ".png";
+  renderSettings.resolution = settings.value("RenderSettings/resolution", QSize(1920, 1080)).toSize();
+  renderSettings.framerate = settings.value("RenderSettings/framerate", 25).toInt();
+  renderSettings.first_index = settings.value("RenderSettings/first_index", 0).toInt();
+  renderSettings.image_format = settings.value("RenderSettings/image_format", ".png").toString();;
 
   return renderSettings;
+}
+
+void RenderSettings::storeSettings()
+{
+  QSettings settings;
+
+  settings.setValue("RenderSettings/resolution", this->resolution);
+  settings.setValue("RenderSettings/framerate", this->framerate);
+  settings.setValue("RenderSettings/first_index", this->first_index);
+  settings.setValue("RenderSettings/image_format", this->image_format);
 }

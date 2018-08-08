@@ -34,6 +34,7 @@ struct RenderSettings
 
 
   static RenderSettings defaultSettings();
+  void storeSettings();
 };
 
 class OfflineRenderer : public QObject
