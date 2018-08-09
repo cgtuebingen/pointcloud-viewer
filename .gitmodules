@@ -4,3 +4,6 @@
 [submodule "glhelper"]
 	path = src/external/glhelper
 	url = git@github.com:Robert42/glhelper.git
+[submodule "boost_sort"]
+	path = src/external/boost_sort
+	url = https://github.com/boostorg/sort.git
