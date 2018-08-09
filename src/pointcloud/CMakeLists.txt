@@ -19,5 +19,5 @@ add_library(pointcloud STATIC
  pointcloud.hpp
 )
 
-target_link_libraries(pointcloud PUBLIC Qt5::Core core_library geometry pcl)
+target_link_libraries(pointcloud PUBLIC boost_sort Qt5::Core core_library geometry pcl)
 

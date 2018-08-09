@@ -1,6 +1,8 @@
 #include <pointcloud/kdtree_index.hpp>
 #include <QtGlobal>
 
+#include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
+
 KDTreeIndex::KDTreeIndex()
 {
 }
@@ -45,9 +47,10 @@ void KDTreeIndex::build(const uint8_t* coordinates, size_t num_points, uint stri
     const uint8_t dimension = (stack.end()-1)->dimension;
     stack.pop_back();
 
-    std::sort(tree.data()+current_tree.begin,
-              tree.data()+current_tree.end,
-              [dimension, coordinate_for_index](size_t a, size_t b){return coordinate_for_index(a, dimension) < coordinate_for_index(b, dimension);});
+    boost::sort::block_indirect_sort(
+          tree.data()+current_tree.begin,
+          tree.data()+current_tree.end,
+          [dimension, coordinate_for_index](size_t a, size_t b){return coordinate_for_index(a, dimension) < coordinate_for_index(b, dimension);});
 
     if(!current_tree.is_leaf())
     {
