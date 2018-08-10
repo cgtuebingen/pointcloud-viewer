@@ -1,7 +1,6 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 
 MainWindow::MainWindow()
-  : pointCloudLayer(this)
 {
   setWindowTitle("Pointcloud Viewer");
 
