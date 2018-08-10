@@ -91,7 +91,7 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     const QString file_to_import = url.path();
     if(file_to_import.isEmpty())
       return;
-    viewport.load_point_cloud(import_point_cloud(this, file_to_import));
+    pointcloud_imported(import_point_cloud(this, file_to_import));
     return;
   }
 }
@@ -144,7 +144,7 @@ void MainWindow::importPointcloudLayer()
   if(file_to_import.isEmpty())
     return;
 
-  viewport.load_point_cloud(import_point_cloud(this, file_to_import));
+  pointcloud_imported(import_point_cloud(this, file_to_import));
 }
 
 extern const QString pcl_notes;

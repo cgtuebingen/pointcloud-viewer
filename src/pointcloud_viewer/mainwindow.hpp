@@ -23,6 +23,9 @@ public:
   MainWindow();
   ~MainWindow();
 
+signals:
+  void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);
+
 private:
   Viewport viewport;
   Flythrough flythrough;
