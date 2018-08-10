@@ -87,3 +87,8 @@ void PointCloud::build_kd_tree(std::function<bool(size_t, size_t)> feedback)
 {
   kdtree_index.build(coordinate_color.data(), num_points, 4*4, feedback);
 }
+
+bool PointCloud::can_build_kdtree() const
+{
+  return this->num_points>0 && !kdtree_index.is_initialized();
+}
