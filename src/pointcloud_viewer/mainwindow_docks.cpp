@@ -27,7 +27,7 @@ void remove_focus_after_enter(QAbstractSpinBox* w);
 
 QDockWidget* MainWindow::initAnimationDock()
 {
-  QDockWidget* dock = new QDockWidget("Animation", this);
+  QDockWidget* dock = new QDockWidget("Flythrough", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
 
@@ -112,9 +112,14 @@ QDockWidget* MainWindow::initAnimationDock()
   // ==== layout ====
   QFormLayout* form;
 
-  // -- animation group --
-  QGroupBox* animationGroup = new QGroupBox("Animation");
-  animationGroup->setLayout((form = new QFormLayout));
+  // -- Keypoints --
+  QGroupBox* keypointsGroup = new QGroupBox("Keypoints");
+  keypointsGroup->setLayout((form = new QFormLayout));
+  form->addWidget(keypointList);
+
+  // -- playback group --
+  QGroupBox* playbackGroup = new QGroupBox("Playback");
+  playbackGroup->setLayout((form = new QFormLayout));
 
   form->addRow("Duration:", animationDuration);
   form->addRow("Velocity:", cameraVelocity);
@@ -129,8 +134,8 @@ QDockWidget* MainWindow::initAnimationDock()
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
-  vbox->addWidget(keypointList);
-  vbox->addWidget(animationGroup);
+  vbox->addWidget(keypointsGroup);
+  vbox->addWidget(playbackGroup);
   vbox->addWidget(navigationGroup);
 
   return dock;
@@ -157,6 +162,12 @@ QDockWidget* MainWindow::initRenderDock()
   QWidget* root = new QWidget;
   dock->setWidget(root);
 
+  // ---- render button ----
+  QPushButton* renderButton = new QPushButton("&Render");
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
+  connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
+  renderButton->setEnabled(flythrough.canPlay());
+
   // ---- background ----
   QSpinBox* backgroundBrightness = new QSpinBox;
   remove_focus_after_enter(backgroundBrightness);
@@ -177,25 +188,19 @@ QDockWidget* MainWindow::initRenderDock()
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
-  // ---- render button ----
-  QPushButton* renderButton = new QPushButton("&Render");
-  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
-  connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
-  renderButton->setEnabled(flythrough.canPlay());
-
   // -- render style --
-  QGroupBox* renderGroup = new QGroupBox("Render");
+  QGroupBox* styleGroup = new QGroupBox("Style");
   QFormLayout* form = new QFormLayout;
-  renderGroup->setLayout((form));
+  styleGroup->setLayout((form));
 
   form->addRow("Background:", backgroundBrightness);
   form->addRow("Point Size:", pointSize);
-  form->addRow(renderButton);
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
 
-  vbox->addWidget(renderGroup);
+  vbox->addWidget(renderButton);
+  vbox->addWidget(styleGroup);
 
   return dock;
 }
