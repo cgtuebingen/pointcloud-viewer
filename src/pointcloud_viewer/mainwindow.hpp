@@ -36,7 +36,9 @@ private:
   void initMenuBar();
   void initDocks();
 
-  void initKeypointListDocks();
+  QDockWidget* initAnimationDock();
+  QDockWidget* initRenderDock();
+  QDockWidget* initDataInspectionDock();
 
   void importPointcloudLayer();
   void openAboutDialog();

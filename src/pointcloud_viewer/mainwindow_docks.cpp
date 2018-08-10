@@ -11,20 +11,27 @@
 #include <QComboBox>
 #include <QSlider>
 #include <QGroupBox>
+#include <QTabWidget>
 
 void MainWindow::initDocks()
 {
-  initKeypointListDocks();
+  QDockWidget* dataInspectionDock = initDataInspectionDock();
+  QDockWidget* animationDock = initAnimationDock();
+  QDockWidget* renderDock = initRenderDock();
+
+  tabifyDockWidget(dataInspectionDock, animationDock);
+  tabifyDockWidget(animationDock, renderDock);
 }
 
 void remove_focus_after_enter(QAbstractSpinBox* w);
 
-void MainWindow::initKeypointListDocks()
+QDockWidget* MainWindow::initAnimationDock()
 {
-  QDockWidget* dock = new QDockWidget("Flythrough Keypoints", this);
+  QDockWidget* dock = new QDockWidget("Animation", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
 
+  // ==== Animation Tab ====
   QWidget* root = new QWidget;
   dock->setWidget(root);
 
@@ -92,32 +99,6 @@ void MainWindow::initKeypointListDocks()
   connect(&flythrough, &Flythrough::canPlayChanged, play_animation_realtime, &QPushButton::setEnabled);
   play_animation_realtime->setEnabled(flythrough.canPlay());
 
-  // ---- background ----
-  QSpinBox* backgroundBrightness = new QSpinBox;
-  remove_focus_after_enter(backgroundBrightness);
-  backgroundBrightness->setMinimum(0);
-  backgroundBrightness->setMaximum(255);
-  backgroundBrightness->setValue(viewport.backgroundColor());
-  backgroundBrightness->setToolTip("The brightness of the gray in the background (default: 54)");
-  connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
-  connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
-
-  // ---- background ----
-  QSpinBox* pointSize = new QSpinBox;
-  remove_focus_after_enter(pointSize);
-  pointSize->setMinimum(1);
-  pointSize->setMaximum(16);
-  pointSize->setValue(int(viewport.pointSize()));
-  pointSize->setToolTip("The size of a sprite to draw a point in pixels (default: 1)");
-  connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
-  connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
-
-  // ---- render button ----
-  QPushButton* renderButton = new QPushButton("&Render");
-  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
-  connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
-  renderButton->setEnabled(flythrough.canPlay());
-
   // ---- mouse sensitivity ----
   QSpinBox* mouseSensitivity = new QSpinBox;
   remove_focus_after_enter(mouseSensitivity);
@@ -140,14 +121,6 @@ void MainWindow::initKeypointListDocks()
   form->addRow("Interpolation:", interpolation);
   form->addRow(play_animation_realtime, new QWidget());
 
-  // -- render style --
-  QGroupBox* renderGroup = new QGroupBox("Render");
-  renderGroup->setLayout((form = new QFormLayout));
-
-  form->addRow("Background:", backgroundBrightness);
-  form->addRow("Point Size:", pointSize);
-  form->addRow(renderButton);
-
   // -- navigation --
   QGroupBox* navigationGroup = new QGroupBox("Navigation");
   navigationGroup->setLayout((form = new QFormLayout));
@@ -158,8 +131,73 @@ void MainWindow::initKeypointListDocks()
   QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(keypointList);
   vbox->addWidget(animationGroup);
-  vbox->addWidget(renderGroup);
   vbox->addWidget(navigationGroup);
+
+  return dock;
+}
+
+QDockWidget* MainWindow::initDataInspectionDock()
+{
+  // ==== Data Inspection Tab ====
+
+  QDockWidget* dock = new QDockWidget("Data Inspection", this);
+  dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+  addDockWidget(Qt::LeftDockWidgetArea, dock);
+
+  return dock;
+}
+
+QDockWidget* MainWindow::initRenderDock()
+{
+  QDockWidget* dock = new QDockWidget("Render", this);
+  dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+  addDockWidget(Qt::LeftDockWidgetArea, dock);
+
+  // ==== Render ====
+  QWidget* root = new QWidget;
+  dock->setWidget(root);
+
+  // ---- background ----
+  QSpinBox* backgroundBrightness = new QSpinBox;
+  remove_focus_after_enter(backgroundBrightness);
+  backgroundBrightness->setMinimum(0);
+  backgroundBrightness->setMaximum(255);
+  backgroundBrightness->setValue(viewport.backgroundColor());
+  backgroundBrightness->setToolTip("The brightness of the gray in the background (default: 54)");
+  connect(&viewport, &Viewport::backgroundColorChanged, backgroundBrightness, &QSpinBox::setValue);
+  connect(backgroundBrightness, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setBackgroundColor);
+
+  // ---- pointSize ----
+  QSpinBox* pointSize = new QSpinBox;
+  remove_focus_after_enter(pointSize);
+  pointSize->setMinimum(1);
+  pointSize->setMaximum(16);
+  pointSize->setValue(int(viewport.pointSize()));
+  pointSize->setToolTip("The size of a sprite to draw a point in pixels (default: 1)");
+  connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
+  connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
+
+  // ---- render button ----
+  QPushButton* renderButton = new QPushButton("&Render");
+  connect(renderButton, &QPushButton::clicked, this, &MainWindow::offline_render_with_ui);
+  connect(&flythrough, &Flythrough::canPlayChanged, renderButton, &QPushButton::setEnabled);
+  renderButton->setEnabled(flythrough.canPlay());
+
+  // -- render style --
+  QGroupBox* renderGroup = new QGroupBox("Render");
+  QFormLayout* form = new QFormLayout;
+  renderGroup->setLayout((form));
+
+  form->addRow("Background:", backgroundBrightness);
+  form->addRow("Point Size:", pointSize);
+  form->addRow(renderButton);
+
+  // -- vbox --
+  QVBoxLayout* vbox = new QVBoxLayout(root);
+
+  vbox->addWidget(renderGroup);
+
+  return dock;
 }
 
 void MainWindow::jumpToKeypoint(const QModelIndex& modelIndex)
