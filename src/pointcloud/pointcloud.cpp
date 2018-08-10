@@ -83,7 +83,7 @@ void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_ty
   }
 }
 
-void PointCloud::build_kd_tree()
+void PointCloud::build_kd_tree(std::function<bool(size_t, size_t)> feedback)
 {
-  kdtree_index.build(coordinate_color.data(), num_points, 4*4);
+  kdtree_index.build(coordinate_color.data(), num_points, 4*4, feedback);
 }

@@ -16,6 +16,8 @@ add_executable(pointcloud_viewer
   flythrough/playback.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
+  workers/kdtree_builder_dialog.cpp
+  workers/kdtree_builder_dialog.hpp
   workers/offline_renderer.cpp
   workers/offline_renderer.hpp
   workers/offline_renderer_dialogs.cpp

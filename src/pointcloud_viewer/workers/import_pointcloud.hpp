@@ -2,7 +2,6 @@
 #define POINTCLOUDVIEWER_WORKERS_IMPORTPOINTCLOUD_HPP_
 
 #include <pointcloud/pointcloud.hpp>
-#include <QSharedPointer>
 #include <QObject>
 
 /**

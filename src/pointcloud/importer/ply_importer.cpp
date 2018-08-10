@@ -87,8 +87,6 @@ bool PlyImporter::import_implementation()
   if(Q_UNLIKELY(!parser.parse(input_file)))
     return false;
 
-  pointcloud.build_kd_tree();
-
   return true;
 }
 

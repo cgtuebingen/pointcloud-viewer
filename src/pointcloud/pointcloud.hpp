@@ -39,7 +39,7 @@ public:
   void clear();
   void resize(size_t num_points);
   void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);
-  void build_kd_tree();
+  void build_kd_tree(std::function<bool(size_t, size_t)> feedback);
 };
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_

@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <functional>
 
 class KDTreeIndex
 {
@@ -14,16 +15,20 @@ public:
 
   void clear();
 
-  void build(const uint8_t* coordinates, size_t num_points, uint stride);
+  void build(const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback);
+
+  bool is_initialized() const;
 
 private:
   struct range_t
   {
     size_t begin, end;
 
+    size_t median() const;
+
     bool is_empty() const;
     bool is_leaf() const;
-    size_t median() const;
+    size_t size() const;
 
     range_t left_subtree() const;
     range_t right_subtree() const;
