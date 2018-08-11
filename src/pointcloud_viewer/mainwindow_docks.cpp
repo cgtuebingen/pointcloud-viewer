@@ -143,11 +143,22 @@ QDockWidget* MainWindow::initAnimationDock()
 
 QDockWidget* MainWindow::initDataInspectionDock()
 {
-  // ==== Data Inspection Tab ====
-
   QDockWidget* dock = new QDockWidget("Data Inspection", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
+
+  // ==== Data Inspection Tab ====
+  QWidget* root = new QWidget;
+  dock->setWidget(root);
+
+  // -- unlock picker --
+  QPushButton* unlockButton = new QPushButton("Unlock Point &Picker", this);
+
+
+
+  // -- vbox --
+  QVBoxLayout* vbox = new QVBoxLayout(root);
+  vbox->addWidget(unlockButton);
 
   return dock;
 }

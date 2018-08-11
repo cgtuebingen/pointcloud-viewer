@@ -11,6 +11,8 @@ class PointCloudInspector final : public QObject
 Q_OBJECT
 public:
 
+public slots:
+
 };
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_INSPECTOR_HPP_
