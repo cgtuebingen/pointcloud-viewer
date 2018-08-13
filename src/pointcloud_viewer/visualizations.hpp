@@ -22,6 +22,7 @@ public:
     bool enable_axis : 1;
     bool enable_turntable_center : 1;
     bool enable_camera_path : 1;
+    bool enable_kdtree_as_aabb : 1;
 
     static settings_t enable_all();
     static settings_t default_settings();
@@ -37,6 +38,8 @@ public:
   void set_turntable_origin(glm::vec3 origin);
   void set_path(const QVector<keypoint_t>& keypoints, int selected_point);
 
+  void set_kdtree_as_aabb(aabb_t left_aabb, glm::vec3 separator_point, aabb_t right_aabbm, bool highlight_left);
+
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;
   typedef renderer::gl450::DebugMesh DebugMesh;
@@ -47,6 +50,10 @@ private:
   DebugMesh world_grid;
   DebugMesh turntable_origin;
   DebugMesh camera_path;
+
+  DebugMesh kdtree_normal_aabb;
+  DebugMesh kdtree_highlight_aabb;
+  DebugMesh kdtree_current_point;
 };
 
 #endif // POINTCLOUDVIEWER_VISUALIZATIONS_HPP_

@@ -50,6 +50,33 @@ DebugMesh& DebugMesh::operator=(DebugMesh&& mesh)
   return *this;
 }
 
+DebugMesh DebugMesh::aabb(aabb_t aabb, glm::vec3 color)
+{
+  Generator generator;
+
+  generator.next_attribute.color = color;
+
+  auto point = [aabb](uint8_t index) {
+    return glm::vec3(index&0b001 ? aabb.min_point.x : aabb.max_point.x,
+                     index&0b010 ? aabb.min_point.y : aabb.max_point.y,
+                     index&0b100 ? aabb.min_point.z : aabb.max_point.z);
+  };
+
+  for(uint8_t a=0; a<8; ++a)
+  {
+    uint8_t opposite_to_a = ~a & 0b111;
+
+    for(uint8_t b=a+1; b<8; ++b)
+      if(b != opposite_to_a)
+      {
+        generator.add_vertex(point(a));
+        generator.add_vertex(point(b));
+      }
+  }
+
+  return generator.to_mesh();
+}
+
 DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r)
 {
   Generator generator;
