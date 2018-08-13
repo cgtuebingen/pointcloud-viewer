@@ -38,7 +38,7 @@ public:
   void set_turntable_origin(glm::vec3 origin);
   void set_path(const QVector<keypoint_t>& keypoints, int selected_point);
 
-  void set_kdtree_as_aabb(aabb_t left_aabb, glm::vec3 separator_point, aabb_t right_aabbm, bool highlight_left);
+  void set_kdtree_as_aabb(aabb_t left_aabb, glm::vec3 separator_point, aabb_t right_aabbm, bool highlight_left, glm::vec3 point_color);
 
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;

@@ -77,7 +77,7 @@ DebugMesh DebugMesh::aabb(aabb_t aabb, glm::vec3 color)
   return generator.to_mesh();
 }
 
-DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r)
+DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r, const glm::vec3 color)
 {
   Generator generator;
 

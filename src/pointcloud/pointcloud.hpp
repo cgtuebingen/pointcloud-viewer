@@ -42,6 +42,7 @@ public:
 
   void build_kd_tree(std::function<bool(size_t, size_t)> feedback);
   bool can_build_kdtree() const;
+  bool has_build_kdtree() const;
 };
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_

@@ -9,11 +9,17 @@ bool PointCloudInspector::canBuildKdTree() const
   return m_canBuildKdTree;
 }
 
+bool PointCloudInspector::hasKdTreeAvailable() const
+{
+  return m_hasKdTreeAvailable;
+}
+
 void PointCloudInspector::unload_all_point_clouds()
 {
   this->point_cloud.clear();
 
   setCanBuildKdTree(false);
+  setHasKdTreeAvailable(false);
 }
 
 void PointCloudInspector::handle_new_point_cloud(QSharedPointer<PointCloud> point_cloud)
@@ -21,6 +27,7 @@ void PointCloudInspector::handle_new_point_cloud(QSharedPointer<PointCloud> poin
   this->point_cloud = point_cloud;
 
   this->setCanBuildKdTree(this->point_cloud->can_build_kdtree());
+  this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());
 }
 
 void PointCloudInspector::build_kdtree()
@@ -33,6 +40,7 @@ void PointCloudInspector::build_kdtree()
   ::build_kdtree(nullptr, this->point_cloud.data());
 
   this->setCanBuildKdTree(this->point_cloud->can_build_kdtree());
+  this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());
 }
 
 void PointCloudInspector::setCanBuildKdTree(bool canBuildKdTree)
@@ -42,4 +50,13 @@ void PointCloudInspector::setCanBuildKdTree(bool canBuildKdTree)
 
   m_canBuildKdTree = canBuildKdTree;
   emit canBuildKdTreeChanged(m_canBuildKdTree);
+}
+
+void PointCloudInspector::setHasKdTreeAvailable(bool hasKdTreeAvailable)
+{
+  if (m_hasKdTreeAvailable == hasKdTreeAvailable)
+    return;
+
+  m_hasKdTreeAvailable = hasKdTreeAvailable;
+  emit hasKdTreeAvailableChanged(m_hasKdTreeAvailable);
 }

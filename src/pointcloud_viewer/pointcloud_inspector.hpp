@@ -12,8 +12,10 @@ class PointCloudInspector final : public QObject
 {
 Q_OBJECT
 Q_PROPERTY(bool canBuildKdTree READ canBuildKdTree WRITE setCanBuildKdTree NOTIFY canBuildKdTreeChanged)
+Q_PROPERTY(bool hasKdTreeAvailable READ hasKdTreeAvailable WRITE setHasKdTreeAvailable NOTIFY hasKdTreeAvailableChanged)
 public:
   bool canBuildKdTree() const;
+  bool hasKdTreeAvailable() const;
 
 public slots:
   void unload_all_point_clouds();
@@ -23,13 +25,17 @@ public slots:
 
 signals:
   void canBuildKdTreeChanged(bool canBuildKdTree);
+  void hasKdTreeAvailableChanged(bool hasKdTreeAvailable);
 
 private:
   QSharedPointer<PointCloud> point_cloud;
+
   bool m_canBuildKdTree = false;
+  bool m_hasKdTreeAvailable;
 
 private slots:
   void setCanBuildKdTree(bool canBuildKdTree);
+  void setHasKdTreeAvailable(bool hasKdTreeAvailable);
 };
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_INSPECTOR_HPP_

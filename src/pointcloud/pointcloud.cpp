@@ -92,3 +92,8 @@ bool PointCloud::can_build_kdtree() const
 {
   return this->num_points>0 && !kdtree_index.is_initialized();
 }
+
+bool PointCloud::has_build_kdtree() const
+{
+  return this->num_points>0 && kdtree_index.is_initialized();
+}
