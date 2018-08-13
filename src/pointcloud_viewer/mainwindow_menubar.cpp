@@ -144,6 +144,7 @@ void MainWindow::importPointcloudLayer()
   if(file_to_import.isEmpty())
     return;
 
+  pointcloud_unloaded();
   pointcloud_imported(import_point_cloud(this, file_to_import));
 }
 

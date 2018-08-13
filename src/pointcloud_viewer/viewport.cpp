@@ -54,6 +54,9 @@ void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
   _aabb = aabb_t::invalid();
+  this->point_cloud.clear();
+
+  this->update();
 }
 
 void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)

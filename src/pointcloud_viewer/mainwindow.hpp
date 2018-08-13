@@ -25,6 +25,7 @@ public:
 
 signals:
   void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);
+  void pointcloud_unloaded();
 
 private:
   Viewport viewport;
