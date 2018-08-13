@@ -12,18 +12,21 @@ class KdTreeBuilder : public QObject
 {
   Q_OBJECT
 public:
-  PointCloud* pointCloud = nullptr;
+  PointCloud& pointCloud;
+  const size_t max_progress = 65535;
+
+  KdTreeBuilder(PointCloud& pointCloud);
 
 public slots:
   void build();
   void abort();
 
 signals:
-  void progress(size_t, size_t);
+  void progress(int);
   void finished();
 
 private:
-  bool _is_aborted = false;
+ volatile bool _is_aborted = false;
 };
 
 } // implementation

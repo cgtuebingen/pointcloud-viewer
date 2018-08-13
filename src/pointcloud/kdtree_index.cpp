@@ -47,6 +47,7 @@ void KDTreeIndex::build(const uint8_t* coordinates, size_t num_points, uint stri
   auto reset_feedback_countdown = [&feedback_count_down, num_points]() {
     feedback_count_down = num_points;
   };
+  reset_feedback_countdown();
 
   while(!stack.empty())
   {

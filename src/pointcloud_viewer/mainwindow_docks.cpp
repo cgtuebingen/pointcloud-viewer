@@ -153,7 +153,9 @@ QDockWidget* MainWindow::initDataInspectionDock()
 
   // -- unlock picker --
   QPushButton* unlockButton = new QPushButton("Unlock Point &Picker", this);
-
+  unlockButton->setEnabled(pointDataInspector.canBuildKdTree());
+  QObject::connect(&pointDataInspector, &PointCloudInspector::canBuildKdTreeChanged, unlockButton, &QPushButton::setEnabled);
+  QObject::connect(unlockButton, &QPushButton::clicked, &pointDataInspector, &PointCloudInspector::build_kdtree);
 
 
   // -- vbox --
