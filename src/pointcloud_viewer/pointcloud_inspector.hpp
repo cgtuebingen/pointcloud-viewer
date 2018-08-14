@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include <geometry/aabb.hpp>
+
 class PointCloud;
 
 /**
@@ -26,6 +28,8 @@ public slots:
 signals:
   void canBuildKdTreeChanged(bool canBuildKdTree);
   void hasKdTreeAvailableChanged(bool hasKdTreeAvailable);
+
+  void kd_tree_inspection_changed(aabb_t active_aabb, glm::vec3 separating_point, aabb_t other_aabb);
 
 private:
   QSharedPointer<PointCloud> point_cloud;

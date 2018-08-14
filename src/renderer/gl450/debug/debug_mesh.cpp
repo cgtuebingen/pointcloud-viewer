@@ -64,14 +64,12 @@ DebugMesh DebugMesh::aabb(aabb_t aabb, glm::vec3 color)
 
   for(uint8_t a=0; a<8; ++a)
   {
-    uint8_t opposite_to_a = ~a & 0b111;
-
-    for(uint8_t b=a+1; b<8; ++b)
-      if(b != opposite_to_a)
-      {
-        generator.add_vertex(point(a));
-        generator.add_vertex(point(b));
-      }
+    for(uint8_t swap=1; swap<8; swap<<=1)
+    {
+      uint8_t b = a ^ swap;
+      generator.add_vertex(point(a));
+      generator.add_vertex(point(b));
+    }
   }
 
   return generator.to_mesh();
@@ -80,6 +78,8 @@ DebugMesh DebugMesh::aabb(aabb_t aabb, glm::vec3 color)
 DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r, const glm::vec3 color)
 {
   Generator generator;
+
+  generator.next_attribute.color = color;
 
   for(int dim=0; dim<3; ++dim)
   {

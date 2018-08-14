@@ -44,14 +44,14 @@ void Visualization::set_path(const QVector<keypoint_t>& keypoints, int selected_
   camera_path = DebugMesh::path(keypoints.length(), [&keypoints](int i){return keypoints[i].frame;}, selected_point);
 }
 
-void Visualization::set_kdtree_as_aabb(aabb_t left_aabb, glm::vec3 separator_point, aabb_t right_aabb, bool highlight_left, glm::vec3 point_color)
+void Visualization::set_kdtree_as_aabb(aabb_t highlighted_aabb, glm::vec3 separator_point, aabb_t other_aabb)
 {
   glm::vec3 normal_color = glm::vec3(1,0.5,0);
   glm::vec3 highlight_color = glm::vec3(1,1,0.2);
 
-  kdtree_current_point = DebugMesh::turntable_point(separator_point, 0.25f, point_color);
-  kdtree_normal_aabb = DebugMesh::aabb(!highlight_left ? left_aabb : right_aabb, normal_color);
-  kdtree_highlight_aabb = DebugMesh::aabb(highlight_left ? left_aabb : right_aabb, highlight_color);
+  kdtree_current_point = DebugMesh::turntable_point(separator_point, 0.25f, normal_color);
+  kdtree_normal_aabb = DebugMesh::aabb(other_aabb, normal_color);
+  kdtree_highlight_aabb = DebugMesh::aabb(highlighted_aabb, highlight_color);
 }
 
 Visualization::settings_t Visualization::settings_t::enable_all()

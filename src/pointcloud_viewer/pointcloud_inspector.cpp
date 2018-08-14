@@ -41,6 +41,9 @@ void PointCloudInspector::build_kdtree()
 
   this->setCanBuildKdTree(this->point_cloud->can_build_kdtree());
   this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());
+
+  if(this->point_cloud->has_build_kdtree())
+    kd_tree_inspection_changed(this->point_cloud->aabb, glm::vec3(INFINITY), aabb_t::invalid());
 }
 
 void PointCloudInspector::setCanBuildKdTree(bool canBuildKdTree)
@@ -58,5 +61,9 @@ void PointCloudInspector::setHasKdTreeAvailable(bool hasKdTreeAvailable)
     return;
 
   m_hasKdTreeAvailable = hasKdTreeAvailable;
+
+  if(!hasKdTreeAvailable)
+    kd_tree_inspection_changed(aabb_t::invalid(), glm::vec3(INFINITY), aabb_t::invalid());
+
   emit hasKdTreeAvailableChanged(m_hasKdTreeAvailable);
 }

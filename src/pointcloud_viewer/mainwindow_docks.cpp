@@ -12,6 +12,7 @@
 #include <QSlider>
 #include <QGroupBox>
 #include <QTabWidget>
+#include <QCheckBox>
 
 void MainWindow::initDocks()
 {
@@ -151,16 +152,43 @@ QDockWidget* MainWindow::initDataInspectionDock()
   QWidget* root = new QWidget;
   dock->setWidget(root);
 
+  // -- vbox --
+  QVBoxLayout* vbox = new QVBoxLayout(root);
+
   // -- unlock picker --
   QPushButton* unlockButton = new QPushButton("Unlock Point &Picker", this);
   unlockButton->setEnabled(pointDataInspector.canBuildKdTree());
   QObject::connect(&pointDataInspector, &PointCloudInspector::canBuildKdTreeChanged, unlockButton, &QPushButton::setEnabled);
   QObject::connect(unlockButton, &QPushButton::clicked, &pointDataInspector, &PointCloudInspector::build_kdtree);
-
-
-  // -- vbox --
-  QVBoxLayout* vbox = new QVBoxLayout(root);
   vbox->addWidget(unlockButton);
+
+#ifndef NDEBUG
+  Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
+
+  // -- debug Kd-Tree --
+  QGroupBox* debug_kd_groupbox = new QGroupBox("Debug Kd-Tree");
+  debug_kd_groupbox->setEnabled(pointDataInspector.hasKdTreeAvailable());
+  QObject::connect(&pointDataInspector, &PointCloudInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
+  vbox->addWidget(debug_kd_groupbox);
+  {
+    QVBoxLayout* vbox = new QVBoxLayout(debug_kd_groupbox);
+    QCheckBox* checkBox = new QCheckBox("Enable");
+    checkBox->setChecked(current_settings.enable_kdtree_as_aabb);
+    connect(checkBox, &QCheckBox::toggled, [this](bool checked){
+      viewport.visualization().settings.enable_kdtree_as_aabb = checked;
+      viewport.update();
+    });
+    vbox->addWidget(checkBox);
+  }
+
+  connect(&pointDataInspector,
+          &PointCloudInspector::kd_tree_inspection_changed,
+          [this](aabb_t active_aabb, glm::vec3 separating_point, aabb_t other_aabb) {
+    viewport.visualization().set_kdtree_as_aabb(active_aabb, separating_point, other_aabb);
+  });
+#endif
+
+  vbox->addStretch(1);
 
   return dock;
 }

@@ -50,7 +50,6 @@ void MainWindow::initMenuBar()
   QAction* action_view_visualization_axis = menu_view_visualization->addAction("&Axis");
 #ifndef NDEBUG
   menu_view_visualization->addSeparator();
-  QAction* action_view_visualization_debug_kdtree = menu_view_visualization->addAction("&Kd-Tree");
   QAction* action_view_visualization_debug_turntable_center = menu_view_visualization->addAction("&Turntable Center");
 #endif
 
@@ -71,10 +70,7 @@ void MainWindow::initMenuBar()
   TOGGLE(action_view_visualization_axis, enable_axis);
 
 #ifndef NDEBUG
-  action_view_visualization_debug_kdtree->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_1));
-  TOGGLE(action_view_visualization_debug_kdtree, enable_kdtree_as_aabb);
-
-  action_view_visualization_debug_turntable_center->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_2));
+  action_view_visualization_debug_turntable_center->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_1));
   TOGGLE(action_view_visualization_debug_turntable_center, enable_turntable_center);
 #endif
 
@@ -95,6 +91,7 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     const QString file_to_import = url.path();
     if(file_to_import.isEmpty())
       return;
+    pointcloud_unloaded();
     pointcloud_imported(import_point_cloud(this, file_to_import));
     return;
   }
