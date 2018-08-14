@@ -157,9 +157,9 @@ QDockWidget* MainWindow::initDataInspectionDock()
 
   // -- unlock picker --
   QPushButton* unlockButton = new QPushButton("Unlock Point &Picker", this);
-  unlockButton->setEnabled(pointDataInspector.canBuildKdTree());
-  QObject::connect(&pointDataInspector, &PointCloudInspector::canBuildKdTreeChanged, unlockButton, &QPushButton::setEnabled);
-  QObject::connect(unlockButton, &QPushButton::clicked, &pointDataInspector, &PointCloudInspector::build_kdtree);
+  unlockButton->setEnabled(kdTreeInspector.canBuildKdTree());
+  QObject::connect(&kdTreeInspector, &KdTreeInspector::canBuildKdTreeChanged, unlockButton, &QPushButton::setEnabled);
+  QObject::connect(unlockButton, &QPushButton::clicked, &kdTreeInspector, &KdTreeInspector::build_kdtree);
   vbox->addWidget(unlockButton);
 
 #ifndef NDEBUG
@@ -167,8 +167,8 @@ QDockWidget* MainWindow::initDataInspectionDock()
 
   // -- debug Kd-Tree --
   QGroupBox* debug_kd_groupbox = new QGroupBox("Debug Kd-Tree");
-  debug_kd_groupbox->setEnabled(pointDataInspector.hasKdTreeAvailable());
-  QObject::connect(&pointDataInspector, &PointCloudInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
+  debug_kd_groupbox->setEnabled(kdTreeInspector.hasKdTreeAvailable());
+  QObject::connect(&kdTreeInspector, &KdTreeInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
   vbox->addWidget(debug_kd_groupbox);
   {
     QVBoxLayout* vbox = new QVBoxLayout(debug_kd_groupbox);
@@ -181,8 +181,8 @@ QDockWidget* MainWindow::initDataInspectionDock()
     vbox->addWidget(checkBox);
   }
 
-  connect(&pointDataInspector,
-          &PointCloudInspector::kd_tree_inspection_changed,
+  connect(&kdTreeInspector,
+          &KdTreeInspector::kd_tree_inspection_changed,
           [this](aabb_t active_aabb, glm::vec3 separating_point, aabb_t other_aabb) {
     viewport.visualization().set_kdtree_as_aabb(active_aabb, separating_point, other_aabb);
   });

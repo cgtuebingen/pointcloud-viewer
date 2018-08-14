@@ -8,9 +8,9 @@
 class PointCloud;
 
 /**
-This class is used to inspect the point cloud data
+This class is used to inspect the kd-tree in debug mode
 */
-class PointCloudInspector final : public QObject
+class KdTreeInspector final : public QObject
 {
 Q_OBJECT
 Q_PROPERTY(bool canBuildKdTree READ canBuildKdTree WRITE setCanBuildKdTree NOTIFY canBuildKdTreeChanged)
@@ -25,6 +25,8 @@ public slots:
 
   void build_kdtree();
 
+  void kd_tree_inspection_move_to_root();
+
 signals:
   void canBuildKdTreeChanged(bool canBuildKdTree);
   void hasKdTreeAvailableChanged(bool hasKdTreeAvailable);
@@ -33,9 +35,12 @@ signals:
 
 private:
   QSharedPointer<PointCloud> point_cloud;
+  size_t kd_tree_inspection_current_point;
 
   bool m_canBuildKdTree = false;
   bool m_hasKdTreeAvailable;
+
+  void set_current_point_for_the_kd_tree_inspection(size_t kd_tree_inspection_current_point);
 
 private slots:
   void setCanBuildKdTree(bool canBuildKdTree);

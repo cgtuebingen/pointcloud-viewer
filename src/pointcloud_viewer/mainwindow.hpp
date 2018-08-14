@@ -7,7 +7,7 @@
 #include <QDropEvent>
 
 #include <pointcloud_viewer/viewport.hpp>
-#include <pointcloud_viewer/pointcloud_inspector.hpp>
+#include <pointcloud_viewer/kdtree_inspector.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
@@ -30,7 +30,7 @@ signals:
 private:
   Viewport viewport;
   Flythrough flythrough;
-  PointCloudInspector pointDataInspector;
+  KdTreeInspector kdTreeInspector;
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 

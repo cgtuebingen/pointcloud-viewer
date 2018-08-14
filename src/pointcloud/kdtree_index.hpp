@@ -10,16 +10,6 @@
 class KDTreeIndex
 {
 public:
-  KDTreeIndex();
-  ~KDTreeIndex();
-
-  void clear();
-
-  void build(const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback);
-
-  bool is_initialized() const;
-
-private:
   struct range_t
   {
     size_t begin, end;
@@ -34,9 +24,18 @@ private:
     range_t right_subtree() const;
   };
 
-  std::vector<size_t> tree;
+  KDTreeIndex();
+  ~KDTreeIndex();
 
-  static size_t median(range_t subtree);
+  range_t whole_tree() const;
+  void clear();
+
+  void build(const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback);
+
+  bool is_initialized() const;
+
+private:
+  std::vector<size_t> tree;
 };
 
 #endif // POINTCLOUD_KDTREE_INDEX_HPP

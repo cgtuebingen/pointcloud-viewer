@@ -25,6 +25,8 @@ add_executable(pointcloud_viewer
   camera.cpp
   camera.hpp
   declarations.hpp
+  kdtree_inspector.cpp
+  kdtree_inspector.hpp
   keypoint_list.cpp
   keypoint_list.hpp
   main.cpp
@@ -35,8 +37,6 @@ add_executable(pointcloud_viewer
   mainwindow.hpp
   navigation.cpp
   navigation.hpp
-  pointcloud_inspector.cpp
-  pointcloud_inspector.hpp
   version_text.cpp
   version_text.hpp
   viewport.cpp

@@ -11,6 +11,11 @@ KDTreeIndex::~KDTreeIndex()
 {
 }
 
+KDTreeIndex::range_t KDTreeIndex::whole_tree() const
+{
+  return range_t{0, this->tree.size()};
+}
+
 void KDTreeIndex::clear()
 {
   tree.clear();
