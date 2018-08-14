@@ -26,6 +26,10 @@ public slots:
   void build_kdtree();
 
   void kd_tree_inspection_move_to_root();
+  void kd_tree_inspection_move_to_parent();
+  void kd_tree_inspection_move_to_subtree();
+  void kd_tree_inspection_select_left();
+  void kd_tree_inspection_select_right();
 
 signals:
   void canBuildKdTreeChanged(bool canBuildKdTree);
@@ -36,11 +40,13 @@ signals:
 private:
   QSharedPointer<PointCloud> point_cloud;
   size_t kd_tree_inspection_current_point;
+  bool _left_selected = true;
 
   bool m_canBuildKdTree = false;
   bool m_hasKdTreeAvailable;
 
   void set_current_point_for_the_kd_tree_inspection(size_t kd_tree_inspection_current_point);
+  void update_kd_tree_inspection();
 
 private slots:
   void setCanBuildKdTree(bool canBuildKdTree);

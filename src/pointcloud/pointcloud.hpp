@@ -36,6 +36,8 @@ public:
   PointCloud(PointCloud&& other);
   PointCloud& operator=(PointCloud&& other);
 
+  constexpr static const size_t stride = 4*4;
+
   void clear();
   void resize(size_t num_points);
   void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);

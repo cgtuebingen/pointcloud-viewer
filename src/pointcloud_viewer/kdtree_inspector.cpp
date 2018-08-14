@@ -59,7 +59,34 @@ void KdTreeInspector::kd_tree_inspection_move_to_root()
     return;
   }
 
-  set_current_point_for_the_kd_tree_inspection(point_cloud->kdtree_index.whole_tree().median());
+  set_current_point_for_the_kd_tree_inspection(point_cloud->kdtree_index.root_point());
+}
+
+void KdTreeInspector::kd_tree_inspection_move_to_parent()
+{
+  set_current_point_for_the_kd_tree_inspection(point_cloud->kdtree_index.parent_of(kd_tree_inspection_current_point));
+}
+
+void KdTreeInspector::kd_tree_inspection_move_to_subtree()
+{
+  if(!point_cloud->kdtree_index.has_children(kd_tree_inspection_current_point))
+    return;
+
+  std::pair<size_t, size_t> children = point_cloud->kdtree_index.children_of(kd_tree_inspection_current_point);
+
+  set_current_point_for_the_kd_tree_inspection(_left_selected ? children.first : children.second);
+}
+
+void KdTreeInspector::kd_tree_inspection_select_left()
+{
+  _left_selected = !_left_selected;
+  update_kd_tree_inspection();
+}
+
+void KdTreeInspector::kd_tree_inspection_select_right()
+{
+  _left_selected = !_left_selected;
+  update_kd_tree_inspection();
 }
 
 void KdTreeInspector::setCanBuildKdTree(bool canBuildKdTree)
@@ -90,5 +117,22 @@ void KdTreeInspector::set_current_point_for_the_kd_tree_inspection(size_t kd_tre
     return;
 
   this->kd_tree_inspection_current_point = kd_tree_inspection_current_point;
-  kd_tree_inspection_changed(this->point_cloud->aabb, glm::vec3(INFINITY), aabb_t::invalid());
+  update_kd_tree_inspection();
+}
+
+void KdTreeInspector::update_kd_tree_inspection()
+{
+  if(this->point_cloud==nullptr || !this->point_cloud->has_build_kdtree())
+  {
+    kd_tree_inspection_changed(point_cloud ? point_cloud->aabb : aabb_t::invalid(), glm::vec3(INFINITY), aabb_t::invalid());
+    return;
+  }
+
+  glm::vec3 point = point_cloud->kdtree_index.point_coordinate(kd_tree_inspection_current_point, point_cloud->coordinate_color.data(), PointCloud::stride);
+  std::pair<aabb_t, aabb_t> aabbs = point_cloud->kdtree_index.aabbs_split_by(kd_tree_inspection_current_point, point_cloud->coordinate_color.data(), PointCloud::stride);
+
+  if(!this->_left_selected)
+    aabbs = std::make_pair(aabbs.second, aabbs.first);
+
+  kd_tree_inspection_changed(aabbs.first, point, aabbs.second);
 }

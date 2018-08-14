@@ -3,6 +3,20 @@
 
 #include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
 
+inline float component_for_index(size_t point_index, uint8_t dimension, const uint8_t* coordinates, uint stride)
+{
+  float coordinate;
+  std::memcpy(&coordinate, coordinates + point_index*stride + dimension*sizeof(float), sizeof(float));
+  return coordinate;
+}
+
+inline glm::vec3 coordinate_for_index(size_t point_index, const uint8_t* coordinates, uint stride)
+{
+  glm::vec3 coordinate;
+  std::memcpy(&coordinate, coordinates + point_index*stride, 3*sizeof(float));
+  return coordinate;
+}
+
 KDTreeIndex::KDTreeIndex()
 {
 }
@@ -11,9 +25,66 @@ KDTreeIndex::~KDTreeIndex()
 {
 }
 
-KDTreeIndex::range_t KDTreeIndex::whole_tree() const
+size_t KDTreeIndex::root_point() const
 {
-  return range_t{0, this->tree.size()};
+  return range_t{0, this->tree.size()}.median();
+}
+
+bool KDTreeIndex::has_children(size_t point) const
+{
+  subtree_t subtree = traverse_kd_tree_to_point(point, [](subtree_t){});
+
+  return subtree.range.is_leaf() == false;
+}
+
+std::pair<size_t, size_t> KDTreeIndex::children_of(size_t point) const
+{
+  subtree_t subtree = traverse_kd_tree_to_point(point, [](subtree_t){});
+
+  return std::make_pair(subtree.left_subtree().root(), subtree.right_subtree().root());
+}
+
+size_t KDTreeIndex::parent_of(size_t point) const
+{
+  size_t parent = point;
+  traverse_kd_tree_to_point(point, [&parent](subtree_t tree){
+    parent = tree.root();
+  });
+
+  return parent;
+}
+
+std::pair<aabb_t, aabb_t> KDTreeIndex::aabbs_split_by(size_t point, const uint8_t* coordinates, uint stride) const
+{
+  auto coordinate_for_index = [coordinates, stride](size_t point_index, uint8_t dimension) -> float {
+    return component_for_index(point_index, dimension, coordinates, stride);
+  };
+
+  aabb_t aabb = total_aabb;
+
+  uint8_t next_split_dimension = 0;
+
+  traverse_kd_tree_to_point(point, [&aabb, &next_split_dimension, point, coordinate_for_index](subtree_t tree){
+    const uint8_t split_dimension = tree.split_dimension;
+    const size_t root = tree.root();
+    if(point < root)
+      aabb.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(root, split_dimension));
+    else
+      aabb.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(root, split_dimension));
+    next_split_dimension = (split_dimension+1) % 3;
+  });
+
+  std::pair<aabb_t, aabb_t> aabbs_split_by_point = std::make_pair(aabb, aabb);
+
+  aabbs_split_by_point.first.max_point[next_split_dimension] = glm::min(aabb.max_point[next_split_dimension], coordinate_for_index(point, next_split_dimension));
+  aabbs_split_by_point.second.min_point[next_split_dimension] = glm::max(aabb.min_point[next_split_dimension], coordinate_for_index(point, next_split_dimension));
+
+  return aabbs_split_by_point;
+}
+
+glm::vec3 KDTreeIndex::point_coordinate(size_t point, const uint8_t* coordinates, uint stride) const
+{
+  return coordinate_for_index(point, coordinates, stride);
 }
 
 void KDTreeIndex::clear()
@@ -21,15 +92,14 @@ void KDTreeIndex::clear()
   tree.clear();
 }
 
-void KDTreeIndex::build(const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback)
+void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback)
 {
-  auto coordinate_for_index = [coordinates, stride](size_t index, uint8_t dimension) -> float {
-    float coordinate;
-    std::memcpy(&coordinate, coordinates + index*stride + dimension*sizeof(float), sizeof(float));
-    return coordinate;
+  auto coordinate_for_index = [coordinates, stride](size_t point_index, uint8_t dimension) -> float {
+    return component_for_index(point_index, dimension, coordinates, stride);
   };
 
   tree.resize(num_points);
+  this->total_aabb = total_aabb;
 
   // Fill the array with the coordinates in original order
   for(size_t i=0; i<num_points; ++i)
@@ -83,7 +153,10 @@ void KDTreeIndex::build(const uint8_t* coordinates, size_t num_points, uint stri
     {
       reset_feedback_countdown();
       if(!feedback(num_processed_points, num_points))
+      {
+        tree.clear();
         return;
+      }
     }else
     {
       feedback_count_down -= current_tree.size();
@@ -94,6 +167,30 @@ void KDTreeIndex::build(const uint8_t* coordinates, size_t num_points, uint stri
 bool KDTreeIndex::is_initialized() const
 {
   return !tree.empty();
+}
+
+KDTreeIndex::subtree_t KDTreeIndex::traverse_kd_tree_to_point(size_t point, std::function<void(subtree_t)> visitor) const
+{
+  subtree_t subtree = whole_tree();
+
+  size_t subtree_root = subtree.root();
+  while(point != subtree_root)
+  {
+    visitor(subtree);
+
+    if(point < subtree_root)
+      subtree = subtree.left_subtree();
+    else
+      subtree = subtree.right_subtree();
+    subtree_root = subtree.root();
+  }
+
+  return subtree;
+}
+
+KDTreeIndex::subtree_t KDTreeIndex::whole_tree() const
+{
+  return subtree_t{range_t{0, this->tree.size()}, 0};
 }
 
 bool KDTreeIndex::range_t::is_empty() const

@@ -3,6 +3,9 @@
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/keypoint_list.hpp>
 
+#include <QGridLayout>
+#include <QApplication>
+#include <QAction>
 #include <QDockWidget>
 #include <QVBoxLayout>
 #include <QDoubleSpinBox>
@@ -13,6 +16,7 @@
 #include <QGroupBox>
 #include <QTabWidget>
 #include <QCheckBox>
+#include <QToolButton>
 
 void MainWindow::initDocks()
 {
@@ -171,20 +175,54 @@ QDockWidget* MainWindow::initDataInspectionDock()
   QObject::connect(&kdTreeInspector, &KdTreeInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
   vbox->addWidget(debug_kd_groupbox);
   {
-    QVBoxLayout* vbox = new QVBoxLayout(debug_kd_groupbox);
+    QGridLayout* grid = new QGridLayout(debug_kd_groupbox);
     QCheckBox* checkBox = new QCheckBox("Enable");
     checkBox->setChecked(current_settings.enable_kdtree_as_aabb);
     connect(checkBox, &QCheckBox::toggled, [this](bool checked){
       viewport.visualization().settings.enable_kdtree_as_aabb = checked;
       viewport.update();
     });
-    vbox->addWidget(checkBox);
+    grid->addWidget(checkBox, 0,0, 1,5);
+
+    const QStyle* style = QApplication::style();
+
+    QAction* move_up = new QAction(style->standardIcon(QStyle::SP_ArrowUp), "Move Up", this);
+    QAction* move_down = new QAction(style->standardIcon(QStyle::SP_ArrowDown), "Move Down", this);
+    QAction* move_left = new QAction(style->standardIcon(QStyle::SP_ArrowLeft), "Move Left", this);
+    QAction* move_right = new QAction(style->standardIcon(QStyle::SP_ArrowRight), "Move Right", this);
+
+    for(QAction* a : {move_up, move_down, move_left, move_right})
+    {
+      a->setEnabled(kdTreeInspector.hasKdTreeAvailable());
+      QObject::connect(&kdTreeInspector, &KdTreeInspector::hasKdTreeAvailableChanged, a, &QAction::setEnabled);
+    }
+
+    QToolButton* btn_up = new QToolButton;
+    QToolButton* btn_down = new QToolButton;
+    QToolButton* btn_left = new QToolButton;
+    QToolButton* btn_right = new QToolButton;
+
+    btn_up->setDefaultAction(move_up);
+    btn_down->setDefaultAction(move_down);
+    btn_left->setDefaultAction(move_left);
+    btn_right->setDefaultAction(move_right);
+
+    grid->addWidget(btn_up, 1, 2, 1, 1);
+    grid->addWidget(btn_left, 2, 1, 1, 1);
+    grid->addWidget(btn_down, 2, 2, 1, 1);
+    grid->addWidget(btn_right, 2, 3, 1, 1);
+
+    connect(move_up, &QAction::triggered, &kdTreeInspector, &KdTreeInspector::kd_tree_inspection_move_to_parent);
+    connect(move_down, &QAction::triggered, &kdTreeInspector, &KdTreeInspector::kd_tree_inspection_move_to_subtree);
+    connect(move_left, &QAction::triggered, &kdTreeInspector, &KdTreeInspector::kd_tree_inspection_select_left);
+    connect(move_right, &QAction::triggered, &kdTreeInspector, &KdTreeInspector::kd_tree_inspection_select_right);
   }
 
   connect(&kdTreeInspector,
           &KdTreeInspector::kd_tree_inspection_changed,
           [this](aabb_t active_aabb, glm::vec3 separating_point, aabb_t other_aabb) {
     viewport.visualization().set_kdtree_as_aabb(active_aabb, separating_point, other_aabb);
+    viewport.update();
   });
 #endif
 
