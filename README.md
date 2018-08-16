@@ -1,5 +1,7 @@
 # Point Cloud Viewer
 
+[![Build Status TensorFlow](https://ci.patwie.com/api/badges/cgtuebingen/pointcloud-viewer/status.svg)](http://ci.patwie.com/cgtuebingen/pointcloud-viewer)
+
 This tool allows viewing huge point clouds.
 
 ## Build on Ubuntu
@@ -14,14 +16,14 @@ Clone with
     git clone git@github.com:cgtuebingen/pointcloud-viewer.git
     cd pointcloud-viewer/
     git submodule update --init
-    
+
 Compile with
-    
+
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ../src
     make -j8
-    
+
 Run with
 
     pointcloud_viewer/pointcloud_viewer
@@ -45,14 +47,14 @@ Run with
             - Reset the tilt of the camera by pressing `Ctrl`+`Middle Mouse Button`
 3. Either import an already created animation with the menu bar:
     > **Flythrough > Import Path**
-    
+
     or create a new camera path by navigating manually and pressing the key `I`
 4. In the left bar, you can change the camera velocity
 5. In the left bar, you can also change the render settings (background color and point size)
 6. In the left bar, you can start the Render process by pressing the big Render button
     - It is insensitive as long as there is no camera path
     - Currently, only one image per frame is saved
-    
+
 ## Known Issues
 
-Currently, no optimization technique is applied. When the pointcloud size exceds the available video memory, the application will probably crash. 
+Currently, no optimization technique is applied. When the pointcloud size exceds the available video memory, the application will probably crash.
