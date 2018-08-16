@@ -28,6 +28,8 @@ public:
   bool is_initialized() const;
 
 private:
+  enum class point_index_t : size_t {};
+
   struct range_t
   {
     size_t begin, end;
@@ -62,12 +64,17 @@ private:
   };
 
   aabb_t total_aabb;
-  std::vector<size_t> tree;
+  std::vector<point_index_t> tree;
 
   subtree_t traverse_kd_tree_to_point(size_t point, std::function<void(subtree_t inner_subtree)> visitor) const;
   subtree_t whole_tree() const;
 
-  void validate_tree();
+  void validate_tree(const uint8_t* coordinates, size_t num_points, uint stride);
+
+  static float component_for_index(point_index_t point_index, uint8_t dimension, const uint8_t* coordinates, uint stride);
+  float component_for_index(size_t entry_index, uint8_t dimension, const uint8_t* coordinates, uint stride) const;
+  static glm::vec3 coordinate_for_index(point_index_t point_index, const uint8_t* coordinates, uint stride);
+  glm::vec3 coordinate_for_index(size_t entry_index, const uint8_t* coordinates, uint stride) const;
 };
 
 #endif // POINTCLOUD_KDTREE_INDEX_HPP

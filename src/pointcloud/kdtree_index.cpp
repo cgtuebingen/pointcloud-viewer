@@ -5,20 +5,6 @@
 
 #include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
 
-inline float component_for_index(size_t point_index, uint8_t dimension, const uint8_t* coordinates, uint stride)
-{
-  float coordinate;
-  std::memcpy(&coordinate, coordinates + point_index*stride + dimension*sizeof(float), sizeof(float));
-  return coordinate;
-}
-
-inline glm::vec3 coordinate_for_index(size_t point_index, const uint8_t* coordinates, uint stride)
-{
-  glm::vec3 coordinate;
-  std::memcpy(&coordinate, coordinates + point_index*stride, 3*sizeof(float));
-  return coordinate;
-}
-
 KDTreeIndex::KDTreeIndex()
 {
 }
@@ -58,8 +44,8 @@ size_t KDTreeIndex::parent_of(size_t point) const
 
 std::pair<aabb_t, aabb_t> KDTreeIndex::aabbs_split_by(size_t point, const uint8_t* coordinates, uint stride) const
 {
-  auto coordinate_for_index = [coordinates, stride](size_t point_index, uint8_t dimension) -> float {
-    return component_for_index(point_index, dimension, coordinates, stride);
+  auto coordinate_for_index = [coordinates, stride, this](size_t entry_index, uint8_t dimension) -> float {
+    return component_for_index(entry_index, dimension, coordinates, stride);
   };
 
   aabb_t aabb = total_aabb;
@@ -75,6 +61,9 @@ std::pair<aabb_t, aabb_t> KDTreeIndex::aabbs_split_by(size_t point, const uint8_
 
   const uint8_t split_dimension = tree.split_dimension;
   std::pair<aabb_t, aabb_t> aabbs_split_by_point = std::make_pair(aabb, aabb);
+
+  if(tree.is_leaf())
+    return aabbs_split_by_point;
 
   aabbs_split_by_point.first.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(point, split_dimension));
   aabbs_split_by_point.second.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(point, split_dimension));
@@ -94,7 +83,7 @@ void KDTreeIndex::clear()
 
 void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback)
 {
-  auto coordinate_for_index = [coordinates, stride](size_t point_index, uint8_t dimension) -> float {
+  auto coordinate_for_index = [coordinates, stride](point_index_t point_index, uint8_t dimension) -> float {
     return component_for_index(point_index, dimension, coordinates, stride);
   };
 
@@ -103,7 +92,7 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
 
   // Fill the array with the coordinates in original order
   for(size_t i=0; i<num_points; ++i)
-    tree[i] = i;
+    tree[i] = point_index_t(i);
 
   Stack<subtree_t> stack;
   stack.reserve(num_points/2);
@@ -127,7 +116,7 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
     boost::sort::block_indirect_sort(
           tree.data()+current_tree.range.begin,
           tree.data()+current_tree.range.end,
-          [dimension, coordinate_for_index](size_t a, size_t b){return coordinate_for_index(a, dimension) < coordinate_for_index(b, dimension);});
+          [dimension, coordinate_for_index](point_index_t a, point_index_t b){return coordinate_for_index(a, dimension) < coordinate_for_index(b, dimension);});
 
     const subtree_t left_subtree = current_tree.left_subtree();
     if(!left_subtree.is_leaf())
@@ -156,7 +145,7 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
   }
 
 #ifndef NDEBUG
-  validate_tree();
+  validate_tree(coordinates, num_points, stride);
 #endif
 }
 
@@ -189,9 +178,62 @@ KDTreeIndex::subtree_t KDTreeIndex::whole_tree() const
   return subtree_t{range_t{0, this->tree.size()}, 0};
 }
 
-void KDTreeIndex::validate_tree()
+void KDTreeIndex::validate_tree(const uint8_t* coordinates, size_t num_points, uint stride)
 {
-  // TODO
+
+  Stack<subtree_t> stack;
+  stack.reserve(num_points/2);
+
+  stack.push(whole_tree());
+
+  while(!stack.is_empty())
+  {
+    const subtree_t subtree = stack.pop();
+
+    auto coordinate_for_index = [coordinates, stride, subtree, this](size_t entry_index) -> float {
+      return component_for_index(entry_index, subtree.split_dimension, coordinates, stride);
+    };
+
+    const size_t root_index = subtree.root();
+    const float split = coordinate_for_index(root_index);
+
+    for(size_t i=subtree.range.begin; i<root_index; ++i)
+      Q_ASSERT(coordinate_for_index(i) <= split);
+
+    for(size_t i=root_index; i<subtree.range.end; ++i)
+      Q_ASSERT(coordinate_for_index(i) >= split);
+
+    subtree_t left = subtree.left_subtree();
+    if(!left.is_leaf())
+      stack.push(left);
+    subtree_t right = subtree.right_subtree();
+    if(!right.is_leaf())
+      stack.push(right);
+  }
+}
+
+float KDTreeIndex::component_for_index(point_index_t point_index, uint8_t dimension, const uint8_t* coordinates, uint stride)
+{
+  float coordinate;
+  std::memcpy(&coordinate, coordinates + size_t(point_index)*stride + dimension*sizeof(float), sizeof(float));
+  return coordinate;
+}
+
+float KDTreeIndex::component_for_index(size_t entry_index, uint8_t dimension, const uint8_t* coordinates, uint stride) const
+{
+  return component_for_index(tree[entry_index], dimension, coordinates, stride);
+}
+
+glm::vec3 KDTreeIndex::coordinate_for_index(point_index_t point_index, const uint8_t* coordinates, uint stride)
+{
+  glm::vec3 coordinate;
+  std::memcpy(&coordinate, coordinates + size_t(point_index)*stride, 3*sizeof(float));
+  return coordinate;
+}
+
+glm::vec3 KDTreeIndex::coordinate_for_index(size_t entry_index, const uint8_t* coordinates, uint stride) const
+{
+  return coordinate_for_index(tree[entry_index], coordinates, stride);
 }
 
 bool KDTreeIndex::range_t::is_empty() const
