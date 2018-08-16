@@ -36,8 +36,8 @@ bool PlyImporter::import_implementation()
   parser.error_callback([format_message](std::size_t line, const std::string& message){print_error(format_message("Error while parsing ply file", line, message));});
 
   // == you may want to add those logging functions back in if you are debugging: ==
-//  parser.warning_callback([format_message](std::size_t line, const std::string& message){print_error(format_message("Warning for ply file", line, message));});
-//  parser.info_callback([format_message](std::size_t line, const std::string& message){print(format_message("Info: ", line, message));});
+//  parser.warning_callback([format_message](std::size_t line, const std::string& message){println_error(format_message("Warning for ply file", line, message));});
+//  parser.info_callback([format_message](std::size_t line, const std::string& message){println(format_message("Info: ", line, message));});
 
   PointCloud::vertex_t* new_vertex_x = nullptr;
   PointCloud::vertex_t* new_vertex_y = nullptr;

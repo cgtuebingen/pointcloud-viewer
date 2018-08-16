@@ -45,7 +45,7 @@ void KdTreeBuilder::build()
 {
   pointCloud.build_kd_tree([this](size_t done, size_t total) -> bool{
     size_t progress = (done*max_progress)/total;
-//    print("done: ", done, "  total: ", total, "  progress", progress);
+//    println("done: ", done, "  total: ", total, "  progress", progress);
     this->progress(int(progress));
     return !_is_aborted;
   });

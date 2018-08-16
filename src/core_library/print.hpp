@@ -20,12 +20,18 @@ template<typename... arg_t>
 std::string format(const arg_t&... args);
 
 template<typename... arg_t>
+std::ostream& println(const arg_t&... args);
+
+template<typename... arg_t>
 std::ostream& print(const arg_t&... args);
+
+template<typename... arg_t>
+std::ostream& println_error(const arg_t&... args);
 
 template<typename... arg_t>
 std::ostream& print_error(const arg_t&... args);
 
-#define PRINT(expression) print(#expression ": ", expression)
+#define PRINT(expression) println(#expression ": ", expression)
 
 #include <core_library/print.inl>
 
