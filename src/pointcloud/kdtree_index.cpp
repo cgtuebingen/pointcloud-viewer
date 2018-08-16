@@ -1,3 +1,4 @@
+#include <core_library/print.hpp>
 #include <pointcloud/kdtree_index.hpp>
 #include <QtGlobal>
 
@@ -62,22 +63,20 @@ std::pair<aabb_t, aabb_t> KDTreeIndex::aabbs_split_by(size_t point, const uint8_
 
   aabb_t aabb = total_aabb;
 
-  uint8_t next_split_dimension = 0;
-
-  traverse_kd_tree_to_point(point, [&aabb, &next_split_dimension, point, coordinate_for_index](subtree_t tree){
+  subtree_t tree = traverse_kd_tree_to_point(point, [&aabb, point, coordinate_for_index](subtree_t tree){
     const uint8_t split_dimension = tree.split_dimension;
     const size_t root = tree.root();
     if(point < root)
       aabb.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(root, split_dimension));
     else
       aabb.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(root, split_dimension));
-    next_split_dimension = (split_dimension+1) % 3;
   });
 
+  const uint8_t split_dimension = tree.split_dimension;
   std::pair<aabb_t, aabb_t> aabbs_split_by_point = std::make_pair(aabb, aabb);
 
-  aabbs_split_by_point.first.max_point[next_split_dimension] = glm::min(aabb.max_point[next_split_dimension], coordinate_for_index(point, next_split_dimension));
-  aabbs_split_by_point.second.min_point[next_split_dimension] = glm::max(aabb.min_point[next_split_dimension], coordinate_for_index(point, next_split_dimension));
+  aabbs_split_by_point.first.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(point, split_dimension));
+  aabbs_split_by_point.second.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(point, split_dimension));
 
   return aabbs_split_by_point;
 }
