@@ -1,0 +1,14 @@
+clone:
+  default:
+    image: plugins/git
+    recursive: true
+    submodule_override:
+      glm: https://github.com/g-truc/glm.git
+      glhelper: https://github.com/Robert42/glhelper.git
+pipeline:
+  build:
+    image: pcl_viewer-qt5.9
+    commands:
+      - mkdir build && cd build
+      - cmake ../src/
+      - make
