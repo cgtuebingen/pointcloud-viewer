@@ -47,9 +47,18 @@ private:
     range_t range;
     uint8_t split_dimension;
 
+    subtree_t(const subtree_t&) = default;
+    subtree_t(subtree_t&&) = default;
+    subtree_t& operator=(const subtree_t&) = default;
+    subtree_t& operator=(subtree_t&&) = default;
+
     size_t root() const{return range.median();}
-    subtree_t left_subtree() const {return subtree_t{range.left_subtree(), uint8_t((split_dimension+1)%3)};}
-    subtree_t right_subtree() const {return subtree_t{range.right_subtree(), uint8_t((split_dimension+1)%3)};}
+    size_t is_leaf() const{return range.is_leaf();}
+    subtree_t left_subtree() const {return subtree(range.left_subtree());}
+    subtree_t right_subtree() const {return subtree(range.right_subtree());}
+
+  private:
+    subtree_t subtree(range_t range) const;
   };
 
   aabb_t total_aabb;

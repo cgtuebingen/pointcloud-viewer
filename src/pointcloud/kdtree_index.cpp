@@ -1,5 +1,6 @@
 #include <core_library/print.hpp>
 #include <pointcloud/kdtree_index.hpp>
+#include <pointcloud/kdtree_index.hpp>
 #include <QtGlobal>
 
 #include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
@@ -104,16 +105,18 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
   for(size_t i=0; i<num_points; ++i)
     tree[i] = i;
 
-  struct stack_element_t
-  {
-    range_t subtree;
-    uint8_t dimension;
-  };
-
-  std::vector<stack_element_t> stack;
+  std::vector<subtree_t> stack;
   stack.reserve(num_points/2);
 
-  stack.push_back(stack_element_t{range_t{0, num_points}, 0});
+  auto push = [&stack](const subtree_t subtree){stack.push_back(subtree);};
+  auto pop = [&stack](){
+    Q_ASSERT(!stack.empty());
+    subtree_t subtree = *(stack.end()-1);
+    stack.pop_back();
+    return subtree;
+  };
+
+  push(whole_tree());
 
   size_t num_processed_points = 0;
   size_t feedback_count_down;
@@ -125,30 +128,28 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
 
   while(!stack.empty())
   {
-    const range_t current_tree = (stack.end()-1)->subtree;
-    const uint8_t dimension = (stack.end()-1)->dimension;
-    stack.pop_back();
+    const subtree_t current_tree = pop();
+    const uint8_t dimension = current_tree.split_dimension;
     num_processed_points++;
 
     boost::sort::block_indirect_sort(
-          tree.data()+current_tree.begin,
-          tree.data()+current_tree.end,
+          tree.data()+current_tree.range.begin,
+          tree.data()+current_tree.range.end,
           [dimension, coordinate_for_index](size_t a, size_t b){return coordinate_for_index(a, dimension) < coordinate_for_index(b, dimension);});
 
-    const uint8_t next_dimension = (dimension + 1) % 3;
-    const range_t left_subtree = current_tree.left_subtree();
+    const subtree_t left_subtree = current_tree.left_subtree();
     if(!left_subtree.is_leaf())
-      stack.push_back(stack_element_t{left_subtree, next_dimension});
+      push(left_subtree);
     else
-      num_processed_points += left_subtree.size();
+      num_processed_points += left_subtree.range.size();
 
-    const range_t right_subtree = current_tree.right_subtree();
+    const subtree_t right_subtree = current_tree.right_subtree();
     if(!right_subtree.is_leaf())
-      stack.push_back(stack_element_t{right_subtree, next_dimension});
+      push(right_subtree);
     else
-      num_processed_points += right_subtree.size();
+      num_processed_points += right_subtree.range.size();
 
-    if(Q_UNLIKELY(feedback_count_down < current_tree.size()))
+    if(Q_UNLIKELY(feedback_count_down < current_tree.range.size()))
     {
       reset_feedback_countdown();
       if(!feedback(num_processed_points, num_points))
@@ -158,7 +159,7 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
       }
     }else
     {
-      feedback_count_down -= current_tree.size();
+      feedback_count_down -= current_tree.range.size();
     }
   }
 }
@@ -221,4 +222,15 @@ KDTreeIndex::range_t KDTreeIndex::range_t::left_subtree() const
 KDTreeIndex::range_t KDTreeIndex::range_t::right_subtree() const
 {
   return range_t{median()+1, end};
+}
+
+KDTreeIndex::subtree_t KDTreeIndex::subtree_t::subtree(KDTreeIndex::range_t range) const
+{
+  const uint8_t new_split_dimension = (split_dimension + 1) % 3;
+
+  const size_t root = this->root();
+  Q_ASSERT(range.size() > 0);
+  Q_ASSERT(root<range.begin || range.end<=root);
+
+  return subtree_t{range, new_split_dimension};
 }
