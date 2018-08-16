@@ -66,6 +66,8 @@ private:
 
   subtree_t traverse_kd_tree_to_point(size_t point, std::function<void(subtree_t inner_subtree)> visitor) const;
   subtree_t whole_tree() const;
+
+  void validate_tree();
 };
 
 #endif // POINTCLOUD_KDTREE_INDEX_HPP

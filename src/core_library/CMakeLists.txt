@@ -10,6 +10,8 @@ add_library(core_library STATIC
   padding.hpp
   print.hpp
   print.inl
+  stack.hpp
+  stack.inl
   types.hpp
 )
 

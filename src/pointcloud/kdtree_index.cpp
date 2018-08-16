@@ -1,5 +1,5 @@
 #include <core_library/print.hpp>
-#include <pointcloud/kdtree_index.hpp>
+#include <core_library/stack.hpp>
 #include <pointcloud/kdtree_index.hpp>
 #include <QtGlobal>
 
@@ -105,18 +105,10 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
   for(size_t i=0; i<num_points; ++i)
     tree[i] = i;
 
-  std::vector<subtree_t> stack;
+  Stack<subtree_t> stack;
   stack.reserve(num_points/2);
 
-  auto push = [&stack](const subtree_t subtree){stack.push_back(subtree);};
-  auto pop = [&stack](){
-    Q_ASSERT(!stack.empty());
-    subtree_t subtree = *(stack.end()-1);
-    stack.pop_back();
-    return subtree;
-  };
-
-  push(whole_tree());
+  stack.push(whole_tree());
 
   size_t num_processed_points = 0;
   size_t feedback_count_down;
@@ -126,9 +118,9 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
   };
   reset_feedback_countdown();
 
-  while(!stack.empty())
+  while(!stack.is_empty())
   {
-    const subtree_t current_tree = pop();
+    const subtree_t current_tree = stack.pop();
     const uint8_t dimension = current_tree.split_dimension;
     num_processed_points++;
 
@@ -139,13 +131,13 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
 
     const subtree_t left_subtree = current_tree.left_subtree();
     if(!left_subtree.is_leaf())
-      push(left_subtree);
+      stack.push(left_subtree);
     else
       num_processed_points += left_subtree.range.size();
 
     const subtree_t right_subtree = current_tree.right_subtree();
     if(!right_subtree.is_leaf())
-      push(right_subtree);
+      stack.push(right_subtree);
     else
       num_processed_points += right_subtree.range.size();
 
@@ -162,6 +154,10 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
       feedback_count_down -= current_tree.range.size();
     }
   }
+
+#ifndef NDEBUG
+  validate_tree();
+#endif
 }
 
 bool KDTreeIndex::is_initialized() const
@@ -191,6 +187,11 @@ KDTreeIndex::subtree_t KDTreeIndex::traverse_kd_tree_to_point(size_t point, std:
 KDTreeIndex::subtree_t KDTreeIndex::whole_tree() const
 {
   return subtree_t{range_t{0, this->tree.size()}, 0};
+}
+
+void KDTreeIndex::validate_tree()
+{
+  // TODO
 }
 
 bool KDTreeIndex::range_t::is_empty() const
@@ -229,7 +230,6 @@ KDTreeIndex::subtree_t KDTreeIndex::subtree_t::subtree(KDTreeIndex::range_t rang
   const uint8_t new_split_dimension = (split_dimension + 1) % 3;
 
   const size_t root = this->root();
-  Q_ASSERT(range.size() > 0);
   Q_ASSERT(root<range.begin || range.end<=root);
 
   return subtree_t{range, new_split_dimension};
