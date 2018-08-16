@@ -3,6 +3,7 @@
 
 #include <core_library/types.hpp>
 #include <geometry/aabb.hpp>
+#include <geometry/ray.hpp>
 #include <glm/glm.hpp>
 
 #include <vector>

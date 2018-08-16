@@ -10,7 +10,8 @@ compile time footprint
 
 glm::vec2 xy(glm::vec2 xy);
 glm::vec2 xy(glm::vec3 xyz);
-glm::vec2 xy(glm::vec4 xyzw);
+glm::vec2 xz(glm::vec4 xyzw);
+glm::vec2 yz(glm::vec4 xyzw);
 glm::vec3 xyz(glm::vec3 xyz);
 glm::vec3 xyz(glm::vec4 xyzw);
 
