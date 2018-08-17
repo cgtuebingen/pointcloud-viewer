@@ -26,12 +26,12 @@ glm::mat4 Camera::view_perspective_matrix() const
   return perspective_matrix() * view_matrix();
 }
 
-ray_t Camera::raye_for_screenspace_point(glm::vec2 screenspace_point) const
+ray_t Camera::ray_for_screenspace_point(glm::vec2 screenspace_point) const
 {
-  return raye_for_clipspace_point(screenspace_to_clipspace(screenspace_point));
+  return ray_for_clipspace_point(screenspace_to_clipspace(screenspace_point));
 }
 
-ray_t Camera::raye_for_clipspace_point(glm::vec2 clipspace_point) const
+ray_t Camera::ray_for_clipspace_point(glm::vec2 clipspace_point) const
 {
   const glm::mat4 inverse_perspective_matrix = glm::inverse(perspective_matrix());
   const glm::vec3 view_space = glm::normalize(transform_point(inverse_perspective_matrix, glm::vec3(clipspace_point, -1.f)));

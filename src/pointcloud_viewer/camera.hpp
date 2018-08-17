@@ -24,8 +24,8 @@ public:
   glm::mat4 view_matrix() const;
   glm::mat4 view_perspective_matrix() const;
 
-  ray_t raye_for_screenspace_point(glm::vec2 screenspace_point) const;
-  ray_t raye_for_clipspace_point(glm::vec2 clipspace_point) const;
+  ray_t ray_for_screenspace_point(glm::vec2 screenspace_point) const;
+  ray_t ray_for_clipspace_point(glm::vec2 clipspace_point) const;
 
   static glm::vec2 screenspace_to_clipspace(glm::vec2 screenspace_point);
 };

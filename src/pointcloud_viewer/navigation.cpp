@@ -169,7 +169,11 @@ void Navigation::mousePressEvent(QMouseEvent* event)
     }else if(event->button() == Qt::LeftButton)
     {
       if(event->modifiers() == Qt::NoModifier)
-        simpleLeftClick(glm::vec2(event->x(), event->y()) / glm::vec2(viewport->width()-1, viewport->height()-1));
+      {
+        const glm::vec2 screenspace = glm::vec2(event->x(), event->y()) / glm::vec2(viewport->width()-1, viewport->height()-1);
+
+        simpleLeftClick(screenspace);
+      }
     }
   }
 }
