@@ -20,6 +20,16 @@ inline cone_t cone_from_ray_tan_angle(ray_t ray, float tan_half_cone_angle)
   return cone;
 }
 
+bool cone_t::contains(glm::vec3 point) const
+{
+  const ray_t ray = center_ray();
+
+  float t_nearest;
+  float distance = ray.distance_to(point, &t_nearest);
+
+  return t_nearest > 0.f && cone_radius_at(t_nearest)>=distance;
+}
+
 inline ray_t cone_t::center_ray() const
 {
   ray_t ray;
@@ -33,6 +43,11 @@ inline ray_t cone_t::center_ray() const
 inline float cone_t::half_angle() const
 {
   return glm::atan(tan_half_angle);
+}
+
+float cone_t::cone_radius_at(float t) const
+{
+  return tan_half_angle * t;
 }
 
 inline ray_t cone_t::closest_ray_towards(glm::vec3 point) const

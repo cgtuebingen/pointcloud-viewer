@@ -33,19 +33,20 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
   {
     const stack_entry_t current = stack.pop();
 
+    // intersectiong a cone with an aabb is too complicated, instead we get the closest ray within the cone to the aabb center
+    ray_t ray_for_intersection_test = cone.closest_ray_towards(current.aabb.center_point());
+
     float near_distance;
     float far_distance;
-    if(!ray.intersects_aabb(current.aabb, &near_distance, &far_distance) || near_distance>distance_of_best_point)
+    if(!ray_for_intersection_test.intersects_aabb(current.aabb, &near_distance, &far_distance) || near_distance>distance_of_best_point)
       continue;
 
     point_index_t current_point = tree[current.subtree.root()];
     glm::vec3 current_coordinate = coordinate_for_index(current_point, coordinates, stride);
 
-    float t_nearest;
-    float distance = ray.distance_to(current_coordinate, &t_nearest);
-    if(distance < t_nearest)
+    if(cone.contains(current_coordinate))
     {
-      float current_distance = glm::distance(ray.origin, current_coordinate);
+      float current_distance = glm::distance(cone.origin, current_coordinate);
       if(distance_of_best_point > current_distance)
       {
         distance_of_best_point = current_distance;
@@ -53,7 +54,8 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
       }
     }
 
-    TODO: add left and right subtrees to the stack
+
+    // TODO: add left and right subtrees to the stack
   }
 
   return best_point;

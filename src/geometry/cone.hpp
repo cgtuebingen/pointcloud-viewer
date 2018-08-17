@@ -14,8 +14,11 @@ public:
   static cone_t cone_from_ray_angle(ray_t ray, float half_cone_angle);
   static cone_t cone_from_ray_tan_angle(ray_t ray, float tan_half_cone_angle);
 
+  bool contains(glm::vec3 point) const;
+
   ray_t center_ray() const;
   float half_angle() const;
+  float cone_radius_at(float t) const;
 
   ray_t closest_ray_towards(glm::vec3 point) const;
 

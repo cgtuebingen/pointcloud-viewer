@@ -17,6 +17,7 @@ struct aabb_t
 
   glm::vec3 toUnitSpace(const glm::vec3& v) const;
 
+  glm::vec3 center_point() const;
   glm::vec3 size() const;
 
   void operator |= (const aabb_t& other);
