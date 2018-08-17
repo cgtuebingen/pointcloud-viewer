@@ -21,12 +21,26 @@ inline glm::vec3 ray_t::operator[](float t) const
 
 inline glm::vec3 ray_t::nearest_point(glm::vec3 point) const
 {
-  return origin + direction * glm::max(0.f, dot(direction, point-origin));
+  float t_nearest;
+  return nearest_point(point, &t_nearest);
+}
+
+inline glm::vec3 ray_t::nearest_point(glm::vec3 point, float* t_nearest) const
+{
+  *t_nearest = glm::max(0.f, dot(direction, point-origin));
+
+  return origin + direction * *t_nearest;
 }
 
 inline float ray_t::distance_to(glm::vec3 point) const
 {
-  return distance(nearest_point(point), point);
+  float t_nearest;
+  return distance_to(point, &t_nearest);
+}
+
+inline float ray_t::distance_to(glm::vec3 point, float* t_nearest) const
+{
+  return distance(nearest_point(point, t_nearest), point);
 }
 
 inline bool ray_t::intersects_aabb(aabb_t aabb, float* intersection_distance_front, float* intersection_distance_back) const

@@ -3,7 +3,7 @@
 
 #include <core_library/types.hpp>
 #include <geometry/aabb.hpp>
-#include <geometry/ray.hpp>
+#include <geometry/cone.hpp>
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -12,8 +12,13 @@
 class KDTreeIndex
 {
 public:
+  enum class point_index_t : size_t {INVALID = std::numeric_limits<size_t>::max()};
+  typedef point_index_t POINT_INDEX;
+
   KDTreeIndex();
   ~KDTreeIndex();
+
+  point_index_t pick_point(cone_t cone, const uint8_t* coordinates, uint stride, point_index_t fallback=POINT_INDEX::INVALID) const;
 
   size_t root_point() const;
   bool has_children(size_t point) const;
@@ -29,8 +34,6 @@ public:
   bool is_initialized() const;
 
 private:
-  enum class point_index_t : size_t {};
-
   struct range_t
   {
     size_t begin, end;

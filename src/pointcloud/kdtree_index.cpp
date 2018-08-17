@@ -13,6 +13,52 @@ KDTreeIndex::~KDTreeIndex()
 {
 }
 
+KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* coordinates, uint stride, KDTreeIndex::point_index_t fallback) const
+{
+  point_index_t best_point = fallback;
+  float distance_of_best_point = std::numeric_limits<float>::infinity();
+
+  struct stack_entry_t
+  {
+    subtree_t subtree;
+    aabb_t aabb;
+  };
+
+  Stack<stack_entry_t> stack;
+  stack.reserve(tree.size());
+
+  stack.push(stack_entry_t{whole_tree(), total_aabb});
+
+  while(!stack.is_empty())
+  {
+    const stack_entry_t current = stack.pop();
+
+    float near_distance;
+    float far_distance;
+    if(!ray.intersects_aabb(current.aabb, &near_distance, &far_distance) || near_distance>distance_of_best_point)
+      continue;
+
+    point_index_t current_point = tree[current.subtree.root()];
+    glm::vec3 current_coordinate = coordinate_for_index(current_point, coordinates, stride);
+
+    float t_nearest;
+    float distance = ray.distance_to(current_coordinate, &t_nearest);
+    if(distance < t_nearest)
+    {
+      float current_distance = glm::distance(ray.origin, current_coordinate);
+      if(distance_of_best_point > current_distance)
+      {
+        distance_of_best_point = current_distance;
+        best_point = current_point;
+      }
+    }
+
+    TODO: add left and right subtrees to the stack
+  }
+
+  return best_point;
+}
+
 size_t KDTreeIndex::root_point() const
 {
   return range_t{0, this->tree.size()}.median();

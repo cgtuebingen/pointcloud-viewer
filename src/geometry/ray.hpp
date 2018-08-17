@@ -15,7 +15,9 @@ public:
 
   glm::vec3 operator[](float t) const;
 
+  glm::vec3 nearest_point(glm::vec3 point, float* t_nearest) const;
   glm::vec3 nearest_point(glm::vec3 point) const;
+  float distance_to(glm::vec3 point, float* t_nearest) const;
   float distance_to(glm::vec3 point) const;
 
   bool intersects_aabb(aabb_t aabb, float* intersection_distance_front, float* intersection_distance_back) const;
