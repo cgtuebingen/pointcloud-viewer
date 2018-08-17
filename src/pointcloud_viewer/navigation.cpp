@@ -166,6 +166,10 @@ void Navigation::mousePressEvent(QMouseEvent* event)
         enableMode(Navigation::TURNTABLE_SHIFT);
       else if(event->modifiers() == Qt::ControlModifier)
         enableMode(Navigation::TURNTABLE_ZOOM);
+    }else if(event->button() == Qt::LeftButton)
+    {
+      if(event->modifiers() == Qt::NoModifier)
+        simpleLeftClick(glm::vec2(event->x(), event->y()) / glm::vec2(viewport->width()-1, viewport->height()-1));
     }
   }
 }

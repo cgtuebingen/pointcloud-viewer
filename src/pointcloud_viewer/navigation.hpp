@@ -49,6 +49,8 @@ protected:
 signals:
   void mouse_sensitivity_value_changed(int value);
 
+  void simpleLeftClick(glm::vec2 point);
+
 private:
   enum mode_t
   {

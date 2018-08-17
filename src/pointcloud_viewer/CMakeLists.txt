@@ -37,6 +37,8 @@ add_executable(pointcloud_viewer
   mainwindow.hpp
   navigation.cpp
   navigation.hpp
+  pointcloud_inspector.cpp
+  pointcloud_inspector.hpp
   version_text.cpp
   version_text.hpp
   viewport.cpp

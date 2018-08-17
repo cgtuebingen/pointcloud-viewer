@@ -8,6 +8,7 @@
 
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/kdtree_inspector.hpp>
+#include <pointcloud_viewer/pointcloud_inspector.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
@@ -31,6 +32,7 @@ private:
   Viewport viewport;
   Flythrough flythrough;
   KdTreeInspector kdTreeInspector;
+  PointCloudInspector pointCloudInspector;
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 
