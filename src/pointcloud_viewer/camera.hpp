@@ -2,6 +2,7 @@
 #define POINTCLOUDVIEWER_CAMERA_HPP_
 
 #include <geometry/frame.hpp>
+#include <geometry/ray.hpp>
 
 /*
 Object storing the camera parameters and returning the camera matrices
@@ -22,6 +23,11 @@ public:
   glm::mat4 perspective_matrix() const;
   glm::mat4 view_matrix() const;
   glm::mat4 view_perspective_matrix() const;
+
+  ray_t raye_for_screenspace_point(glm::vec2 screenspace_point) const;
+  ray_t raye_for_clipspace_point(glm::vec2 clipspace_point) const;
+
+  static glm::vec2 screenspace_to_clipspace(glm::vec2 screenspace_point);
 };
 
 #endif // POINTCLOUDVIEWER_CAMERA_HPP_
