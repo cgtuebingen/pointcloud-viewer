@@ -6,7 +6,7 @@
 #include <geometry/aabb.hpp>
 
 /*
-Stores the whole point cloud
+Stores the whole point cloud.
 */
 class PointCloud final
 {

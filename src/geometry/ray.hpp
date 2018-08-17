@@ -3,6 +3,9 @@
 
 #include <geometry/aabb.hpp>
 
+// Representation of a single ray
+//
+// Used for intersection tests
 struct ray_t final
 {
 public:

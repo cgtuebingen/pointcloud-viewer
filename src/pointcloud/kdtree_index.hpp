@@ -9,6 +9,11 @@
 #include <vector>
 #include <functional>
 
+/**
+Representation of an Kd-Tree of all points.
+
+This allowes picking single points.
+*/
 class KDTreeIndex
 {
 public:

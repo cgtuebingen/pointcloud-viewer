@@ -3,6 +3,8 @@
 
 #include <vector>
 
+// Simple stack class
+
 template<typename T>
 class Stack
 {
