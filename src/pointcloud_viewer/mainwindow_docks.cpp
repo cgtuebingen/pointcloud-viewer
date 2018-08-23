@@ -17,6 +17,7 @@
 #include <QTabWidget>
 #include <QCheckBox>
 #include <QToolButton>
+#include <QSettings>
 
 void MainWindow::initDocks()
 {
@@ -165,6 +166,14 @@ QDockWidget* MainWindow::initDataInspectionDock()
   QObject::connect(&kdTreeInspector, &KdTreeInspector::canBuildKdTreeChanged, unlockButton, &QPushButton::setEnabled);
   QObject::connect(unlockButton, &QPushButton::clicked, &kdTreeInspector, &KdTreeInspector::build_kdtree);
   vbox->addWidget(unlockButton);
+
+  QCheckBox* autoUnlockButton = new QCheckBox("&Automatically Unlock after loading", this);
+  autoUnlockButton->setChecked(kdTreeInspector.autoBuildKdTreeAfterLoading());
+  QObject::connect(autoUnlockButton, &QCheckBox::toggled, &kdTreeInspector, &KdTreeInspector::setAutoBuildKdTreeAfterLoading);
+  QObject::connect(&kdTreeInspector, &KdTreeInspector::canBuildKdTreeChanged, unlockButton, &QCheckBox::setChecked);
+  vbox->addWidget(autoUnlockButton);
+
+  vbox->addSpacing(16);
 
 #ifndef NDEBUG
   Visualization::settings_t current_settings = Visualization::settings_t::default_settings();

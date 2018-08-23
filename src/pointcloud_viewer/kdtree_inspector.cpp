@@ -3,6 +3,7 @@
 #include <pointcloud/pointcloud.hpp>
 
 #include <QDebug>
+#include <QSettings>
 
 bool KdTreeInspector::canBuildKdTree() const
 {
@@ -12,6 +13,24 @@ bool KdTreeInspector::canBuildKdTree() const
 bool KdTreeInspector::hasKdTreeAvailable() const
 {
   return m_hasKdTreeAvailable;
+}
+
+bool KdTreeInspector::autoBuildKdTreeAfterLoading() const
+{
+  return m_autoBuildKdTreeAfterLoading;
+}
+
+KdTreeInspector::KdTreeInspector()
+{
+  QSettings settings;
+  setAutoBuildKdTreeAfterLoading(settings.value("import/auto_build_kdtree_after_loading", false).toBool());
+}
+
+KdTreeInspector::~KdTreeInspector()
+{
+  QSettings settings;
+  settings.setValue("import/auto_build_kdtree_after_loading", autoBuildKdTreeAfterLoading());
+
 }
 
 // Called when athe point-cloud was unloaded
@@ -32,6 +51,9 @@ void KdTreeInspector::handle_new_point_cloud(QSharedPointer<PointCloud> point_cl
   this->setCanBuildKdTree(this->point_cloud->can_build_kdtree());
   this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());
   kd_tree_inspection_move_to_root();
+
+  if(autoBuildKdTreeAfterLoading())
+    build_kdtree();
 }
 
 // build the kd tree (also showing a progress dialog)
@@ -87,6 +109,15 @@ void KdTreeInspector::kd_tree_inspection_select_right()
 {
   _left_selected = !_left_selected;
   update_kd_tree_inspection();
+}
+
+void KdTreeInspector::setAutoBuildKdTreeAfterLoading(bool autoBuildKdTreeAfterLoading)
+{
+  if (m_autoBuildKdTreeAfterLoading == autoBuildKdTreeAfterLoading)
+    return;
+
+  m_autoBuildKdTreeAfterLoading = autoBuildKdTreeAfterLoading;
+  emit autoBuildKdTreeAfterLoadingChanged(m_autoBuildKdTreeAfterLoading);
 }
 
 void KdTreeInspector::setCanBuildKdTree(bool canBuildKdTree)
