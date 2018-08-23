@@ -264,23 +264,35 @@ void KDTreeIndex::validate_tree(const uint8_t* coordinates, size_t num_points, u
     const size_t root_index = subtree.root();
     const glm::vec3 split = coordinate_for_index(root_index);
     const uint8_t split_dimension = subtree.split_dimension;
+    std::pair<aabb_t, aabb_t> split_aabb = aabb.split(split_dimension, split);
 
     Q_ASSERT(aabb.contains(split));
 
+    aabb_t left_aabb = split_aabb.first;
+    aabb_t right_aabb = split_aabb.second;
+
     for(size_t i=subtree.range.begin; i<root_index; ++i)
-      Q_ASSERT(coordinate_for_index(i)[split_dimension] <= split[split_dimension]);
+    {
+      const glm::vec3 p = coordinate_for_index(i);
+      Q_ASSERT(left_aabb.contains(p));
+      Q_ASSERT(p[split_dimension] <= split[split_dimension]);
+    }
 
     for(size_t i=root_index; i<subtree.range.end; ++i)
+    {
+      const glm::vec3 p = coordinate_for_index(i);
+      Q_ASSERT(right_aabb.contains(p));
       Q_ASSERT(coordinate_for_index(i)[split_dimension] >= split[split_dimension]);
+    }
 
-    std::pair<aabb_t, aabb_t> split_aabb = aabb.split(split_dimension, split);
 
+    // TODO: don't check for each subtree, whether is is a leaf. instead, check for the current tree, whether it is a leaf
     subtree_t left = subtree.left_subtree();
-    if(!left.is_leaf())
-      stack.push(stack_entry_t{split_aabb.first, left});
+    if(!subtree.is_leaf())
+      stack.push(stack_entry_t{left_aabb, left});
     subtree_t right = subtree.right_subtree();
     if(!right.is_leaf())
-      stack.push(stack_entry_t{split_aabb.second, right});
+      stack.push(stack_entry_t{right_aabb, right});
   }
 }
 
