@@ -32,6 +32,8 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
 
   stack.push(stack_entry_t{whole_tree(), total_aabb});
 
+  const ray_t center_ray = cone.center_ray();
+
   while(!stack.is_empty())
   {
     const stack_entry_t current = stack.pop();
@@ -52,9 +54,17 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
 
     if(cone.contains(current_coordinate))
     {
-      // TODO inread of getting the distace of the point to the cone origin, first determine the distance to the center ray of the cone, than add the distance along the center ray?
-
+#if 0
       float current_distance = glm::distance(cone.origin, current_coordinate);
+#else
+      float distance_along_ray;
+      float distance_to_ray = center_ray.distance_to(current_coordinate, &distance_along_ray);
+      float current_distance = distance_to_ray + distance_along_ray;
+
+      if(Q_UNLIKELY(distance_along_ray < 0.f))
+        current_distance = std::numeric_limits<float>::infinity();
+#endif
+
       if(distance_of_best_point > current_distance)
       {
         distance_of_best_point = current_distance;
