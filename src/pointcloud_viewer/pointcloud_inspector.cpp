@@ -18,6 +18,9 @@ PointCloudInspector::~PointCloudInspector()
 // Called when athe point-cloud was unloaded
 void PointCloudInspector::unload_all_point_clouds()
 {
+  viewport.visualization().deselect_picked_point();
+  deselect_picked_point();
+
   this->point_cloud.clear();
 }
 
