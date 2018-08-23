@@ -66,16 +66,13 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
     const aabb_t left_aabb = sub_aabbs.first;
     const aabb_t right_aabb = sub_aabbs.second;
 
-//    if(!current.subtree.is_leaf())
-    {
-      const subtree_t left_subtree = current.subtree.left_subtree();
-      const subtree_t right_subtree = current.subtree.right_subtree();
+    const subtree_t left_subtree = current.subtree.left_subtree();
+    const subtree_t right_subtree = current.subtree.right_subtree();
 
-      if(!left_subtree.is_empty())
-        stack.push(stack_entry_t{left_subtree, left_aabb});
-      if(!right_subtree.is_empty())
-        stack.push(stack_entry_t{right_subtree, right_aabb});
-    }
+    if(!left_subtree.is_empty())
+      stack.push(stack_entry_t{left_subtree, left_aabb});
+    if(!right_subtree.is_empty())
+      stack.push(stack_entry_t{right_subtree, right_aabb});
   }
 
   return best_point;
@@ -212,7 +209,7 @@ void KDTreeIndex::build(aabb_t total_aabb, const uint8_t* coordinates, size_t nu
   }
 
 #ifndef NDEBUG
-  validate_tree(coordinates, num_points, stride);
+//  validate_tree(coordinates, num_points, stride);
 #endif
 }
 
