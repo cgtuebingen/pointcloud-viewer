@@ -16,6 +16,10 @@ struct aabb_t
   bool is_nan() const {return glm::any(glm::isnan(min_point)) || glm::any(glm::isnan(max_point));}
   bool is_valid() const{return !is_inf() && !is_nan() && all(greaterThan(max_point, min_point));}
 
+  bool contains(glm::vec3 point, float epsilon=1.e-6f) const;
+
+  std::pair<aabb_t, aabb_t> split(int split_dimension, glm::vec3 split_point) const;
+
   // Maps a point lineary to the unitspace within the aabb.
   // toUnitSpace(min_point) return vec3(0)
   // toUnitSpace(max_point) return vec3(1)

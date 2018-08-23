@@ -41,6 +41,7 @@ public:
   static DebugMesh grid(int repetition_per_side, float cell_size, glm::vec3 color, glm::vec3 origin=glm::vec3(0), glm::vec3 axis_1 = glm::vec3(1,0,0), glm::vec3 axis_2 = glm::vec3(0,1,0));
   static DebugMesh path(int path_length, std::function<frame_t(int)> frame_for_index, int selection);
   static DebugMesh cone(cone_t cone);
+  static DebugMesh highlighted_point(glm::vec3 coordinate, glm::vec3 color, float radius);
 
 private:
   gl::Buffer vertex_buffer;

@@ -25,6 +25,10 @@ public slots:
 
   void pick_point(glm::ivec2 pixel);
 
+signals:
+  void deselect_picked_point();
+  void selected_point(glm::vec3 coordinate, glm::u8vec3 color);
+
 private:
   Viewport& viewport;
   QSharedPointer<PointCloud> point_cloud;

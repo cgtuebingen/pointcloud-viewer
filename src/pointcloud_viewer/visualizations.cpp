@@ -27,6 +27,8 @@ void Visualization::render()
     debug_mesh_renderer.render(camera_path);
   if(settings.enable_picked_cone)
     debug_mesh_renderer.render(picked_cone);
+  if(settings.enable_selected_point)
+    debug_mesh_renderer.render(selected_point);
   if(settings.enable_kdtree_as_aabb)
   {
     debug_mesh_renderer.render(kdtree_current_point);
@@ -59,6 +61,16 @@ void Visualization::set_kdtree_as_aabb(aabb_t highlighted_aabb, glm::vec3 separa
 void Visualization::set_picked_cone(cone_t picked_cone)
 {
   this->picked_cone = DebugMesh::cone(picked_cone);
+}
+
+void Visualization::deselect_picked_point()
+{
+  this->selected_point = DebugMesh();
+}
+
+void Visualization::select_picked_point(glm::vec3 coordinate, glm::u8vec3 color, float radius)
+{
+  this->selected_point = DebugMesh::highlighted_point(coordinate, glm::vec3(color) / 255.f, radius);
 }
 
 Visualization::settings_t Visualization::settings_t::enable_all()

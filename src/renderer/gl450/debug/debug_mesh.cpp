@@ -201,6 +201,29 @@ DebugMesh DebugMesh::cone(cone_t cone)
   return generator.to_mesh();
 }
 
+DebugMesh DebugMesh::highlighted_point(glm::vec3 coordinate, glm::vec3 color, float radius)
+{
+  Generator generator;
+  generator.push_matrix(coordinate);
+
+  generator.next_attribute.color = color;
+
+  generator.add_sphere(radius, 64);
+
+  for(int d=0; d<3; ++d)
+  {
+    glm::vec3 p(0.f);
+
+    p[d] = radius;
+
+    generator.add_vertex(p);
+    generator.add_vertex(-p);
+  }
+
+  generator.pop_matrix();
+  return generator.to_mesh();
+}
+
 
 // ======== Renderer ============================================================
 

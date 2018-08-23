@@ -15,6 +15,9 @@ KDTreeIndex::~KDTreeIndex()
 
 KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* coordinates, uint stride, KDTreeIndex::point_index_t fallback) const
 {
+  if(tree.empty())
+    return fallback;
+
   point_index_t best_point = fallback;
   float distance_of_best_point = std::numeric_limits<float>::infinity();
 
@@ -33,6 +36,7 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
   {
     const stack_entry_t current = stack.pop();
 
+
     // intersectiong a cone with an aabb is too complicated, instead we get the closest ray within the cone to the aabb center
     ray_t ray_for_intersection_test = cone.closest_ray_towards(current.aabb.center_point());
 
@@ -44,8 +48,12 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
     point_index_t current_point = tree[current.subtree.root()];
     glm::vec3 current_coordinate = coordinate_for_index(current_point, coordinates, stride);
 
+    Q_ASSERT(current.aabb.contains(current_coordinate));
+
     if(cone.contains(current_coordinate))
     {
+      // TODO inread of getting the distace of the point to the cone origin, first determine the distance to the center ray of the cone, than add the distance along the center ray?
+
       float current_distance = glm::distance(cone.origin, current_coordinate);
       if(distance_of_best_point > current_distance)
       {
@@ -54,8 +62,13 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
       }
     }
 
+    std::pair<aabb_t, aabb_t> sub_aabbs = current.aabb.split(current.subtree.split_dimension, current_coordinate);
 
-    // TODO: add left and right subtrees to the stack
+    if(!current.subtree.is_leaf())
+    {
+      stack.push(stack_entry_t{current.subtree.left_subtree(), sub_aabbs.first});
+      stack.push(stack_entry_t{current.subtree.right_subtree(), sub_aabbs.second});
+    }
   }
 
   return best_point;
@@ -92,31 +105,30 @@ size_t KDTreeIndex::parent_of(size_t point) const
 
 std::pair<aabb_t, aabb_t> KDTreeIndex::aabbs_split_by(size_t point, const uint8_t* coordinates, uint stride) const
 {
-  auto coordinate_for_index = [coordinates, stride, this](size_t entry_index, uint8_t dimension) -> float {
-    return component_for_index(entry_index, dimension, coordinates, stride);
+  auto coordinate_for_index = [coordinates, stride, this](size_t entry_index) -> glm::vec3 {
+    return KDTreeIndex::coordinate_for_index(entry_index, coordinates, stride);
   };
 
   aabb_t aabb = total_aabb;
 
   subtree_t tree = traverse_kd_tree_to_point(point, [&aabb, point, coordinate_for_index](subtree_t tree){
-    const uint8_t split_dimension = tree.split_dimension;
-    const size_t root = tree.root();
+    size_t root = tree.root();
+    glm::vec3 current_coordinate = coordinate_for_index(root);
+
+    std::pair<aabb_t, aabb_t> aabbs_split_by_point = aabb.split(tree.split_dimension, current_coordinate);
+
+    Q_ASSERT(aabb.contains(current_coordinate));
+
     if(point < root)
-      aabb.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(root, split_dimension));
+      aabb = aabbs_split_by_point.first;
     else
-      aabb.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(root, split_dimension));
+      aabb = aabbs_split_by_point.second;
   });
 
-  const uint8_t split_dimension = tree.split_dimension;
-  std::pair<aabb_t, aabb_t> aabbs_split_by_point = std::make_pair(aabb, aabb);
-
   if(tree.is_leaf())
-    return aabbs_split_by_point;
-
-  aabbs_split_by_point.first.max_point[split_dimension] = glm::min(aabb.max_point[split_dimension], coordinate_for_index(point, split_dimension));
-  aabbs_split_by_point.second.min_point[split_dimension] = glm::max(aabb.min_point[split_dimension], coordinate_for_index(point, split_dimension));
-
-  return aabbs_split_by_point;
+    return std::make_pair(aabb, aabb);
+  else
+    return aabb.split(tree.split_dimension, coordinate_for_index(point));
 }
 
 glm::vec3 KDTreeIndex::point_coordinate(size_t point, const uint8_t* coordinates, uint stride) const
