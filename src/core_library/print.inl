@@ -37,13 +37,26 @@ std::string format(const arg_t&... args)
 
 
 template<typename... arg_t>
+std::ostream& println(const arg_t&... args)
+{
+  return print(args...) << std::endl;
+}
+
+
+template<typename... arg_t>
 std::ostream& print(const arg_t&... args)
 {
-  return __internal__::format_implementation(std::cout, args...) << std::endl;
+  return __internal__::format_implementation(std::cout, args...);
+}
+
+template<typename... arg_t>
+std::ostream& println_error(const arg_t&... args)
+{
+  return print_error(args...) << std::endl;
 }
 
 template<typename... arg_t>
 std::ostream& print_error(const arg_t&... args)
 {
-  return __internal__::format_implementation(std::cerr, args...) << std::endl;
+  return __internal__::format_implementation(std::cerr, args...);
 }

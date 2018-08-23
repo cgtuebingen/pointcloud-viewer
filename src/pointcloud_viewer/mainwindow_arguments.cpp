@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
 
 #include <QApplication>
+#include <QSharedPointer>
 #include <QDebug>
 
 void MainWindow::handleApplicationArguments()
@@ -31,15 +32,15 @@ void MainWindow::handleApplicationArguments()
 
       const QString path = arguments[argument_index];
 
-      PointCloud point_cloud = import_point_cloud(this, path);
+      QSharedPointer<PointCloud> point_cloud = import_point_cloud(this, path);
 
-      if(Q_UNLIKELY(!point_cloud.is_valid))
+      if(Q_UNLIKELY(!point_cloud->is_valid))
       {
         abort();
         return;
       }
 
-      viewport.load_point_cloud(std::move(point_cloud));
+      pointcloud_imported(point_cloud);
     }else if(argument == "--camera-path")
     {
       if(argument_index+1 == arguments.length())

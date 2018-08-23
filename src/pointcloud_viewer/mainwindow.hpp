@@ -7,7 +7,8 @@
 #include <QDropEvent>
 
 #include <pointcloud_viewer/viewport.hpp>
-#include <pointcloud_viewer/pointcloud_layers.hpp>
+#include <pointcloud_viewer/kdtree_inspector.hpp>
+#include <pointcloud_viewer/pointcloud_inspector.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
@@ -18,15 +19,20 @@ class MainWindow : public QMainWindow
 Q_OBJECT
 
 public:
-  PointCloudLayers pointCloudLayer;
   bool noninteractive = false;
 
   MainWindow();
   ~MainWindow();
 
+signals:
+  void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);
+  void pointcloud_unloaded();
+
 private:
   Viewport viewport;
   Flythrough flythrough;
+  KdTreeInspector kdTreeInspector;
+  PointCloudInspector pointCloudInspector;
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 
@@ -36,7 +42,9 @@ private:
   void initMenuBar();
   void initDocks();
 
-  void initKeypointListDocks();
+  QDockWidget* initAnimationDock();
+  QDockWidget* initRenderDock();
+  QDockWidget* initDataInspectionDock();
 
   void importPointcloudLayer();
   void openAboutDialog();

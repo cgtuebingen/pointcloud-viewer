@@ -58,6 +58,7 @@ void PointRenderer::clear_buffer()
 {
   gl::Buffer buffer;
   this->vertex_position_buffer = std::move(buffer);
+  this->num_vertices = 0;
 }
 
 void PointRenderer::load_points(const uint8_t* point_data, GLsizei num_points)

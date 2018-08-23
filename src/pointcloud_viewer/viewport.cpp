@@ -54,23 +54,20 @@ void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
   _aabb = aabb_t::invalid();
-}
-
-point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
-{
-  _aabb = point_cloud.aabb;
-
-  point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
-  PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
-
-  if(Q_UNLIKELY(p.num_points>std::numeric_limits<GLsizei>::max()))
-    return point_cloud_handle_t::INVALID;
-
-  point_renderer->load_points(p.coordinate_color.data(), GLsizei(p.num_points));
+  this->point_cloud.clear();
 
   this->update();
+}
 
-  return point_cloud_handle_t(handle);
+void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
+{
+  this->point_cloud = point_cloud;
+
+  _aabb = point_cloud->aabb;
+
+  point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
+
+  this->update();
 }
 
 void Viewport::render_points(frame_t camera_frame, float aspect, std::function<void ()> additional_rendering) const

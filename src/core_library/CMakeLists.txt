@@ -10,7 +10,10 @@ add_library(core_library STATIC
   padding.hpp
   print.hpp
   print.inl
+  stack.hpp
+  stack.inl
   types.hpp
 )
 
 target_link_libraries(core_library PUBLIC Qt5::Gui glm)
+target_compile_options(core_library PUBLIC  "-Werror=return-type")

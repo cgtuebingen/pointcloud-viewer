@@ -14,10 +14,10 @@
 
 #include <fstream>
 
-PointCloud failed(){return PointCloud();}
+QSharedPointer<PointCloud> failed(){return QSharedPointer<PointCloud>(new PointCloud);}
 
 
-PointCloud import_point_cloud(QWidget* parent, QString filepath)
+QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
 {
   QFileInfo file(filepath);
 
@@ -81,8 +81,7 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
     return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
   {
-    PointCloud pointcloud(std::move(importer->pointcloud));
-    return pointcloud;
+    return QSharedPointer<PointCloud>(new PointCloud(std::move(importer->pointcloud)));
   }
   }
 

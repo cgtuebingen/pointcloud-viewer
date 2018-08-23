@@ -34,6 +34,7 @@ void PointCloud::clear()
 {
   coordinate_color.clear();
   user_data.clear();
+  kdtree_index.clear();
 
   aabb.min_point = glm::vec3(std::numeric_limits<float>::max());
   aabb.max_point = glm::vec3(-std::numeric_limits<float>::max());
@@ -44,8 +45,8 @@ void PointCloud::resize(size_t num_points)
   this->num_points = num_points;
   this->is_valid = true;
 
-  coordinate_color.resize(num_points * 4*4);
-  user_data.resize(num_points * 4*4);
+  coordinate_color.resize(num_points * stride);
+  user_data.resize(num_points * stride);
 
   coordinate_color.memset(0xffffffff);
 }
@@ -64,20 +65,35 @@ void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_ty
   case COLUMN::COORDINATES:
     internal_data_type.base_type = BASE_TYPE::FLOAT32;
     internal_data_type.num_components = 3;
-    internal_data_type.stride_in_bytes = 4*4;
+    internal_data_type.stride_in_bytes = stride;
     coordinate_color.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes);
     break;
   case COLUMN::COLOR:
     internal_data_type.base_type = BASE_TYPE::UINT8_NORMALIZED;
     internal_data_type.num_components = 3;
-    internal_data_type.stride_in_bytes = 4*4;
+    internal_data_type.stride_in_bytes = stride;
     coordinate_color.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes+3*4); // Use the 4 bytes directly after  of the coordinates (which would remain as useless padding) for storing the color.
     break;
   case COLUMN::USER_DATA:
     internal_data_type.base_type = BASE_TYPE::FLOAT32;
     internal_data_type.num_components = 4;
-    internal_data_type.stride_in_bytes = 4*4;
+    internal_data_type.stride_in_bytes = 4*4; // TODO
     user_data.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes);
     break;
   }
+}
+
+void PointCloud::build_kd_tree(std::function<bool(size_t, size_t)> feedback)
+{
+  kdtree_index.build(aabb, coordinate_color.data(), num_points, stride, feedback);
+}
+
+bool PointCloud::can_build_kdtree() const
+{
+  return this->num_points>0 && !kdtree_index.is_initialized();
+}
+
+bool PointCloud::has_build_kdtree() const
+{
+  return this->num_points>0 && kdtree_index.is_initialized();
 }
