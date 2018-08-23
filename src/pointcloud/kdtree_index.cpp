@@ -63,11 +63,18 @@ KDTreeIndex::point_index_t KDTreeIndex::pick_point(cone_t cone, const uint8_t* c
     }
 
     std::pair<aabb_t, aabb_t> sub_aabbs = current.aabb.split(current.subtree.split_dimension, current_coordinate);
+    const aabb_t left_aabb = sub_aabbs.first;
+    const aabb_t right_aabb = sub_aabbs.second;
 
-    if(!current.subtree.is_leaf())
+//    if(!current.subtree.is_leaf())
     {
-      stack.push(stack_entry_t{current.subtree.left_subtree(), sub_aabbs.first});
-      stack.push(stack_entry_t{current.subtree.right_subtree(), sub_aabbs.second});
+      const subtree_t left_subtree = current.subtree.left_subtree();
+      const subtree_t right_subtree = current.subtree.right_subtree();
+
+      if(!left_subtree.is_empty())
+        stack.push(stack_entry_t{left_subtree, left_aabb});
+      if(!right_subtree.is_empty())
+        stack.push(stack_entry_t{right_subtree, right_aabb});
     }
   }
 
@@ -261,6 +268,8 @@ void KDTreeIndex::validate_tree(const uint8_t* coordinates, size_t num_points, u
     const subtree_t subtree = stack_entry.subtree;
     const aabb_t aabb = stack_entry.aabb;
 
+    Q_ASSERT(!subtree.is_empty());
+
     const size_t root_index = subtree.root();
     const glm::vec3 split = coordinate_for_index(root_index);
     const uint8_t split_dimension = subtree.split_dimension;
@@ -286,12 +295,11 @@ void KDTreeIndex::validate_tree(const uint8_t* coordinates, size_t num_points, u
     }
 
 
-    // TODO: don't check for each subtree, whether is is a leaf. instead, check for the current tree, whether it is a leaf
     subtree_t left = subtree.left_subtree();
-    if(!subtree.is_leaf())
-      stack.push(stack_entry_t{left_aabb, left});
     subtree_t right = subtree.right_subtree();
-    if(!right.is_leaf())
+    if(!left.is_empty())
+      stack.push(stack_entry_t{left_aabb, left});
+    if(!right.is_empty())
       stack.push(stack_entry_t{right_aabb, right});
   }
 }
@@ -322,7 +330,7 @@ glm::vec3 KDTreeIndex::coordinate_for_index(size_t entry_index, const uint8_t* c
 
 bool KDTreeIndex::range_t::is_empty() const
 {
-  return size() == 1;
+  return size() == 0;
 }
 
 bool KDTreeIndex::range_t::is_leaf() const
@@ -343,11 +351,13 @@ size_t KDTreeIndex::range_t::median() const
 
 KDTreeIndex::range_t KDTreeIndex::range_t::left_subtree() const
 {
+  Q_ASSERT(begin <= median());
   return range_t{begin, median()};
 }
 
 KDTreeIndex::range_t KDTreeIndex::range_t::right_subtree() const
 {
+  Q_ASSERT(median() < end);
   return range_t{median()+1, end};
 }
 

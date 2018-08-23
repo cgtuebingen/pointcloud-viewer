@@ -65,6 +65,7 @@ private:
 
     size_t root() const{return range.median();}
     size_t is_leaf() const{return range.is_leaf();}
+    size_t is_empty() const{return range.is_empty();}
     subtree_t left_subtree() const {return subtree(range.left_subtree());}
     subtree_t right_subtree() const {return subtree(range.right_subtree());}
 
