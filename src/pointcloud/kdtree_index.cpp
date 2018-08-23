@@ -240,35 +240,47 @@ KDTreeIndex::subtree_t KDTreeIndex::whole_tree() const
 
 void KDTreeIndex::validate_tree(const uint8_t* coordinates, size_t num_points, uint stride)
 {
+  auto coordinate_for_index = [coordinates, stride, this](size_t entry_index) -> glm::vec3 {
+    return KDTreeIndex::coordinate_for_index(entry_index, coordinates, stride);
+  };
 
-  Stack<subtree_t> stack;
+  struct stack_entry_t
+  {
+    aabb_t aabb;
+    subtree_t subtree;
+  };
+
+  Stack<stack_entry_t> stack;
   stack.reserve(num_points/2);
 
-  stack.push(whole_tree());
+  stack.push(stack_entry_t{total_aabb, whole_tree()});
 
   while(!stack.is_empty())
   {
-    const subtree_t subtree = stack.pop();
-
-    auto coordinate_for_index = [coordinates, stride, subtree, this](size_t entry_index) -> float {
-      return component_for_index(entry_index, subtree.split_dimension, coordinates, stride);
-    };
+    const stack_entry_t stack_entry = stack.pop();
+    const subtree_t subtree = stack_entry.subtree;
+    const aabb_t aabb = stack_entry.aabb;
 
     const size_t root_index = subtree.root();
-    const float split = coordinate_for_index(root_index);
+    const glm::vec3 split = coordinate_for_index(root_index);
+    const uint8_t split_dimension = subtree.split_dimension;
+
+    Q_ASSERT(aabb.contains(split));
 
     for(size_t i=subtree.range.begin; i<root_index; ++i)
-      Q_ASSERT(coordinate_for_index(i) <= split);
+      Q_ASSERT(coordinate_for_index(i)[split_dimension] <= split[split_dimension]);
 
     for(size_t i=root_index; i<subtree.range.end; ++i)
-      Q_ASSERT(coordinate_for_index(i) >= split);
+      Q_ASSERT(coordinate_for_index(i)[split_dimension] >= split[split_dimension]);
+
+    std::pair<aabb_t, aabb_t> split_aabb = aabb.split(split_dimension, split);
 
     subtree_t left = subtree.left_subtree();
     if(!left.is_leaf())
-      stack.push(left);
+      stack.push(stack_entry_t{split_aabb.first, left});
     subtree_t right = subtree.right_subtree();
     if(!right.is_leaf())
-      stack.push(right);
+      stack.push(stack_entry_t{split_aabb.second, right});
   }
 }
 
