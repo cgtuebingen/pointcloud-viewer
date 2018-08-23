@@ -44,3 +44,8 @@ glm::vec2 Camera::screenspace_to_clipspace(glm::vec2 screenspace_point)
 {
   return screenspace_point * glm::vec2(2.f, -2.f) + glm::vec2(-1.f, +1.f);
 }
+
+glm::vec2 Camera::pixel_to_screenspace(glm::ivec2 screenspace_pixel, glm::ivec2 viewport_size)
+{
+  return glm::vec2(screenspace_pixel) / glm::vec2(viewport_size - 1);
+}

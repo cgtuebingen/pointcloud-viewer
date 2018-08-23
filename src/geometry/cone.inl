@@ -1,6 +1,6 @@
 #include <geometry/cone.hpp>
 
-inline cone_t cone_from_ray_angle(ray_t ray, float half_cone_angle)
+inline cone_t cone_t::cone_from_ray_angle(ray_t ray, float half_cone_angle)
 {
   cone_t cone;
   cone.origin = ray.origin;
@@ -10,7 +10,7 @@ inline cone_t cone_from_ray_angle(ray_t ray, float half_cone_angle)
   return cone;
 }
 
-inline cone_t cone_from_ray_tan_angle(ray_t ray, float tan_half_cone_angle)
+inline cone_t cone_t::cone_from_ray_tan_angle(ray_t ray, float tan_half_cone_angle)
 {
   cone_t cone;
   cone.origin = ray.origin;

@@ -48,6 +48,7 @@ void MainWindow::initMenuBar()
   QAction* action_view_visualization_camerapath = menu_view_visualization->addAction("&Camera Path");
   QAction* action_view_visualization_grid = menu_view_visualization->addAction("&Grid");
   QAction* action_view_visualization_axis = menu_view_visualization->addAction("&Axis");
+  QAction* action_view_visualization_picked_cone = menu_view_visualization->addAction("&Picked Cone");
 #ifndef NDEBUG
   menu_view_visualization->addSeparator();
   QAction* action_view_visualization_debug_turntable_center = menu_view_visualization->addAction("&Turntable Center");
@@ -68,6 +69,9 @@ void MainWindow::initMenuBar()
 
   action_view_visualization_axis->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_3));
   TOGGLE(action_view_visualization_axis, enable_axis);
+
+  action_view_visualization_picked_cone->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_4));
+  TOGGLE(action_view_visualization_picked_cone, enable_picked_cone);
 
 #ifndef NDEBUG
   action_view_visualization_debug_turntable_center->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_1));

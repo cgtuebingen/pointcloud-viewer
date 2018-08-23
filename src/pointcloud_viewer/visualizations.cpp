@@ -25,6 +25,8 @@ void Visualization::render()
     debug_mesh_renderer.render(turntable_origin);
   if(settings.enable_camera_path)
     debug_mesh_renderer.render(camera_path);
+  if(settings.enable_picked_cone)
+    debug_mesh_renderer.render(picked_cone);
   if(settings.enable_kdtree_as_aabb)
   {
     debug_mesh_renderer.render(kdtree_current_point);
@@ -54,6 +56,11 @@ void Visualization::set_kdtree_as_aabb(aabb_t highlighted_aabb, glm::vec3 separa
   kdtree_highlight_aabb = DebugMesh::aabb(highlighted_aabb, highlight_color);
 }
 
+void Visualization::set_picked_cone(cone_t picked_cone)
+{
+  this->picked_cone = DebugMesh::cone(picked_cone);
+}
+
 Visualization::settings_t Visualization::settings_t::enable_all()
 {
   settings_t settings;
@@ -69,6 +76,7 @@ Visualization::settings_t Visualization::settings_t::default_settings()
 
   settings.enable_turntable_center = false;
   settings.enable_kdtree_as_aabb = false;
+  settings.enable_picked_cone = false;
 
   return settings;
 }

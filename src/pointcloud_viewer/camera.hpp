@@ -28,6 +28,7 @@ public:
   ray_t ray_for_clipspace_point(glm::vec2 clipspace_point) const;
 
   static glm::vec2 screenspace_to_clipspace(glm::vec2 screenspace_point);
+  static glm::vec2 pixel_to_screenspace(glm::ivec2 pixel, glm::ivec2 viewport_size);
 };
 
 #endif // POINTCLOUDVIEWER_CAMERA_HPP_

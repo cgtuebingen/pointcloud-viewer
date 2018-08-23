@@ -23,9 +23,10 @@ public slots:
   void unload_all_point_clouds();
   void handle_new_point_cloud(QSharedPointer<PointCloud> point_cloud);
 
-  void pick_point(glm::vec2 screenspace_point);
+  void pick_point(glm::ivec2 pixel);
 
 private:
+  Viewport& viewport;
   QSharedPointer<PointCloud> point_cloud;
 };
 

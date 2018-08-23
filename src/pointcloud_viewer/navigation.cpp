@@ -170,9 +170,9 @@ void Navigation::mousePressEvent(QMouseEvent* event)
     {
       if(event->modifiers() == Qt::NoModifier)
       {
-        const glm::vec2 screenspace = glm::vec2(event->x(), event->y()) / glm::vec2(viewport->width()-1, viewport->height()-1);
+        const glm::ivec2 screenspace_pixel = glm::ivec2(event->x(), event->y());
 
-        simpleLeftClick(screenspace);
+        simpleLeftClick(screenspace_pixel);
       }
     }
   }

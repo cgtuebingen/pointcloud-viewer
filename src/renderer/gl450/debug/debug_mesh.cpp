@@ -175,6 +175,32 @@ DebugMesh DebugMesh::path(int path_length, std::function<frame_t (int)> frame_fo
   return generator.to_mesh();
 }
 
+DebugMesh DebugMesh::cone(cone_t cone)
+{
+  Generator generator;
+
+  generator.push_matrix(cone.origin, cone.direction);
+
+  float max_length = 1.;
+  float max_radius = cone.cone_radius_at(max_length);
+
+  generator.push_matrix(glm::vec3(0,0,max_length));
+  generator.add_circle(max_radius, 16);
+  generator.pop_matrix();
+
+  for(int i=0; i<4; ++i)
+  {
+    float angle = glm::radians(i * 360.f / 4.f);
+
+    generator.add_vertex(glm::vec3(0));
+    generator.add_vertex(glm::vec3(glm::cos(angle)*max_radius, glm::sin(angle)*max_radius, max_length));
+  }
+
+  generator.pop_matrix();
+
+  return generator.to_mesh();
+}
+
 
 // ======== Renderer ============================================================
 
