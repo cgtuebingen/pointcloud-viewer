@@ -20,7 +20,8 @@ bool KdTreeInspector::autoBuildKdTreeAfterLoading() const
   return m_autoBuildKdTreeAfterLoading;
 }
 
-KdTreeInspector::KdTreeInspector()
+KdTreeInspector::KdTreeInspector(QWidget* window)
+  : window(window)
 {
   QSettings settings;
   setAutoBuildKdTreeAfterLoading(settings.value("Import/autoBuildKdTreeAfterLoading", false).toBool());
@@ -64,7 +65,7 @@ void KdTreeInspector::build_kdtree()
 
   this->setCanBuildKdTree(false);
 
-  ::build_kdtree(nullptr, this->point_cloud.data());
+  ::build_kdtree(window, this->point_cloud.data());
 
   this->setCanBuildKdTree(this->point_cloud->can_build_kdtree());
   this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());

@@ -17,7 +17,7 @@ Q_PROPERTY(bool canBuildKdTree READ canBuildKdTree WRITE setCanBuildKdTree NOTIF
 Q_PROPERTY(bool hasKdTreeAvailable READ hasKdTreeAvailable WRITE setHasKdTreeAvailable NOTIFY hasKdTreeAvailableChanged)
 Q_PROPERTY(bool autoBuildKdTreeAfterLoading READ autoBuildKdTreeAfterLoading WRITE setAutoBuildKdTreeAfterLoading NOTIFY autoBuildKdTreeAfterLoadingChanged)
 public:
-  KdTreeInspector();
+  KdTreeInspector(QWidget* window);
   ~KdTreeInspector();
 
   bool canBuildKdTree() const;
@@ -45,6 +45,7 @@ signals:
   void autoBuildKdTreeAfterLoadingChanged(bool autoBuildKdTreeAfterLoading);
 
 private:
+  QWidget* const window;
   QSharedPointer<PointCloud> point_cloud;
   size_t kd_tree_inspection_current_point;
   bool _left_selected = true;

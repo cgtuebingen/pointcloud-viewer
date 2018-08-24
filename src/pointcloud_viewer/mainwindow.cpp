@@ -1,7 +1,8 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 
 MainWindow::MainWindow()
-  : pointCloudInspector(&viewport)
+  : kdTreeInspector(this),
+    pointCloudInspector(&viewport)
 {
   setWindowTitle("Pointcloud Viewer");
 
