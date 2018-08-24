@@ -27,6 +27,11 @@ PointCloud& PointCloud::operator=(PointCloud&& other)
   this->coordinate_color = std::move(other.coordinate_color);
   this->user_data = std::move(other.user_data);
 
+  std::swap(this->user_data_stride, other.user_data_stride);
+  this->user_data_names.swap(other.user_data_names);
+  this->user_data_offset.swap(other.user_data_offset);
+  this->user_data_types.swap(other.user_data_types);
+
   return *this;
 }
 
@@ -38,6 +43,11 @@ void PointCloud::clear()
 
   aabb.min_point = glm::vec3(std::numeric_limits<float>::max());
   aabb.max_point = glm::vec3(-std::numeric_limits<float>::max());
+
+  user_data_stride = 0;
+  user_data_names.clear();
+  user_data_offset.clear();
+  user_data_types.clear();
 }
 
 void PointCloud::resize(size_t num_points)
@@ -46,41 +56,18 @@ void PointCloud::resize(size_t num_points)
   this->is_valid = true;
 
   coordinate_color.resize(num_points * stride);
-  user_data.resize(num_points * stride);
+  user_data.resize(num_points * user_data_stride);
 
   coordinate_color.memset(0xffffffff);
+  user_data.memset(0xffffffff);
 }
 
-void PointCloud::set_data(PointCloud::column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set)
+void PointCloud::set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type_t::base_type_t> user_data_types)
 {
-  data_type_t internal_data_type;
-
-  Q_ASSERT(num_points >= first_vertex_to_set + num_vertices_to_set);
-
-  const size_t size_in_bytes = num_vertices_to_set * input_data_type.stride_in_bytes;
-  const size_t offset_in_bytes = first_vertex_to_set * input_data_type.stride_in_bytes;
-
-  switch(column)
-  {
-  case COLUMN::COORDINATES:
-    internal_data_type.base_type = BASE_TYPE::FLOAT32;
-    internal_data_type.num_components = 3;
-    internal_data_type.stride_in_bytes = stride;
-    coordinate_color.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes);
-    break;
-  case COLUMN::COLOR:
-    internal_data_type.base_type = BASE_TYPE::UINT8_NORMALIZED;
-    internal_data_type.num_components = 3;
-    internal_data_type.stride_in_bytes = stride;
-    coordinate_color.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes+3*4); // Use the 4 bytes directly after  of the coordinates (which would remain as useless padding) for storing the color.
-    break;
-  case COLUMN::USER_DATA:
-    internal_data_type.base_type = BASE_TYPE::FLOAT32;
-    internal_data_type.num_components = 4;
-    internal_data_type.stride_in_bytes = 4*4; // TODO
-    user_data.fill(internal_data_type, input_data_type, data, size_in_bytes, /* offset: */ offset_in_bytes);
-    break;
-  }
+  this->user_data_stride = user_data_stride;
+  this->user_data_names = user_data_names;
+  this->user_data_offset = user_data_offset;
+  this->user_data_types = user_data_types;
 }
 
 void PointCloud::build_kd_tree(std::function<bool(size_t, size_t)> feedback)

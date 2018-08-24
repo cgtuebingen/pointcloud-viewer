@@ -2,8 +2,11 @@
 #define POINTCLOUD_WORKERS_IMPORTER_PLY_HPP_
 
 #include <pointcloud/importer/abstract_importer.hpp>
+#include <pointcloud/buffer.hpp>
 
 #include <pcl/io/ply/ply_parser.h>
+
+#include <QVector>
 
 /**
 Implementation for loading ply files
@@ -17,7 +20,12 @@ protected:
   bool import_implementation() override;
 
 private:
-  int64_t current_progress = 0;
+  int64_t current_progress;
+
+  size_t vertex_data_stride;
+  QVector<QString> property_names;
+  QVector<size_t> property_offsets;
+  QVector<data_type_t::base_type_t> property_types;
 
   template<typename value_type>
   typename pcl::io::ply::ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
@@ -25,7 +33,8 @@ private:
                                                                                                                           PointCloud::vertex_t** new_vertex_z,
                                                                                                                           PointCloud::vertex_t** new_vertex_r,
                                                                                                                           PointCloud::vertex_t** new_vertex_g,
-                                                                                                                          PointCloud::vertex_t** new_vertex_b);
+                                                                                                                          PointCloud::vertex_t** new_vertex_b,
+                                                                                                                          uint8_t** all_data);
 };
 
 #endif // POINTCLOUD_WORKERS_IMPORTER_PLY_HPP_

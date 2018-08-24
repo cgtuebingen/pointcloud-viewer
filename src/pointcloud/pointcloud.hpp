@@ -5,6 +5,9 @@
 #include <pointcloud/kdtree_index.hpp>
 #include <geometry/aabb.hpp>
 
+#include <QVector>
+#include <QString>
+
 /*
 Stores the whole point cloud.
 */
@@ -32,6 +35,11 @@ public:
   size_t num_points;
   bool is_valid;
 
+  size_t user_data_stride;
+  QVector<QString> user_data_names;
+  QVector<size_t> user_data_offset;
+  QVector<data_type_t::base_type_t> user_data_types;
+
   PointCloud();
   PointCloud(PointCloud&& other);
   PointCloud& operator=(PointCloud&& other);
@@ -40,7 +48,8 @@ public:
 
   void clear();
   void resize(size_t num_points);
-  void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);
+
+  void set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type_t::base_type_t> user_data_types);
 
   void build_kd_tree(std::function<bool(size_t, size_t)> feedback);
   bool can_build_kdtree() const;

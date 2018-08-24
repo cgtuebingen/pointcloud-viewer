@@ -46,7 +46,24 @@ struct data_type_t final
   base_type_t base_type;
   uint num_components;
   uint stride_in_bytes;
+
+  template<typename T>
+  struct base_type_of;
 };
+
+#define BASE_TYPE(c_type, enum_value) template<>struct data_type_t::base_type_of<c_type>{static constexpr base_type_t value(){return base_type_t::enum_value;}};
+BASE_TYPE(int8_t, INT8_NORMALIZED)
+BASE_TYPE(int16_t, INT16_NORMALIZED)
+BASE_TYPE(int32_t, INT32_NORMALIZED)
+BASE_TYPE(int64_t, INT64_NORMALIZED)
+BASE_TYPE(uint8_t, UINT8_NORMALIZED)
+BASE_TYPE(uint16_t, UINT16_NORMALIZED)
+BASE_TYPE(uint32_t, UINT32_NORMALIZED)
+BASE_TYPE(uint64_t, UINT64_NORMALIZED)
+BASE_TYPE(float32_t, FLOAT32)
+BASE_TYPE(float64_t, FLOAT64)
+#undef BASE_TYPE
+
 
 /**
 Buffer for storing the point cloud.
