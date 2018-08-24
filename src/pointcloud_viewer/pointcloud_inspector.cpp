@@ -6,13 +6,29 @@
 #include <core_library/print.hpp>
 #include <glm/gtx/io.hpp>
 
+#include <QSettings>
+
 PointCloudInspector::PointCloudInspector(Viewport* viewport)
   : viewport(*viewport)
 {
+  QSettings settings;
+  m_pointSelectionHighlightRadius = settings.value("UI/SelectionHighlightRadius", 0.5).toDouble();
 }
 
 PointCloudInspector::~PointCloudInspector()
 {
+  QSettings settings;
+  settings.setValue("UI/SelectionHighlightRadius", m_pointSelectionHighlightRadius);
+}
+
+double PointCloudInspector::pointSelectionHighlightRadius() const
+{
+  return m_pointSelectionHighlightRadius;
+}
+
+bool PointCloudInspector::hasSelectedPoint() const
+{
+  return m_hasSelectedPoint;
 }
 
 // Called when athe point-cloud was unloaded
@@ -20,6 +36,7 @@ void PointCloudInspector::unload_all_point_clouds()
 {
   viewport.visualization().deselect_picked_point();
   deselect_picked_point();
+  setHasSelectedPoint(false);
 
   this->point_cloud.clear();
 }
@@ -55,6 +72,7 @@ void PointCloudInspector::pick_point(glm::ivec2 pixel)
   {
     viewport.visualization().deselect_picked_point();
     deselect_picked_point();
+    setHasSelectedPoint(false);
   }else
   {
     size_t index = size_t(point);
@@ -64,6 +82,26 @@ void PointCloudInspector::pick_point(glm::ivec2 pixel)
 
     viewport.visualization().select_picked_point(coordinate, color, 1.f);
     selected_point(coordinate, color);
+    setHasSelectedPoint(true);
   }
   viewport.update();
+}
+
+void PointCloudInspector::setPointSelectionHighlightRadius(double pointSelectionHighlightRadius)
+{
+  qWarning("Floating point comparison needs context sanity check");
+  if (qFuzzyCompare(m_pointSelectionHighlightRadius, pointSelectionHighlightRadius))
+    return;
+
+  m_pointSelectionHighlightRadius = pointSelectionHighlightRadius;
+  emit pointSelectionHighlightRadiusChanged(m_pointSelectionHighlightRadius);
+}
+
+void PointCloudInspector::setHasSelectedPoint(bool hasSelectedPoint)
+{
+  if (m_hasSelectedPoint == hasSelectedPoint)
+    return;
+
+  m_hasSelectedPoint = hasSelectedPoint;
+  emit hasSelectedPointChanged(m_hasSelectedPoint);
 }

@@ -2,7 +2,28 @@
 
 
 Color::Color(QRgb rgb)
-  : color(QColor::fromRgb(rgb))
+  : Color(QColor::fromRgb(rgb))
+{
+}
+
+Color::Color(QColor color)
+  : color(color)
+{
+}
+
+Color::Color(glm::vec3 rgb)
+  : Color(glm::dvec3(rgb))
+{
+}
+
+Color::Color(glm::dvec3 rgb)
+  : Color(QColor::fromRgbF(rgb.r, rgb.g, rgb.b))
+{
+
+}
+
+Color::Color(glm::u8vec3 rgb)
+  : Color(glm::dvec3(rgb) / 255.)
 {
 }
 
@@ -25,6 +46,11 @@ Color Color::with_saturation(double saturation) const
   Color c(0);
   c.color.setHsvF(color.hueF(), saturation, color.valueF());
   return c;
+}
+
+QString Color::hexcode() const
+{
+  return color.name();
 }
 
 Color::operator glm::vec3() const

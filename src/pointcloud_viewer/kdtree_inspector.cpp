@@ -23,13 +23,13 @@ bool KdTreeInspector::autoBuildKdTreeAfterLoading() const
 KdTreeInspector::KdTreeInspector()
 {
   QSettings settings;
-  setAutoBuildKdTreeAfterLoading(settings.value("import/auto_build_kdtree_after_loading", false).toBool());
+  setAutoBuildKdTreeAfterLoading(settings.value("Import/autoBuildKdTreeAfterLoading", false).toBool());
 }
 
 KdTreeInspector::~KdTreeInspector()
 {
   QSettings settings;
-  settings.setValue("import/auto_build_kdtree_after_loading", autoBuildKdTreeAfterLoading());
+  settings.setValue("Import/autoBuildKdTreeAfterLoading", autoBuildKdTreeAfterLoading());
 
 }
 

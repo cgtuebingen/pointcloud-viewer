@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/keypoint_list.hpp>
+#include <core_library/color_palette.hpp>
 
 #include <QGridLayout>
 #include <QApplication>
@@ -18,6 +19,7 @@
 #include <QCheckBox>
 #include <QToolButton>
 #include <QSettings>
+#include <QLabel>
 
 void MainWindow::initDocks()
 {
@@ -174,6 +176,74 @@ QDockWidget* MainWindow::initDataInspectionDock()
   vbox->addWidget(autoUnlockButton);
 
   vbox->addSpacing(16);
+
+  // -- selected point --
+  QGroupBox* selected_point_groupbox = new QGroupBox("Selected Point");
+  selected_point_groupbox->setEnabled(pointCloudInspector.hasSelectedPoint());
+  QObject::connect(&pointCloudInspector, &PointCloudInspector::hasSelectedPointChanged, selected_point_groupbox, &QWidget::setEnabled);
+  vbox->addWidget(selected_point_groupbox);
+  {
+    QVBoxLayout* vbox = new QVBoxLayout(selected_point_groupbox);
+    QLabel* x = new QLabel;
+    QLabel* y = new QLabel;
+    QLabel* z = new QLabel;
+
+    QHBoxLayout* row;
+
+    row = new QHBoxLayout;
+    vbox->addLayout(row);
+    row->addWidget(new QLabel(QString("color:")));
+    QLabel* color = new QLabel;
+    color->setMinimumHeight(32);
+    color->setAlignment(Qt::AlignCenter);
+    color->setTextFormat(Qt::PlainText);
+    color->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    row->addWidget(color, 1);
+
+    row = new QHBoxLayout;
+    vbox->addLayout(row);
+
+    row->addWidget(new QLabel(QString("<i>x:</i>")));
+    row->addWidget(x, 1);
+    x->setTextFormat(Qt::PlainText);
+    x->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    row->addWidget(new QLabel(QString("<i>y:</i>")));
+    row->addWidget(y, 1);
+    y->setTextFormat(Qt::PlainText);
+    y->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    row->addWidget(new QLabel(QString("<i>z:</i>")));
+    row->addWidget(z, 1);
+    z->setTextFormat(Qt::PlainText);
+    z->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+
+    QObject::connect(&pointCloudInspector, &PointCloudInspector::deselect_picked_point, [x, y, z, color]() {
+      x->setText(QString());
+      y->setText(QString());
+      z->setText(QString());
+      color->setText(QString("#------"));
+      color->setStyleSheet(QString());
+    });
+
+    QObject::connect(&pointCloudInspector, &PointCloudInspector::selected_point, [x, y, z, color](glm::vec3 coordinate, glm::u8vec3 _color) {
+      auto format_float = [](float f) -> QString {
+        QString s;
+        s.setNum(f);
+        return s.toHtmlEscaped();
+      };
+
+      x->setText(format_float(coordinate.x));
+      y->setText(format_float(coordinate.y));
+      z->setText(format_float(coordinate.z));
+
+      const Color pointColor(_color);
+      QString colorCode = pointColor.hexcode();
+      color->setText(colorCode);
+      color->setStyleSheet(QString("QLabel{background: %0; color: %1}").arg(colorCode).arg(glm::vec3(pointColor.with_saturation(0.)).g > 0.4f ? "#000000" : "#ffffff"));
+    });
+  }
 
 #ifndef NDEBUG
   Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
