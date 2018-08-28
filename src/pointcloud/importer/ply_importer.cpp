@@ -125,7 +125,7 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
     const size_t offset = vertex_data_stride;
     property_names.append(QString::fromStdString(property_name));
     property_offsets.append(offset);
-    property_types.append(data_type_t::base_type_of<value_type>::value());
+    property_types.append(data_type::base_type_of<value_type>::value());
     vertex_data_stride += sizeof(value_type);
     auto data_handler = [all_data](value_type value) {
       write_value_to_buffer(all_data, value);

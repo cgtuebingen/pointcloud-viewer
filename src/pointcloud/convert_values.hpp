@@ -14,7 +14,7 @@ struct float_type
 };
 
 template<>
-struct float_type<8>
+struct float_type<8> // 8 byte = 64 bit
 {
   typedef float64_t type;
 };

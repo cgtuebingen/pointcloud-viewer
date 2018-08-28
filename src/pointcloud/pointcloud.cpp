@@ -6,7 +6,7 @@
 
 #include <QtGlobal>
 
-typedef data_type_t::BASE_TYPE BASE_TYPE;
+typedef data_type::BASE_TYPE BASE_TYPE;
 
 PointCloud::PointCloud()
 {
@@ -62,7 +62,7 @@ void PointCloud::resize(size_t num_points)
   user_data.memset(0xffffffff);
 }
 
-void PointCloud::set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type_t::base_type_t> user_data_types)
+void PointCloud::set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type::base_type_t> user_data_types)
 {
   this->user_data_stride = user_data_stride;
   this->user_data_names = user_data_names;

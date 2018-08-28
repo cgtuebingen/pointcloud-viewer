@@ -38,7 +38,7 @@ public:
   size_t user_data_stride;
   QVector<QString> user_data_names;
   QVector<size_t> user_data_offset;
-  QVector<data_type_t::base_type_t> user_data_types;
+  QVector<data_type::base_type_t> user_data_types;
 
   PointCloud();
   PointCloud(PointCloud&& other);
@@ -49,7 +49,7 @@ public:
   void clear();
   void resize(size_t num_points);
 
-  void set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type_t::base_type_t> user_data_types);
+  void set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type::base_type_t> user_data_types);
 
   void build_kd_tree(std::function<bool(size_t, size_t)> feedback);
   bool can_build_kdtree() const;

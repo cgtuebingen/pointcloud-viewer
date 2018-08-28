@@ -25,7 +25,7 @@ private:
   size_t vertex_data_stride;
   QVector<QString> property_names;
   QVector<size_t> property_offsets;
-  QVector<data_type_t::base_type_t> property_types;
+  QVector<data_type::base_type_t> property_types;
 
   template<typename value_type>
   typename pcl::io::ply::ply_parser::scalar_property_definition_callback_type<value_type>::type property_callback_handler(PointCloud::vertex_t** new_vertex_x,
