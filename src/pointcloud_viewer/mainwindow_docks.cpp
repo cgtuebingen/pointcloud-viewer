@@ -21,6 +21,7 @@
 #include <QSettings>
 #include <QLabel>
 #include <QDebug>
+#include <QClipboard>
 
 void MainWindow::initDocks()
 {
@@ -219,16 +220,45 @@ QDockWidget* MainWindow::initDataInspectionDock()
     z->setTextFormat(Qt::PlainText);
     z->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
+    row = new QHBoxLayout;
+    vbox->addLayout(row);
+    QLabel* labelUserData = new QLabel;
+    row->addWidget(labelUserData);
 
-    QObject::connect(&pointCloudInspector, &PointCloudInspector::deselect_picked_point, [x, y, z, color]() {
+    row = new QHBoxLayout;
+    vbox->addLayout(row);
+    row->addStretch(1);
+    static QString plyNamesToCopy;
+    QPushButton* btnCopyNames = new QPushButton("Copy &Names");
+    row->addWidget(btnCopyNames);
+    btnCopyNames->setEnabled(false);
+    connect(btnCopyNames, &QPushButton::clicked, [](){
+      QClipboard* clipboard = QApplication::clipboard();
+      clipboard->setText(plyNamesToCopy);
+    });
+    static QString plyValuesToCopy;
+    QPushButton* btnCopyValues = new QPushButton("Copy &Values");
+    row->addWidget(btnCopyValues);
+    btnCopyValues->setEnabled(false);
+    connect(btnCopyValues, &QPushButton::clicked, [](){
+      QClipboard* clipboard = QApplication::clipboard();
+      clipboard->setText(plyValuesToCopy);
+    });
+
+    QObject::connect(&pointCloudInspector, &PointCloudInspector::deselect_picked_point, [x, y, z, color, btnCopyValues, btnCopyNames, labelUserData]() {
       x->setText(QString());
       y->setText(QString());
       z->setText(QString());
       color->setText(QString("#------"));
       color->setStyleSheet(QString());
+
+      labelUserData->setText(QString());
+
+      btnCopyNames->setEnabled(false);
+      btnCopyValues->setEnabled(false);
     });
 
-    QObject::connect(&pointCloudInspector, &PointCloudInspector::selected_point, [x, y, z, color](glm::vec3 coordinate, glm::u8vec3 _color, PointCloud::UserData userData) {
+    QObject::connect(&pointCloudInspector, &PointCloudInspector::selected_point, [x, y, z, color, btnCopyNames, btnCopyValues, labelUserData](glm::vec3 coordinate, glm::u8vec3 _color, PointCloud::UserData userData) {
       auto format_float = [](float f) -> QString {
         QString s;
         s.setNum(f);
@@ -244,7 +274,22 @@ QDockWidget* MainWindow::initDataInspectionDock()
       color->setText(colorCode);
       color->setStyleSheet(QString("QLabel{background: %0; color: %1}").arg(colorCode).arg(glm::vec3(pointColor.with_saturation(0.)).g > 0.4f ? "#000000" : "#ffffff"));
 
-      qDebug() << userData;
+      QString userDataOnly;
+
+      plyNamesToCopy.clear();
+      plyValuesToCopy.clear();
+      for(int i=0; i<userData.values.length(); ++i)
+      {
+        static QSet<QString> standardNames({"x", "y", "z", "red", "green", "blue"});
+        if(!standardNames.contains(userData.names[i]))
+          userDataOnly += (userDataOnly.isEmpty() ? "" : "\n") + userData.names[i] + ": " + userData.values[i].toString();
+        plyNamesToCopy += (i!=0 ?  " " : "") + userData.names[i];
+        plyValuesToCopy += (i!=0 ?  " " : "") + userData.values[i].toString();
+      }
+
+      labelUserData->setText(userDataOnly);
+      btnCopyNames->setEnabled(true);
+      btnCopyValues->setEnabled(true);
     });
   }
 
