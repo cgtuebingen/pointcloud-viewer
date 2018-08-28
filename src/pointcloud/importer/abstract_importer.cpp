@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QSharedPointer>
 #include <QAbstractEventDispatcher>
+#include <QSettings>
 
 #include <iostream>
 

@@ -4,8 +4,6 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core 5.5 REQUIRED)
 
 add_library(pointcloud STATIC
- helpers/all_buffer_types.inl
- helpers/all_buffer_types_combi.inl
  importer/abstract_importer.cpp
  importer/abstract_importer.hpp
  importer/ply_importer.cpp
