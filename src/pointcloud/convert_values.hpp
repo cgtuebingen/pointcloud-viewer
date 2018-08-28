@@ -78,6 +78,24 @@ from_float_normalized(T value)
 template<typename t_in, typename t_out>
 struct convert_component
 {
+  static void convert_absolute(const void* source, void* target)
+  {
+    typedef typename float_type<sizeof(t_out)>::type float_t;
+
+    t_in in_value = read_value_from_buffer<t_in>(source);
+
+    if(std::is_floating_point<t_in>::value && !std::is_floating_point<t_out>::value)
+      in_value = glm::round(in_value);
+
+    in_value = glm::clamp<t_in>(in_value,
+                                t_in(std::numeric_limits<t_out>::min()),
+                                t_in(std::numeric_limits<t_out>::max()));
+
+    t_out out_value = t_out(in_value);
+
+    write_value_to_buffer(target, out_value);
+  }
+
   static void convert_normalized(const void* source, void* target)
   {
     typedef typename float_type<sizeof(t_out)>::type float_t;
@@ -88,9 +106,14 @@ struct convert_component
 template<typename T>
 struct convert_component<T, T>
 {
-  static void convert_normalized(const void* source, void* target)
+  static void convert_absolute(const void* source, void* target)
   {
     std::memcpy(target, source, sizeof(T));
+  }
+
+  static void convert_normalized(const void* source, void* target)
+  {
+    convert_absolute(source, target);
   }
 };
 
