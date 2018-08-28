@@ -126,11 +126,11 @@ bool PointCloud::has_build_kdtree() const
 
 QDebug operator<<(QDebug debug, const PointCloud::UserData& userData)
 {
-  debug.nospace() << "==== UserData ====\n";
+  debug.nospace() << "/==== UserData ====\\\n";
 
   for(int i=0; i<userData.names.length(); ++i)
-    debug.nospace() << "= " << userData.names[i] << ": " << userData.values[i] << "\n";
-  debug.nospace() << "================\n";
+    debug.nospace().noquote() << "| " << userData.names[i] << ": " << userData.values[i].toString() << "\n";
+  debug.nospace() << "\\==================/\n";
 
   return debug;
 }
