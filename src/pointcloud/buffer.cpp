@@ -12,17 +12,9 @@ Buffer::Buffer()
 {
 }
 
-Buffer::Buffer(Buffer&& other)
-  : Buffer()
-{
-  *this = std::move(other);
-}
+Buffer::Buffer(Buffer&& other) = default;
 
-void Buffer::operator=(Buffer&& other)
-{
-  bytes.swap(other.bytes);
-  std::swap(data_type, other.data_type);
-}
+Buffer& Buffer::operator=(Buffer&& other) = default;
 
 uint8_t*Buffer::data()
 {
@@ -88,8 +80,6 @@ struct buffer_copy
 
 void Buffer::fill(data_type_t internal_data_type, data_type_t input_data_type, const uint8_t* data, size_t input_size_in_bytes, size_t target_offset)
 {
-  this->data_type = internal_data_type;
-
   if((input_size_in_bytes % input_data_type.stride_in_bytes) != 0)
     throw QString("Size mismatch between the data type and the given buffer.");
 

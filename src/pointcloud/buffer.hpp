@@ -73,7 +73,7 @@ class Buffer final
 public:
   Buffer();
   Buffer(Buffer&& other);
-  void operator=(Buffer&& other);
+  Buffer& operator=(Buffer&& other);
 
   Buffer(const Buffer& buffer) = delete;
   Buffer& operator=(const Buffer& buffer) = delete;
@@ -94,7 +94,6 @@ public:
 
 private:
   std::vector<uint8_t> bytes;
-  data_type_t data_type;
 };
 
 #endif // POINTCLOUDVIEWER_BUFFER_HPP_

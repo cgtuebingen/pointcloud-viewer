@@ -128,8 +128,8 @@ typename ply_parser::scalar_property_definition_callback_type<value_type>::type 
     property_types.append(data_type_t::base_type_of<value_type>::value());
     vertex_data_stride += sizeof(value_type);
     auto data_handler = [all_data](value_type value) {
-//      write_value_to_buffer(all_data, value);
-//      *all_data += sizeof(value_type);
+      write_value_to_buffer(all_data, value);
+      *all_data += sizeof(value_type);
     };
 
     if(property_name == "red")
