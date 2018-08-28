@@ -7,6 +7,7 @@
 
 #include <QVector>
 #include <QString>
+#include <QVariant>
 
 /*
 Stores the whole point cloud.
@@ -45,6 +46,8 @@ public:
   PointCloud& operator=(PointCloud&& other);
 
   constexpr static const size_t stride = 4*4;
+
+  QVector<QPair<QString, QVariant>> all_values_of_point(size_t point_index) const;
 
   void clear();
   void resize(size_t num_points);
