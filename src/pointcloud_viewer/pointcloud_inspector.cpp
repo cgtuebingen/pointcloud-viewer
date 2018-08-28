@@ -81,7 +81,7 @@ void PointCloudInspector::pick_point(glm::ivec2 pixel)
     glm::u8vec3 color = read_value_from_buffer<glm::u8vec3>(point_cloud->coordinate_color.data() + index * PointCloud::stride + sizeof(glm::vec3));
 
     viewport.visualization().select_picked_point(coordinate, color, 1.f);
-    selected_point(coordinate, color);
+    selected_point(coordinate, color, point_cloud->all_values_of_point(index));
     setHasSelectedPoint(true);
   }
   viewport.update();

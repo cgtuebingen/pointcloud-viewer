@@ -20,6 +20,7 @@
 #include <QToolButton>
 #include <QSettings>
 #include <QLabel>
+#include <QDebug>
 
 void MainWindow::initDocks()
 {
@@ -227,7 +228,7 @@ QDockWidget* MainWindow::initDataInspectionDock()
       color->setStyleSheet(QString());
     });
 
-    QObject::connect(&pointCloudInspector, &PointCloudInspector::selected_point, [x, y, z, color](glm::vec3 coordinate, glm::u8vec3 _color) {
+    QObject::connect(&pointCloudInspector, &PointCloudInspector::selected_point, [x, y, z, color](glm::vec3 coordinate, glm::u8vec3 _color, PointCloud::UserData userData) {
       auto format_float = [](float f) -> QString {
         QString s;
         s.setNum(f);
@@ -242,6 +243,8 @@ QDockWidget* MainWindow::initDataInspectionDock()
       QString colorCode = pointColor.hexcode();
       color->setText(colorCode);
       color->setStyleSheet(QString("QLabel{background: %0; color: %1}").arg(colorCode).arg(glm::vec3(pointColor.with_saturation(0.)).g > 0.4f ? "#000000" : "#ffffff"));
+
+      qDebug() << userData;
     });
   }
 

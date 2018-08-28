@@ -5,6 +5,7 @@
 #include <core_library/types.hpp>
 
 #include <QtGlobal>
+#include <QDebug>
 
 typedef data_type::BASE_TYPE BASE_TYPE;
 
@@ -35,11 +36,11 @@ PointCloud& PointCloud::operator=(PointCloud&& other)
   return *this;
 }
 
-QVector<QPair<QString, QVariant>> PointCloud::all_values_of_point(size_t point_index) const
+PointCloud::UserData PointCloud::all_values_of_point(size_t point_index) const
 {
   const int n = user_data_names.length();
 
-  QVector<QPair<QString, QVariant>> values;
+  QVector<QVariant> values;
   values.reserve(n);
 
   const uint8_t* data = user_data.data() + user_data_stride * point_index;
@@ -67,10 +68,10 @@ QVector<QPair<QString, QVariant>> PointCloud::all_values_of_point(size_t point_i
       break;
     }
 
-    values << qMakePair(user_data_names[i], value);
+    values << value;
   }
 
-  return values;
+  return UserData{user_data_names, values};
 }
 
 void PointCloud::clear()
@@ -121,4 +122,15 @@ bool PointCloud::can_build_kdtree() const
 bool PointCloud::has_build_kdtree() const
 {
   return this->num_points>0 && kdtree_index.is_initialized();
+}
+
+QDebug operator<<(QDebug debug, const PointCloud::UserData& userData)
+{
+  debug.nospace() << "==== UserData ====\n";
+
+  for(int i=0; i<userData.names.length(); ++i)
+    debug.nospace() << "= " << userData.names[i] << ": " << userData.values[i] << "\n";
+  debug.nospace() << "================\n";
+
+  return debug;
 }

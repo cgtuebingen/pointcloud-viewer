@@ -30,6 +30,12 @@ public:
     padding<uint8_t> _padding;
   };
 
+  struct UserData
+  {
+    QVector<QString> names;
+    QVector<QVariant> values;
+  };
+
   Buffer coordinate_color, user_data;
   KDTreeIndex kdtree_index;
   aabb_t aabb;
@@ -47,7 +53,7 @@ public:
 
   constexpr static const size_t stride = 4*4;
 
-  QVector<QPair<QString, QVariant>> all_values_of_point(size_t point_index) const;
+  UserData all_values_of_point(size_t point_index) const;
 
   void clear();
   void resize(size_t num_points);
@@ -58,5 +64,7 @@ public:
   bool can_build_kdtree() const;
   bool has_build_kdtree() const;
 };
+
+QDebug operator<<(QDebug debug, const PointCloud::UserData& userData);
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_

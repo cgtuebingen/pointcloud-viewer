@@ -3,10 +3,10 @@
 
 #include <QMainWindow>
 
+#include <pointcloud/pointcloud.hpp>
 #include <geometry/aabb.hpp>
 #include <geometry/ray.hpp>
 
-class PointCloud;
 class Viewport;
 
 /**
@@ -35,7 +35,7 @@ public slots:
 
 signals:
   void deselect_picked_point();
-  void selected_point(glm::vec3 coordinate, glm::u8vec3 color);
+  void selected_point(glm::vec3 coordinate, glm::u8vec3 color, PointCloud::UserData user_data);
 
   void pointSelectionHighlightRadiusChanged(double pointSelectionHighlightRadius);
   void hasSelectedPointChanged(bool hasSelectedPoint);
