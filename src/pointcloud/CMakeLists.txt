@@ -8,6 +8,8 @@ add_library(pointcloud STATIC
  exporter/abstract_exporter.hpp
  exporter/ply_exporter.cpp
  exporter/ply_exporter.hpp
+ exporter/pcvd_exporter.cpp
+ exporter/pcvd_exporter.hpp
  importer/abstract_importer.cpp
  importer/abstract_importer.hpp
  importer/ply_importer.cpp

@@ -1,5 +1,6 @@
 #include <pointcloud/exporter/abstract_exporter.hpp>
 #include <pointcloud/exporter/ply_exporter.hpp>
+#include <pointcloud/exporter/pcvd_exporter.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
 
@@ -7,25 +8,50 @@
 #include <QSharedPointer>
 #include <QAbstractEventDispatcher>
 #include <QSettings>
+#include <QFileInfo>
 
 #include <iostream>
+
+#define PLY_FILTER "PLY (*.ply)"
+#define PCVD_FILTER "Pointcoud Viewer Dump (*.pcvd)"
 
 AbstractPointCloudExporter::~AbstractPointCloudExporter()
 {
 }
 
-QSharedPointer<AbstractPointCloudExporter> AbstractPointCloudExporter::exporterForSuffix(QString suffix, std::string filepath, const PointCloud& pointcloud)
+QString AbstractPointCloudExporter::addMissingSuffix(QString filepath, QString selectedFilter)
 {
-  if(suffix == "ply")
+  const QString suffix = QFileInfo(filepath).suffix().toLower();
+
+  if(selectedFilter == PLY_FILTER)
   {
+    if(suffix == "ply")
+      return filepath;
+    return filepath + ".ply";
+  }else if(selectedFilter == PCVD_FILTER)
+  {
+    if(suffix == "pcvd")
+      return filepath;
+    return filepath + ".pcvd";
+  }
+
+  return addMissingSuffix(filepath, PCVD_FILTER);
+}
+
+QSharedPointer<AbstractPointCloudExporter> AbstractPointCloudExporter::exporterForSuffix(QString selectedFilter, std::string filepath, const PointCloud& pointcloud)
+{
+  if(selectedFilter == PLY_FILTER)
     return QSharedPointer<AbstractPointCloudExporter>(new PlyExporter(filepath, pointcloud));
-  }else
-    return QSharedPointer<AbstractPointCloudExporter>();
+  else if(selectedFilter == PCVD_FILTER)
+    return QSharedPointer<AbstractPointCloudExporter>(new PcvdExporter(filepath, pointcloud));
+
+  Q_UNREACHABLE();
+  return exporterForSuffix(PCVD_FILTER, filepath, pointcloud);
 }
 
 QString AbstractPointCloudExporter::allSupportedFiletypes()
 {
-  return "PLY (*.ply)";
+  return PLY_FILTER ";;" PCVD_FILTER;
 }
 
 void AbstractPointCloudExporter::export_now()

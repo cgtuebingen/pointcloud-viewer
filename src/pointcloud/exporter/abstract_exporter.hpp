@@ -34,6 +34,7 @@ public:
   constexpr static int progress_max(){return 65536;}
 
   static QSharedPointer<AbstractPointCloudExporter> exporterForSuffix(QString suffix, std::string filepath, const PointCloud& pointcloud);
+  static QString addMissingSuffix(QString filepath, QString selectedFilter);
   static QString allSupportedFiletypes();
 
 public slots:

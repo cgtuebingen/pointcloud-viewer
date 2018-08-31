@@ -1,8 +1,10 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
+#include <pointcloud_viewer/workers/export_pointcloud.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/version_text.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
+#include <pointcloud/exporter/abstract_exporter.hpp>
 
 #include <QMenuBar>
 #include <QMimeData>
@@ -125,13 +127,14 @@ void MainWindow::import_pointcloud(QString filepath)
 
   QSharedPointer<PointCloud> pointcloud = import_point_cloud(this, filepath);
 
-  if(pointcloud->is_valid && pointcloud->num_points>0)
+  if(pointcloud && pointcloud->is_valid && pointcloud->num_points>0)
     pointcloud_imported(pointcloud);
 }
 
-void MainWindow::export_pointcloud(QString filepath)
+void MainWindow::export_pointcloud(QString filepath, QString selectedFilter)
 {
-
+  if(pointcloud && pointcloud->is_valid && pointcloud->num_points>0)
+    export_point_cloud(this, filepath, *pointcloud, selectedFilter);
 }
 
 void MainWindow::exportCameraPath()
@@ -183,15 +186,17 @@ void MainWindow::importPointcloudLayer()
 
 void MainWindow::exportPointcloud()
 {
+  QString selectedFilter;
   QString file_to_export_to = QFileDialog::getSaveFileName(this,
                                                            "Export as",
                                                            ".",
-                                                           AbstractPointCloudImporter::allSupportedFiletypes());
+                                                           AbstractPointCloudExporter::allSupportedFiletypes(),
+                                                           &selectedFilter);
 
   if(file_to_export_to.isEmpty())
     return;
 
-  export_pointcloud(file_to_export_to);
+  export_pointcloud(file_to_export_to, selectedFilter);
 }
 
 extern const QString pcl_notes;

@@ -63,8 +63,10 @@ protected:
   void dragEnterEvent(QDragEnterEvent *ev);
 
 private:
+  QSharedPointer<PointCloud> pointcloud;
+
   void import_pointcloud(QString filepath);
-  void export_pointcloud(QString filepath);
+  void export_pointcloud(QString filepath, QString selectedFilter);
 };
 
 
