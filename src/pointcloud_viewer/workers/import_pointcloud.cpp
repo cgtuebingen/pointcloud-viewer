@@ -80,9 +80,7 @@ QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
     QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0>. Probably an io error or invalid file.").arg(file.fileName()));
     return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
-  {
     return QSharedPointer<PointCloud>(new PointCloud(std::move(importer->pointcloud)));
-  }
   }
 
   progressDialog.hide();

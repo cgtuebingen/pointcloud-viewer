@@ -99,14 +99,23 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     const QString file_to_import = url.path();
     if(file_to_import.isEmpty())
       return;
-    pointcloud_unloaded();
-    pointcloud_imported(import_point_cloud(this, file_to_import));
+    import_pointcloud(file_to_import);
     return;
   }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
   ev->accept();
+}
+
+void MainWindow::import_pointcloud(QString filepath)
+{
+  pointcloud_unloaded();
+
+  QSharedPointer<PointCloud> pointcloud = import_point_cloud(this, filepath);
+
+  if(pointcloud->is_valid && pointcloud->num_points>0)
+    pointcloud_imported(pointcloud);
 }
 
 void MainWindow::exportCameraPath()
@@ -153,8 +162,7 @@ void MainWindow::importPointcloudLayer()
   if(file_to_import.isEmpty())
     return;
 
-  pointcloud_unloaded();
-  pointcloud_imported(import_point_cloud(this, file_to_import));
+  import_pointcloud(file_to_import);
 }
 
 extern const QString pcl_notes;

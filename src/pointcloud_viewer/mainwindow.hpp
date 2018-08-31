@@ -60,6 +60,9 @@ protected:
   void dropEvent(QDropEvent *ev);
 
   void dragEnterEvent(QDragEnterEvent *ev);
+
+private:
+  void import_pointcloud(QString filepath);
 };
 
 
