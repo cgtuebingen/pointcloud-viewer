@@ -4,6 +4,10 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core 5.5 REQUIRED)
 
 add_library(pointcloud STATIC
+ exporter/abstract_exporter.cpp
+ exporter/abstract_exporter.hpp
+ exporter/ply_exporter.cpp
+ exporter/ply_exporter.hpp
  importer/abstract_importer.cpp
  importer/abstract_importer.hpp
  importer/ply_importer.cpp
@@ -12,6 +16,7 @@ add_library(pointcloud STATIC
  importer/pcvd_importer.hpp
  buffer.cpp
  buffer.hpp
+ buffer.inl
  convert_values.hpp
  pcvd_file_format.hpp
  kdtree_index.cpp

@@ -28,6 +28,9 @@ struct base_type_of;
 template<typename T>
 T read_value_from_buffer(base_type_t input_type, const uint8_t* input_buffer);
 
+template<typename stream_t>
+size_t read_value_from_buffer_to_stream(stream_t& stream, base_type_t input_type, const uint8_t* input_buffer);
+
 #define BASE_TYPE(c_type, enum_value) template<>struct base_type_of<c_type>{static constexpr base_type_t value(){return base_type_t::enum_value;}};
 BASE_TYPE(int8_t, INT8)
 BASE_TYPE(int16_t, INT16)
@@ -40,38 +43,6 @@ BASE_TYPE(uint64_t, UINT64)
 BASE_TYPE(float32_t, FLOAT32)
 BASE_TYPE(float64_t, FLOAT64)
 #undef BASE_TYPE
-
-
-template<typename T>
-T read_value_from_buffer(base_type_t input_type, const uint8_t* input_buffer)
-{
-  switch(input_type)
-  {
-  case BASE_TYPE::FLOAT32:
-    return ::read_value_from_buffer<float32_t>(input_buffer);
-  case BASE_TYPE::FLOAT64:
-    return ::read_value_from_buffer<float64_t>(input_buffer);
-  case BASE_TYPE::INT8:
-    return ::read_value_from_buffer<int8_t>(input_buffer);
-  case BASE_TYPE::INT16:
-    return ::read_value_from_buffer<int16_t>(input_buffer);
-  case BASE_TYPE::INT32:
-    return ::read_value_from_buffer<int32_t>(input_buffer);
-  case BASE_TYPE::INT64:
-    return ::read_value_from_buffer<int64_t>(input_buffer);
-  case BASE_TYPE::UINT8:
-    return ::read_value_from_buffer<uint8_t>(input_buffer);
-  case BASE_TYPE::UINT16:
-    return ::read_value_from_buffer<uint16_t>(input_buffer);
-  case BASE_TYPE::UINT32:
-    return ::read_value_from_buffer<uint32_t>(input_buffer);
-  case BASE_TYPE::UINT64:
-    return ::read_value_from_buffer<uint64_t>(input_buffer);
-  }
-
-  Q_UNREACHABLE();
-  return T();
-}
 
 } // namespace data_type
 
@@ -99,5 +70,7 @@ public:
 private:
   std::vector<uint8_t> bytes;
 };
+
+#include <pointcloud/buffer.inl>
 
 #endif // POINTCLOUDVIEWER_BUFFER_HPP_
