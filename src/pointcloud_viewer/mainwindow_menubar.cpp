@@ -17,9 +17,20 @@ void MainWindow::initMenuBar()
   // ======== Project ==================================================================================================
   QMenu* menu_project = menuBar->addMenu("&Project");
   QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud");
+  QAction* export_pointcloud = menu_project->addAction("&Save Pointcloud");
 
   import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
   connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);
+
+  export_pointcloud->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+  export_pointcloud->setEnabled(false);
+  connect(export_pointcloud, &QAction::triggered, this, &MainWindow::exportPointcloud);
+  connect(this, &MainWindow::pointcloud_unloaded, [export_pointcloud](){
+    export_pointcloud->setEnabled(false);
+  });
+  connect(this, &MainWindow::pointcloud_imported, [export_pointcloud](){
+    export_pointcloud->setEnabled(true);
+  });
 
   // ======== Flythrough ===============================================================================================
   QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
@@ -118,6 +129,11 @@ void MainWindow::import_pointcloud(QString filepath)
     pointcloud_imported(pointcloud);
 }
 
+void MainWindow::export_pointcloud(QString filepath)
+{
+
+}
+
 void MainWindow::exportCameraPath()
 {
   QString file_to_export = QFileDialog::getSaveFileName(this,
@@ -163,6 +179,19 @@ void MainWindow::importPointcloudLayer()
     return;
 
   import_pointcloud(file_to_import);
+}
+
+void MainWindow::exportPointcloud()
+{
+  QString file_to_export_to = QFileDialog::getSaveFileName(this,
+                                                           "Export as",
+                                                           ".",
+                                                           AbstractPointCloudImporter::allSupportedFiletypes());
+
+  if(file_to_export_to.isEmpty())
+    return;
+
+  export_pointcloud(file_to_export_to);
 }
 
 extern const QString pcl_notes;

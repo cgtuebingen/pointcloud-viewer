@@ -21,7 +21,6 @@ MainWindow::MainWindow()
   connect(this, &MainWindow::pointcloud_unloaded, &kdTreeInspector, &KdTreeInspector::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &pointCloudInspector, &PointCloudInspector::unload_all_point_clouds);
 
-  connect(this, &MainWindow::pointcloud_imported, this, &MainWindow::pointcloud_unloaded);
   connect(this, &MainWindow::pointcloud_imported, &viewport, &Viewport::load_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &kdTreeInspector, &KdTreeInspector::handle_new_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &pointCloudInspector, &PointCloudInspector::handle_new_point_cloud);
