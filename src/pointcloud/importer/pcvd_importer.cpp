@@ -8,4 +8,5 @@ PcvdImporter::PcvdImporter(const std::string& input_file)
 bool PcvdImporter::import_implementation()
 {
   // TODO
+  return false;
 }
