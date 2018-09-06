@@ -105,4 +105,54 @@ size_t read_value_from_buffer_to_stream(stream_t& stream, base_type_t input_type
   return 0;
 }
 
+inline size_t size_of_type(base_type_t base_type)
+{
+  switch(base_type)
+  {
+  case BASE_TYPE::FLOAT32:
+    return 4;
+  case BASE_TYPE::FLOAT64:
+    return 8;
+  case BASE_TYPE::INT8:
+    return 1;
+  case BASE_TYPE::INT16:
+    return 2;
+  case BASE_TYPE::INT32:
+    return 4;
+  case BASE_TYPE::INT64:
+    return 8;
+  case BASE_TYPE::UINT8:
+    return 1;
+  case BASE_TYPE::UINT16:
+    return 2;
+  case BASE_TYPE::UINT32:
+    return 4;
+  case BASE_TYPE::UINT64:
+    return 8;
+  }
+
+  Q_UNREACHABLE();
+  return 0;
+}
+
+inline bool is_valid(base_type_t base_type)
+{
+  switch(base_type)
+  {
+  case BASE_TYPE::FLOAT32:
+  case BASE_TYPE::FLOAT64:
+  case BASE_TYPE::INT8:
+  case BASE_TYPE::INT16:
+  case BASE_TYPE::INT32:
+  case BASE_TYPE::INT64:
+  case BASE_TYPE::UINT8:
+  case BASE_TYPE::UINT16:
+  case BASE_TYPE::UINT32:
+  case BASE_TYPE::UINT64:
+    return true;
+  }
+
+  return false;
+}
+
 } // namespace data_type

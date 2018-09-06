@@ -31,11 +31,11 @@ struct header_t
   uint16_t number_fields; // total number of fields
   uint16_t field_names_total_size; // must be equal to the sum of all field_description_t::name_length
 
-  uint16_t flags; // 0b1: contains kdtree, 0b10: contains vertex_data other bits must be zero.
+  uint16_t flags; // 0b1: contains kdtree, 0b10: contains vertex_data other bits must be zero if file_version_number==0.
 
-  aabb_t aabbt;
+  aabb_t aabb;
 
-  uint64_t reserved; // ignored
+  uint64_t reserved; // ignored. Must be zero, if file_version_number==0
 };
 
 struct field_description_t

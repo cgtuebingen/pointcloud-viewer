@@ -47,7 +47,7 @@ signals:
 
 protected:
   int64_t total_progress = 0;
-  bool handle_written_chunk(int64_t progress);
+  void handle_written_chunk(int64_t progress);
 
 protected slots:
   virtual bool export_implementation() = 0;

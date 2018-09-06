@@ -91,7 +91,7 @@ void AbstractPointCloudExporter::cancel()
   this->state = CANCELED;
 }
 
-bool AbstractPointCloudExporter::handle_written_chunk(int64_t current_progress)
+void AbstractPointCloudExporter::handle_written_chunk(int64_t current_progress)
 {
   Q_ASSERT(current_progress <= total_progress);
 
@@ -114,5 +114,5 @@ bool AbstractPointCloudExporter::handle_written_chunk(int64_t current_progress)
 
   process_events();
 
-  return this->state == RUNNING;
+  Q_ASSERT(this->state == RUNNING);
 }

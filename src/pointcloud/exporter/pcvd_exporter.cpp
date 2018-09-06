@@ -21,17 +21,11 @@ bool PcvdExporter::export_implementation()
 
   header.point_data_stride = decltype(header.point_data_stride)(pointcloud.user_data_stride);
   if(header.point_data_stride != pointcloud.user_data_stride)
-  {
-    std::cerr << "internal error: more properties than supported";
-    return false;
-  }
+    throw QString("More properties than supported by the file format (point stride too large)");
 
   header.number_fields = decltype(header.number_fields)(pointcloud.user_data_names.length());
   if(header.number_fields != pointcloud.user_data_names.length())
-  {
-    std::cerr << "internal error: more properties than supported";
-    return false;
-  }
+    throw QString("More properties than supported by the file format");
 
   QVector<pcvd_format::field_description_t> field_descriptions;
   std::string joined_field_names;
@@ -43,31 +37,25 @@ bool PcvdExporter::export_implementation()
     joined_field_names += name;
     field_description.name_length = decltype(field_description.name_length)(name.length());
     if(field_description.name_length != name.length())
-    {
-      std::cerr << "internal error: property name " << name << " too long";
-      return false;
-    }
+      throw QString("More properties than supported by the file format (property name too long)");
     field_description.type = pointcloud.user_data_types[i];
   }
 
   header.field_names_total_size = decltype(header.point_data_stride)(joined_field_names.length());
   if(header.field_names_total_size != joined_field_names.length())
-  {
-    std::cerr << "internal error: property names too long";
-    return false;
-  }
+    throw QString("More properties than supported by the file format (property names too long)");
 
   save_kd_tree = save_kd_tree && pointcloud.has_build_kdtree();
 
   header.flags = (save_kd_tree ? 0b1 : 0) | (save_vertex_data ? 0b10 : 0);
 
-  header.aabbt = pointcloud.aabb;
+  header.aabb = pointcloud.aabb;
 
   header.reserved = 0;
 
   std::streamsize header_size = sizeof(pcvd_format::header_t);
   std::streamsize field_headers_size = sizeof(pcvd_format::field_description_t) * header.number_fields;
-  std::streamsize field_names_size = std::streamsize(joined_field_names.length());
+  std::streamsize field_names_size = header.field_names_total_size;
   std::streamsize vertex_data_size = save_vertex_data ? std::streamsize(pointcloud.num_points * sizeof(PointCloud::vertex_t)) : 0;
   std::streamsize point_data_size = std::streamsize(pointcloud.num_points * header.point_data_stride);
   std::streamsize kd_tree_size = save_kd_tree ? std::streamsize(pointcloud.num_points * sizeof(size_t)) : 0;
@@ -75,31 +63,25 @@ bool PcvdExporter::export_implementation()
   int64_t current_progress = 0;
 
   stream.write(reinterpret_cast<const char*>(&header), header_size);
-  if(!handle_written_chunk(current_progress += header_size))
-    return false;
+  handle_written_chunk(current_progress += header_size);
 
   stream.write(reinterpret_cast<const char*>(field_descriptions.data()), field_headers_size);
-  if(!handle_written_chunk(current_progress += field_headers_size))
-    return false;
+  handle_written_chunk(current_progress += field_headers_size);
 
   stream.write(joined_field_names.c_str(), field_names_size);
-  if(!handle_written_chunk(current_progress += field_names_size))
-    return false;
+  handle_written_chunk(current_progress += field_names_size);
 
   if(save_vertex_data)
   {
     stream.write(reinterpret_cast<const char*>(pointcloud.coordinate_color.data()), vertex_data_size);
-    if(!handle_written_chunk(current_progress += vertex_data_size))
-      return false;
+    handle_written_chunk(current_progress += vertex_data_size);
   }
   stream.write(reinterpret_cast<const char*>(pointcloud.user_data.data()), point_data_size);
-  if(!handle_written_chunk(current_progress += point_data_size))
-    return false;
+  handle_written_chunk(current_progress += point_data_size);
   if(save_kd_tree)
   {
     stream.write(reinterpret_cast<const char*>(pointcloud.kdtree_index.data()), kd_tree_size);
-    if(!handle_written_chunk(current_progress += kd_tree_size))
-      return false;
+    handle_written_chunk(current_progress += kd_tree_size);
   }
 
   return true;

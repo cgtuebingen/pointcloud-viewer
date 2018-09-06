@@ -1,5 +1,5 @@
-#ifndef POINTCLOUD_WORKERS_IMPORTER_PLY_HPP_
-#define POINTCLOUD_WORKERS_IMPORTER_PLY_HPP_
+#ifndef POINTCLOUD_WORKERS_IMPORTER_PCVD_HPP_
+#define POINTCLOUD_WORKERS_IMPORTER_PCVD_HPP_
 
 #include <pointcloud/importer/abstract_importer.hpp>
 #include <pointcloud/buffer.hpp>
@@ -16,6 +16,9 @@ public:
 
 protected:
   bool import_implementation() override;
+
+private:
+  std::streamsize current_progress;
 };
 
-#endif // POINTCLOUD_WORKERS_IMPORTER_PLY_HPP_
+#endif // POINTCLOUD_WORKERS_IMPORTER_PCVD_HPP_

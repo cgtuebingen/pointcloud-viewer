@@ -46,8 +46,7 @@ bool PlyExporter::export_implementation()
 
       data += read_value_from_buffer_to_stream(stream, data_types[i], data);
     }
-    if(Q_UNLIKELY(handle_written_chunk(int64_t(point_index)) == false))
-      return false;
+    handle_written_chunk(int64_t(point_index));
 
     stream << "\n";
   }

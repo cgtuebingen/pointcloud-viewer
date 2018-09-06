@@ -39,6 +39,7 @@ public:
   bool is_initialized() const;
 
   const point_index_t* data() const;
+  point_index_t* alloc_for_loading(size_t num_points);
 
 private:
   struct range_t

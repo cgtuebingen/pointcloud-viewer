@@ -233,6 +233,12 @@ const KDTreeIndex::point_index_t* KDTreeIndex::data() const
   return tree.data();
 }
 
+KDTreeIndex::point_index_t* KDTreeIndex::alloc_for_loading(size_t num_points)
+{
+  tree.resize(num_points);
+  return tree.data();
+}
+
 KDTreeIndex::subtree_t KDTreeIndex::traverse_kd_tree_to_point(size_t point, std::function<void(subtree_t)> visitor) const
 {
   subtree_t subtree = whole_tree();
