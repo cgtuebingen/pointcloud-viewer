@@ -51,7 +51,7 @@ QSharedPointer<AbstractPointCloudExporter> AbstractPointCloudExporter::exporterF
 
 QString AbstractPointCloudExporter::allSupportedFiletypes()
 {
-  return PLY_FILTER ";;" PCVD_FILTER;
+  return PCVD_FILTER ";;" PLY_FILTER;
 }
 
 void AbstractPointCloudExporter::export_now()

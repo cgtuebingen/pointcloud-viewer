@@ -1,4 +1,4 @@
-#ifndef POINTCLOUD_KDTREE_INDEX_HPP
+﻿#ifndef POINTCLOUD_KDTREE_INDEX_HPP
 #define POINTCLOUD_KDTREE_INDEX_HPP
 
 #include <core_library/types.hpp>
@@ -37,6 +37,8 @@ public:
   void build(aabb_t total_aabb, const uint8_t* coordinates, size_t num_points, uint stride, std::function<bool(size_t, size_t)> feedback);
 
   bool is_initialized() const;
+
+  const point_index_t* data() const;
 
 private:
   struct range_t

@@ -228,6 +228,11 @@ bool KDTreeIndex::is_initialized() const
   return !tree.empty();
 }
 
+const KDTreeIndex::point_index_t* KDTreeIndex::data() const
+{
+  return tree.data();
+}
+
 KDTreeIndex::subtree_t KDTreeIndex::traverse_kd_tree_to_point(size_t point, std::function<void(subtree_t)> visitor) const
 {
   subtree_t subtree = whole_tree();

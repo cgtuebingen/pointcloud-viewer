@@ -17,7 +17,7 @@ The file format consists out of the following sections (plain binary data withou
 struct header_t
 {
   static constexpr uint32_t expected_macic_number() {
-    return (((uint32_t('p')<<8) | uint32_t('c')<<8) | uint32_t('v')<<8) | uint32_t('d'); // point cloud viewer dump
+    return (uint32_t('p')<<0) | (uint32_t('c')<<8) | (uint32_t('v')<<16) | (uint32_t('d') << 24); // point cloud viewer dump
   }
 
   uint32_t magic_number; // must be `expected_macic_number()`
@@ -26,12 +26,12 @@ struct header_t
   uint16_t downwards_compatibility_version_number; // up to which file version is this file downwards compatible
 
   uint64_t number_points; // total number of points
-  uint32_t point_data_stride; // must be equal to the sum of the sizes of all field_description_t::size
+  uint16_t point_data_stride; // must be equal to the sum of the sizes of all field_description_t::size
 
+  uint16_t number_fields; // total number of fields
   uint16_t field_names_total_size; // must be equal to the sum of all field_description_t::name_length
-  uint8_t number_fields; // total number of fields
 
-  uint8_t flags; // 0b1: contains kdtree, 0b10: contains vertex_data other bits must be zero.
+  uint16_t flags; // 0b1: contains kdtree, 0b10: contains vertex_data other bits must be zero.
 
   aabb_t aabbt;
 
