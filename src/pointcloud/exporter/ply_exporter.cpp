@@ -13,6 +13,15 @@ PlyExporter::PlyExporter(const std::string& output_file, const PointCloud& point
 bool PlyExporter::export_implementation()
 {
   std::ofstream stream(output_file, std::ios_base::out); // not a binary stream
+  stream << std::fixed;
+
+  if(pointcloud.num_points > std::numeric_limits<int64_t>::max())
+  {
+    std::cerr << "Internal error: too large pointcloud too be written into a file" << std::endl;
+    return false;
+  }
+
+  total_progress = int64_t(pointcloud.num_points);
 
   if(!stream.is_open())
     return false;
@@ -37,11 +46,11 @@ bool PlyExporter::export_implementation()
 
       data += read_value_from_buffer_to_stream(stream, data_types[i], data);
     }
+    handle_written_chunk(int64_t(point_index));
 
     stream << "\n";
   }
 
-  stream << "end_header\n";
   return true;
 }
 
