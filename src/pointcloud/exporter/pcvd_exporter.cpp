@@ -39,6 +39,8 @@ bool PcvdExporter::export_implementation()
     if(field_description.name_length != name.length())
       throw QString("More properties than supported by the file format (property name too long)");
     field_description.type = pointcloud.user_data_types[i];
+
+    field_descriptions << field_description;
   }
 
   header.field_names_total_size = decltype(header.point_data_stride)(joined_field_names.length());
