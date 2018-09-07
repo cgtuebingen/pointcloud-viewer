@@ -14,6 +14,8 @@ add_executable(pointcloud_viewer
   flythrough/keypoint.hpp
   flythrough/playback.cpp
   flythrough/playback.hpp
+  workers/export_pointcloud.cpp
+  workers/export_pointcloud.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
   workers/kdtree_builder_dialog.cpp

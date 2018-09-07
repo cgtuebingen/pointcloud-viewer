@@ -1,4 +1,4 @@
-#ifndef POINTCLOUDVIEWER_MAINWINDOW_HPP_
+﻿#ifndef POINTCLOUDVIEWER_MAINWINDOW_HPP_
 #define POINTCLOUDVIEWER_MAINWINDOW_HPP_
 
 #include <QMainWindow>
@@ -47,6 +47,7 @@ private:
   QDockWidget* initDataInspectionDock();
 
   void importPointcloudLayer();
+  void exportPointcloud();
   void openAboutDialog();
 
   void exportCameraPath();
@@ -60,6 +61,12 @@ protected:
   void dropEvent(QDropEvent *ev);
 
   void dragEnterEvent(QDragEnterEvent *ev);
+
+private:
+  QSharedPointer<PointCloud> pointcloud;
+
+  void import_pointcloud(QString filepath);
+  void export_pointcloud(QString filepath, QString selectedFilter);
 };
 
 

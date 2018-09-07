@@ -1,8 +1,10 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 #include <pointcloud_viewer/workers/import_pointcloud.hpp>
+#include <pointcloud_viewer/workers/export_pointcloud.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/version_text.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
+#include <pointcloud/exporter/abstract_exporter.hpp>
 
 #include <QMenuBar>
 #include <QMimeData>
@@ -17,9 +19,20 @@ void MainWindow::initMenuBar()
   // ======== Project ==================================================================================================
   QMenu* menu_project = menuBar->addMenu("&Project");
   QAction* import_pointcloud_layers = menu_project->addAction("&Import Pointcloud");
+  QAction* export_pointcloud = menu_project->addAction("&Save Pointcloud");
 
   import_pointcloud_layers->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_I));
   connect(import_pointcloud_layers, &QAction::triggered, this, &MainWindow::importPointcloudLayer);
+
+  export_pointcloud->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+  export_pointcloud->setEnabled(false);
+  connect(export_pointcloud, &QAction::triggered, this, &MainWindow::exportPointcloud);
+  connect(this, &MainWindow::pointcloud_unloaded, [export_pointcloud](){
+    export_pointcloud->setEnabled(false);
+  });
+  connect(this, &MainWindow::pointcloud_imported, [export_pointcloud](){
+    export_pointcloud->setEnabled(true);
+  });
 
   // ======== Flythrough ===============================================================================================
   QMenu* menu_flythrough = menuBar->addMenu("&Flythrough");
@@ -99,14 +112,29 @@ void MainWindow::dropEvent(QDropEvent *ev) {
     const QString file_to_import = url.path();
     if(file_to_import.isEmpty())
       return;
-    pointcloud_unloaded();
-    pointcloud_imported(import_point_cloud(this, file_to_import));
+    import_pointcloud(file_to_import);
     return;
   }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
   ev->accept();
+}
+
+void MainWindow::import_pointcloud(QString filepath)
+{
+  pointcloud_unloaded();
+
+  QSharedPointer<PointCloud> pointcloud = import_point_cloud(this, filepath);
+
+  if(pointcloud && pointcloud->is_valid && pointcloud->num_points>0)
+    pointcloud_imported(pointcloud);
+}
+
+void MainWindow::export_pointcloud(QString filepath, QString selectedFilter)
+{
+  if(pointcloud && pointcloud->is_valid && pointcloud->num_points>0)
+    export_point_cloud(this, filepath, *pointcloud, selectedFilter);
 }
 
 void MainWindow::exportCameraPath()
@@ -153,8 +181,22 @@ void MainWindow::importPointcloudLayer()
   if(file_to_import.isEmpty())
     return;
 
-  pointcloud_unloaded();
-  pointcloud_imported(import_point_cloud(this, file_to_import));
+  import_pointcloud(file_to_import);
+}
+
+void MainWindow::exportPointcloud()
+{
+  QString selectedFilter;
+  QString file_to_export_to = QFileDialog::getSaveFileName(this,
+                                                           "Export as",
+                                                           ".",
+                                                           AbstractPointCloudExporter::allSupportedFiletypes(),
+                                                           &selectedFilter);
+
+  if(file_to_export_to.isEmpty())
+    return;
+
+  export_pointcloud(file_to_export_to, selectedFilter);
 }
 
 extern const QString pcl_notes;
