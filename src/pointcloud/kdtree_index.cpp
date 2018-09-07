@@ -233,8 +233,9 @@ const KDTreeIndex::point_index_t* KDTreeIndex::data() const
   return tree.data();
 }
 
-KDTreeIndex::point_index_t* KDTreeIndex::alloc_for_loading(size_t num_points)
+KDTreeIndex::point_index_t* KDTreeIndex::alloc_for_loading(size_t num_points, aabb_t total_aabb)
 {
+  this->total_aabb = total_aabb;
   tree.resize(num_points);
   return tree.data();
 }

@@ -202,7 +202,7 @@ bool PcvdImporter::import_implementation()
 
   if(load_kd_tree)
   {
-    read_bytes = read(pointcloud.kdtree_index.alloc_for_loading(header.number_points), kd_tree_size);
+    read_bytes = read(pointcloud.kdtree_index.alloc_for_loading(header.number_points, header.aabb), kd_tree_size);
     if(read_bytes != kd_tree_size)
       throw QString("Incomplete file!");
     handle_loaded_chunk(current_progress += kd_tree_size);

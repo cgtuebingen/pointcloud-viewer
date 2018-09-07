@@ -14,27 +14,9 @@ PointCloud::PointCloud()
   is_valid = false;
 }
 
-PointCloud::PointCloud(PointCloud&& other)
-  : PointCloud()
-{
-  *this = std::move(other);
-}
+PointCloud::PointCloud(PointCloud&& other) = default;
 
-PointCloud& PointCloud::operator=(PointCloud&& other)
-{
-  std::swap(this->aabb, other.aabb);
-  std::swap(this->num_points, other.num_points);
-  std::swap(this->is_valid, other.is_valid);
-  this->coordinate_color = std::move(other.coordinate_color);
-  this->user_data = std::move(other.user_data);
-
-  std::swap(this->user_data_stride, other.user_data_stride);
-  this->user_data_names.swap(other.user_data_names);
-  this->user_data_offset.swap(other.user_data_offset);
-  this->user_data_types.swap(other.user_data_types);
-
-  return *this;
-}
+PointCloud& PointCloud::operator=(PointCloud&& other) = default;
 
 PointCloud::UserData PointCloud::all_values_of_point(size_t point_index) const
 {
