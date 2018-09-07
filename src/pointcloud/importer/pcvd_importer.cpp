@@ -71,7 +71,7 @@ bool PcvdImporter::import_implementation()
   read_bytes = stream.readsome(reinterpret_cast<char*>(field_descriptions.data()), field_headers_size);
   if(read_bytes != field_headers_size)
     throw QString("Incomplete file!");
-  read_bytes = stream.readsome(reinterpret_cast<char*>(field_descriptions.data()), field_names_size);
+  read_bytes = stream.readsome(reinterpret_cast<char*>(&joined_field_names.at(0)), field_names_size);
   if(read_bytes != field_names_size)
     throw QString("Incomplete file!");
 
