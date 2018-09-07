@@ -18,7 +18,7 @@ protected:
   bool import_implementation() override;
 
 private:
-  std::streamsize current_progress;
+  std::streamsize current_progress = 0;
 };
 
 #endif // POINTCLOUD_WORKERS_IMPORTER_PCVD_HPP_
