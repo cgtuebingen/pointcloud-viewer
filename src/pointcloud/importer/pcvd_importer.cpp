@@ -113,11 +113,11 @@ bool PcvdImporter::import_implementation()
     throw QString("Corrupt header! (field names length mismatch)");
 
   pointcloud.aabb = header.aabb;
-  pointcloud.resize(header.number_points);
   pointcloud.user_data_stride = header.point_data_stride;
   pointcloud.user_data_names = field_names;
   pointcloud.user_data_offset = field_data_offset;
   pointcloud.user_data_types = field_types;
+  pointcloud.resize(header.number_points);
 
   handle_loaded_chunk(current_progress += field_headers_size + field_names_size);
 
