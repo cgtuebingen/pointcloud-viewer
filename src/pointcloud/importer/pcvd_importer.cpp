@@ -12,8 +12,16 @@ bool PcvdImporter::import_implementation()
   std::streamsize read_bytes;
   std::ifstream stream(input_file, std::ios_base::in | std::ios_base::binary); // a binary stream
 
+  auto read = [&stream](void* target, std::streamsize num_bytes) -> std::streamsize {
+    std::streamsize begin = stream.tellg();
+
+    stream.read(reinterpret_cast<char*>(target), num_bytes);
+
+    return stream.tellg() - begin;
+  };
+
   pcvd_format::header_t header;
-  read_bytes = stream.readsome(reinterpret_cast<char*>(&header), sizeof(pcvd_format::header_t));
+  read_bytes = read(&header, sizeof(pcvd_format::header_t));
   if(read_bytes == 0)
     throw QString("Can't load empty file");
 
@@ -68,10 +76,10 @@ bool PcvdImporter::import_implementation()
   std::string joined_field_names;
   field_descriptions.resize(header.number_fields);
   joined_field_names.resize(header.field_names_total_size);
-  read_bytes = stream.readsome(reinterpret_cast<char*>(field_descriptions.data()), field_headers_size);
+  read_bytes = read(field_descriptions.data(), field_headers_size);
   if(read_bytes != field_headers_size)
     throw QString("Incomplete file!");
-  read_bytes = stream.readsome(reinterpret_cast<char*>(&joined_field_names.at(0)), field_names_size);
+  read_bytes = read(&joined_field_names.at(0), field_names_size);
   if(read_bytes != field_names_size)
     throw QString("Incomplete file!");
 
@@ -123,13 +131,13 @@ bool PcvdImporter::import_implementation()
 
   if(load_vertex)
   {
-    read_bytes = stream.readsome(reinterpret_cast<char*>(pointcloud.coordinate_color.data()), vertex_data_size);
+    read_bytes = read(pointcloud.coordinate_color.data(), vertex_data_size);
     if(read_bytes != vertex_data_size)
       throw QString("Incomplete file!");
     handle_loaded_chunk(current_progress += vertex_data_size);
   }
 
-  read_bytes = stream.readsome(reinterpret_cast<char*>(pointcloud.user_data.data()), point_data_size);
+  read_bytes = read(pointcloud.user_data.data(), point_data_size);
   if(read_bytes != point_data_size)
     throw QString("Incomplete file!");
   handle_loaded_chunk(current_progress += point_data_size);
@@ -194,7 +202,7 @@ bool PcvdImporter::import_implementation()
 
   if(load_kd_tree)
   {
-    read_bytes = stream.readsome(reinterpret_cast<char*>(pointcloud.kdtree_index.alloc_for_loading(header.number_points)), kd_tree_size);
+    read_bytes = read(pointcloud.kdtree_index.alloc_for_loading(header.number_points), kd_tree_size);
     if(read_bytes != kd_tree_size)
       throw QString("Incomplete file!");
     handle_loaded_chunk(current_progress += kd_tree_size);
