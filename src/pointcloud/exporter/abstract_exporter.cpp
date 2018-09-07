@@ -66,7 +66,7 @@ void AbstractPointCloudExporter::export_now()
       this->state = RUNTIME_ERROR;
   }catch(QString message)
   {
-    print_error(message.toStdString());
+    println_error(message.toStdString());
     this->state = RUNTIME_ERROR;
   }catch(canceled_t)
   {

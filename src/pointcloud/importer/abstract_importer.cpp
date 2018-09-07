@@ -44,7 +44,7 @@ void AbstractPointCloudImporter::import()
       this->state = RUNTIME_ERROR;
   }catch(QString message)
   {
-    print_error(message.toStdString());
+    println_error(message.toStdString());
     this->state = INVALID_FILE;
   }catch(canceled_t)
   {
