@@ -168,14 +168,18 @@ bool PcvdImporter::import_implementation()
     const uint8_t* user_data = pointcloud.user_data.data();
 
     auto read_property_as_float = [this, &user_data](int source_index) -> float32_t {
+      if(source_index == -1)
+        return 0.f;
       return data_type::read_value_from_buffer<float32_t>(pointcloud.user_data_types[source_index], user_data + pointcloud.user_data_offset[source_index]);
     };
 
     auto read_property_as_uint8 = [this, &user_data](int source_index) -> uint8_t {
+      if(source_index == -1)
+        return 255;
       return data_type::read_value_from_buffer<uint8_t>(pointcloud.user_data_types[source_index], user_data + pointcloud.user_data_offset[source_index]);
     };
 
-    uint8_t* const coordinates = pointcloud.coordinate_color.data();
+    uint8_t* coordinates = pointcloud.coordinate_color.data();
 
     size_t ui_update = 0;
     for(size_t i=0; i<header.number_points; ++i)
@@ -191,13 +195,17 @@ bool PcvdImporter::import_implementation()
 
       write_value_to_buffer<PointCloud::vertex_t>(coordinates, vertex);
 
-      if(Q_UNLIKELY(ui_update == 2048))
-        handle_loaded_chunk(current_progress += ui_update);
       ui_update++;
+      if(Q_UNLIKELY(ui_update == 8192))
+      {
+        handle_loaded_chunk(current_progress += ui_update * PointCloud::stride);
+        ui_update = 0;
+      }
 
       user_data += header.point_data_stride;
+      coordinates += PointCloud::stride;
     }
-    handle_loaded_chunk(current_progress += ui_update);
+    handle_loaded_chunk(current_progress += ui_update * PointCloud::stride);
   }
 
   if(load_kd_tree)
