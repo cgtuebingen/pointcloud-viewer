@@ -57,9 +57,9 @@ bool PcvdImporter::import_implementation()
   std::streamsize header_size = sizeof(pcvd_format::header_t);
   std::streamsize field_headers_size = sizeof(pcvd_format::field_description_t) * header.number_fields;
   std::streamsize field_names_size = header.field_names_total_size;
-  std::streamsize vertex_data_size = std::streamsize(pointcloud.num_points * sizeof(PointCloud::vertex_t));
-  std::streamsize point_data_size = std::streamsize(pointcloud.num_points * header.point_data_stride);
-  std::streamsize kd_tree_size = load_kd_tree ? std::streamsize(pointcloud.num_points * sizeof(size_t)) : 0;
+  std::streamsize vertex_data_size = std::streamsize(header.number_points * sizeof(PointCloud::vertex_t));
+  std::streamsize point_data_size = std::streamsize(header.number_points * header.point_data_stride);
+  std::streamsize kd_tree_size = load_kd_tree ? std::streamsize(header.number_points * sizeof(size_t)) : 0;
   total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size;
 
   handle_loaded_chunk(current_progress += header_size);
