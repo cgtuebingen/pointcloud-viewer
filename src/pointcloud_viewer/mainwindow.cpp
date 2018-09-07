@@ -16,6 +16,7 @@ MainWindow::MainWindow()
   connect(&viewport, &Viewport::openGlContextCreated, this, &MainWindow::handleApplicationArguments);
 
   connect(&viewport.navigation, &Navigation::simpleLeftClick, &pointCloudInspector, &PointCloudInspector::pick_point, Qt::QueuedConnection);
+  connect(&viewport, &Viewport::pointSizeChanged, &pointCloudInspector, &PointCloudInspector::setPickRadius);
 
   connect(this, &MainWindow::pointcloud_unloaded, [this](){pointcloud.clear();});
   connect(this, &MainWindow::pointcloud_unloaded, &viewport, &Viewport::unload_all_point_clouds);

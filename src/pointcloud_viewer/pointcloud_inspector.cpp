@@ -31,6 +31,11 @@ bool PointCloudInspector::hasSelectedPoint() const
   return m_hasSelectedPoint;
 }
 
+int PointCloudInspector::pickRadius() const
+{
+  return m_pickRadius;
+}
+
 // Called when athe point-cloud was unloaded
 void PointCloudInspector::unload_all_point_clouds()
 {
@@ -52,7 +57,7 @@ void PointCloudInspector::pick_point(glm::ivec2 pixel)
   if(!point_cloud || !point_cloud->has_build_kdtree())
     return;
 
-  float pick_radius = 2.f;
+  float pick_radius = m_pickRadius * 2.f;
   glm::ivec2 viewport_size(viewport.width(), viewport.height());
 
   glm::vec2 screenspace_point = Camera::pixel_to_screenspace(pixel, viewport_size);
@@ -104,4 +109,13 @@ void PointCloudInspector::setHasSelectedPoint(bool hasSelectedPoint)
 
   m_hasSelectedPoint = hasSelectedPoint;
   emit hasSelectedPointChanged(m_hasSelectedPoint);
+}
+
+void PointCloudInspector::setPickRadius(int pickRadius)
+{
+  if (m_pickRadius == pickRadius)
+    return;
+
+  m_pickRadius = pickRadius;
+  emit pickRadiusChanged(m_pickRadius);
 }
