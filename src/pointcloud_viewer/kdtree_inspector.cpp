@@ -53,7 +53,7 @@ void KdTreeInspector::handle_new_point_cloud(QSharedPointer<PointCloud> point_cl
   this->setHasKdTreeAvailable(this->point_cloud->has_build_kdtree());
   kd_tree_inspection_move_to_root();
 
-  if(autoBuildKdTreeAfterLoading())
+  if(autoBuildKdTreeAfterLoading() && this->point_cloud->can_build_kdtree())
     build_kdtree();
 }
 
