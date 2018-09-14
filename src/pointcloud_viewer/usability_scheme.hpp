@@ -5,6 +5,8 @@
 #include <QSharedPointer>
 #include <QVector>
 
+#include <pointcloud_viewer/navigation.hpp>
+
 // Different Usability schemes on how to navigate the 3d space
 
 class UsabilityScheme final : public QObject
@@ -16,7 +18,7 @@ public:
     MESHLAB = 1,
   };
 
-  UsabilityScheme();
+  UsabilityScheme(Navigation::Controller& navigation);
   ~UsabilityScheme();
 
   void enableBlenderScheme();
@@ -46,6 +48,9 @@ public:
   class BlenderScheme;
   class MeshLabScheme;
 
+  Navigation::Controller& navigation;
+
+  Implementation(Navigation::Controller& navigation);
   virtual ~Implementation() = default;
 
   virtual void on_enable() = 0;

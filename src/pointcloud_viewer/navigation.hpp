@@ -8,6 +8,7 @@
 #include <QKeyEvent>
 
 class Viewport;
+class UsabilityScheme;
 
 /*
 Handles input events for implementing navigation
@@ -16,6 +17,8 @@ class Navigation final : public QObject
 {
   Q_OBJECT
 public:
+  class Controller;
+
   Camera camera;
   glm::vec3 turntable_origin = glm::vec3(0);
 
@@ -70,6 +73,9 @@ private:
 
   Viewport* const viewport;
 
+  Controller* const _controller;
+  UsabilityScheme* const _usability_scheme;
+
   mode_t mode = IDLE;
 
 
@@ -109,6 +115,23 @@ private:
   void disableMode(mode_t mode);
 
   void set_mouse_pos(glm::ivec2 mouse_pos);
+};
+
+class Navigation::Controller final
+{
+public:
+  Controller(const Controller&) = delete;
+  Controller& operator=(const Controller&) = delete;
+
+  Controller(Controller&&) = delete;
+  Controller& operator=(Controller&&) = delete;
+
+private:
+  friend class Navigation;
+
+  Navigation& navigation;
+
+  Controller(Navigation& navigation);
 };
 
 

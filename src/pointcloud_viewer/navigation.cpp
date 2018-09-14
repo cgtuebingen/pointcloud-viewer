@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/camera.hpp>
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/usability_scheme.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -11,7 +12,9 @@
 #include <QSettings>
 
 Navigation::Navigation(Viewport* viewport)
-  : viewport(viewport)
+  : viewport(viewport),
+    _controller(new Controller(*this)),
+    _usability_scheme(new UsabilityScheme(*_controller))
 {
   connect(viewport, &Viewport::frame_rendered, this, &Navigation::updateFrameRenderDuration);
 
@@ -27,6 +30,9 @@ Navigation::~Navigation()
 
   QSettings settings;
   settings.setValue("Navigation/mouseSensitivity", int(_mouse_sensitivity_value));
+
+  delete _usability_scheme;
+  delete _controller;
 }
 
 void Navigation::startFpsNavigation()
@@ -472,4 +478,9 @@ void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)
   QCursor cursor = viewport->cursor();
   cursor.setPos(viewport->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
   viewport->setCursor(cursor);
+}
+
+Navigation::Controller::Controller(Navigation& navigation)
+  : navigation(navigation)
+{
 }

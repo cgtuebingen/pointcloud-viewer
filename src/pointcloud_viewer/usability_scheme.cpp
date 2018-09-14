@@ -4,7 +4,7 @@
 class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
 {
 public:
-  BlenderScheme();
+  BlenderScheme(Navigation::Controller& navigation);
 
   void on_enable() override;
   void on_disable() override;
@@ -21,7 +21,7 @@ public:
 class UsabilityScheme::Implementation::MeshLabScheme final : public UsabilityScheme::Implementation
 {
 public:
-  MeshLabScheme();
+  MeshLabScheme(Navigation::Controller& navigation);
 
   void on_enable() override;
   void on_disable() override;
@@ -36,10 +36,10 @@ public:
 };
 
 
-UsabilityScheme::UsabilityScheme()
+UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
 {
-  implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme);
-  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme);
+  implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme(navigation));
+  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
 
   enableBlenderScheme();
 }
@@ -107,9 +107,18 @@ void UsabilityScheme::focusOutEvent(QFocusEvent* event)
   _implementation->focusOutEvent(event);
 }
 
+// ==== Implementation ====
+
+UsabilityScheme::Implementation::Implementation(Navigation::Controller& navigation)
+  : navigation(navigation)
+{
+
+}
+
 // ==== Blender ====
 
-UsabilityScheme::Implementation::BlenderScheme::BlenderScheme()
+UsabilityScheme::Implementation::BlenderScheme::BlenderScheme(Navigation::Controller& navigation)
+  : Implementation(navigation)
 {
 }
 
@@ -160,7 +169,8 @@ void UsabilityScheme::Implementation::BlenderScheme::focusOutEvent(QFocusEvent* 
 
 // ==== Meshlab ====
 
-UsabilityScheme::Implementation::MeshLabScheme::MeshLabScheme()
+UsabilityScheme::Implementation::MeshLabScheme::MeshLabScheme(Navigation::Controller& navigation)
+  : Implementation(navigation)
 {
 }
 
