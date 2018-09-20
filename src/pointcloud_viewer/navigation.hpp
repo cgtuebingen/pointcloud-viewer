@@ -94,6 +94,7 @@ private:
   glm::vec3 _turntable_origin_relative_to_camera;
 
   void navigate_fps();
+  void fps_rotation(glm::vec2 mouse_force);
 
   void set_mouse_pos(glm::ivec2 mouse_pos);
 };
@@ -121,7 +122,6 @@ public:
 
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
-  void fps_rotation(glm::vec2 mouse_force);
 
   void begin_turntable();
   void end_turntable();

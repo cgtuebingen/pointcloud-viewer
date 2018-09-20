@@ -121,7 +121,9 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
     mouse_force = glm::clamp(glm::vec2(-20), glm::vec2(20), mouse_force);
 
-    if(!fps_mode)
+    if(fps_mode)
+      fps_rotation(mouse_force);
+    else
       _usability_scheme->mouseMoveEvent(mouse_force, event);
   }
 
@@ -280,6 +282,15 @@ void Navigation::navigate_fps()
 //  turntable_origin += movement;
 }
 
+void Navigation::fps_rotation(glm::vec2 mouse_force)
+{
+  frame_t& view = camera.frame;
+
+  const glm::vec3 right = view.orientation * glm::vec3(1, 0, 0);
+
+  view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right) * view.orientation;
+}
+
 void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)
 {
   QCursor cursor = viewport->cursor();
@@ -321,13 +332,6 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
   key_speed = 0;
   key_force = glm::vec3(0);
   navigation.stopFpsNavigation(keepNewFrame);
-}
-
-void Navigation::Controller::fps_rotation(glm::vec2 mouse_force)
-{
-  frame_t& view = navigation.camera.frame;
-
-  view.orientation = glm::angleAxis(-mouse_force.x, glm::vec3(0,0,1)) * glm::angleAxis(-mouse_force.y, right_vector()) * view.orientation;
 }
 
 void Navigation::Controller::begin_turntable()

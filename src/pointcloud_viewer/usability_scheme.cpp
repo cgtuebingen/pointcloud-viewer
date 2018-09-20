@@ -185,9 +185,6 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mo
 
   switch(mode)
   {
-  case FPS:
-    navigation.fps_rotation(mouse_force);
-    break;
   case TURNTABLE_ROTATE:
     navigation.turntable_rotate(mouse_force);
     break;
@@ -197,6 +194,7 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mo
   case TURNTABLE_ZOOM:
     navigation.turntable_zoom(mouse_force);
     break;
+  case FPS:
   case IDLE:
     break;
   }
