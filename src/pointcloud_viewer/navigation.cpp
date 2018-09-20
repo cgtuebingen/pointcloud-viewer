@@ -39,6 +39,7 @@ void Navigation::startFpsNavigation()
 {
   if(!fps_mode)
   {
+    fps_mode = true;
     fps_start_frame = camera.frame;
     fps_timer = startTimer(40);
     num_frames_in_fps_mode = 0;
@@ -53,6 +54,7 @@ void Navigation::stopFpsNavigation(bool keepNewFrame)
 {
   if(fps_mode)
   {
+    fps_mode = false;
     if(!keepNewFrame)
     {
       camera.frame = fps_start_frame;
