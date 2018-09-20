@@ -31,6 +31,7 @@ public:
 
 private:
   mode_t mode = IDLE;
+  int _padding;
 
   void enableMode(mode_t mode);
   void disableMode(mode_t mode);
@@ -42,6 +43,14 @@ private:
 class UsabilityScheme::Implementation::MeshLabScheme final : public UsabilityScheme::Implementation
 {
 public:
+  enum mode_t
+  {
+    IDLE,
+    TRACKBALL_ROTATE,
+    TRACKBALL_SHIFT,
+    TRACKBALL_ZOOM,
+  };
+
   MeshLabScheme(Navigation::Controller& navigation);
 
   void on_enable() override;
@@ -55,6 +64,13 @@ public:
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
   QKeySequence fps_activation_key_sequence() override;
+
+private:
+  mode_t mode = IDLE;
+  int _padding;
+
+  void enableMode(mode_t mode);
+  void disableMode(mode_t mode);
 };
 
 
@@ -187,6 +203,7 @@ UsabilityScheme::Implementation::Implementation(Navigation::Controller& navigati
 UsabilityScheme::Implementation::BlenderScheme::BlenderScheme(Navigation::Controller& navigation)
   : Implementation(navigation)
 {
+  Q_UNUSED(_padding);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::on_enable()
@@ -196,19 +213,7 @@ void UsabilityScheme::Implementation::BlenderScheme::on_enable()
 
 void UsabilityScheme::Implementation::BlenderScheme::on_disable()
 {
-  switch(mode)
-  {
-  case TURNTABLE_ROTATE:
-  case TURNTABLE_SHIFT:
-  case TURNTABLE_ZOOM:
-    navigation.end_turntable();
-    break;
-  case FPS:
-    navigation.stopFpsNavigation();
-    break;
-  case IDLE:
-    break;
-  }
+  disableMode(mode);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::wheelEvent(QWheelEvent* event)
@@ -270,7 +275,6 @@ void UsabilityScheme::Implementation::BlenderScheme::mousePressEvent(QMouseEvent
   {
     if(event->button() == Qt::MiddleButton)
     {
-      navigation.begin_turntable();
 
       if(event->modifiers() == Qt::NoModifier)
         enableMode(TURNTABLE_ROTATE);
@@ -356,6 +360,20 @@ void UsabilityScheme::Implementation::BlenderScheme::enableMode(mode_t mode)
   if(this->mode == IDLE)
   {
     this->mode = mode;
+
+    switch(this->mode)
+    {
+    case TURNTABLE_ZOOM:
+    case TURNTABLE_SHIFT:
+    case TURNTABLE_ROTATE:
+       navigation.begin_turntable();
+      break;
+    case IDLE:
+      break;
+    case FPS:
+      navigation.startFpsNavigation();
+      break;
+    }
   }
 }
 
@@ -371,7 +389,9 @@ void UsabilityScheme::Implementation::BlenderScheme::disableMode(mode_t mode)
       navigation.end_turntable();
       break;
     case IDLE:
+      break;
     case FPS:
+      navigation.stopFpsNavigation();
       break;
     }
 
@@ -418,6 +438,7 @@ int UsabilityScheme::Implementation::BlenderScheme::speed_for_key(QKeyEvent* eve
 UsabilityScheme::Implementation::MeshLabScheme::MeshLabScheme(Navigation::Controller& navigation)
   : Implementation(navigation)
 {
+  Q_UNUSED(_padding);
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_enable()
@@ -427,45 +448,119 @@ void UsabilityScheme::Implementation::MeshLabScheme::on_enable()
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_disable()
 {
-
+  disableMode(mode);
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::wheelEvent(QWheelEvent* event)
 {
-
+  if(mode == IDLE)
+  {
+    navigation.turntable_zoom(event->angleDelta().y() / 120.f);
+  }
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event)
 {
+  Q_UNUSED(event);
 
+  switch(mode)
+  {
+  case TRACKBALL_ROTATE:
+    navigation.turntable_rotate(mouse_force);
+    break;
+  case TRACKBALL_SHIFT:
+    navigation.turntable_shift(mouse_force);
+    break;
+  case TRACKBALL_ZOOM:
+    navigation.turntable_zoom(mouse_force.y);
+    break;
+  case IDLE:
+    break;
+  }
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::mousePressEvent(QMouseEvent* event)
 {
-
+  if(mode == IDLE)
+  {
+    if(event->button() == Qt::LeftButton)
+    {
+      if(event->modifiers() == Qt::NoModifier)
+        enableMode(TRACKBALL_ROTATE);
+      else if(event->modifiers() == Qt::ShiftModifier)
+        enableMode(TRACKBALL_ZOOM);
+      else if(event->modifiers() == Qt::AltModifier)
+        enableMode(TRACKBALL_ZOOM);
+      else if(event->modifiers() == Qt::ControlModifier)
+        enableMode(TRACKBALL_SHIFT);
+    }
+  }
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::mouseReleaseEvent(QMouseEvent* event)
 {
-
+  if(mode == TRACKBALL_ROTATE || mode == TRACKBALL_ZOOM || mode == TRACKBALL_SHIFT)
+  {
+    if(event->button() == Qt::LeftButton)
+      disableMode(mode);
+  }
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::keyPressEvent(QKeyEvent* event)
 {
-
+  Q_UNUSED(event);
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::keyReleaseEvent(QKeyEvent* event)
 {
-
+  Q_UNUSED(event);
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::fps_mode_changed(bool enabled_fps_mode)
 {
-
+  Q_UNUSED(enabled_fps_mode);
+  Q_UNREACHABLE();
 }
 
 QKeySequence UsabilityScheme::Implementation::MeshLabScheme::fps_activation_key_sequence()
 {
   return QKeySequence();
+}
+
+void UsabilityScheme::Implementation::MeshLabScheme::enableMode(mode_t mode)
+{
+  if(this->mode == IDLE)
+  {
+    this->mode = mode;
+
+    switch(this->mode)
+    {
+    case TRACKBALL_ZOOM:
+    case TRACKBALL_SHIFT:
+    case TRACKBALL_ROTATE:
+      navigation.begin_turntable();
+      break;
+    case IDLE:
+      break;
+    }
+  }
+}
+
+void UsabilityScheme::Implementation::MeshLabScheme::disableMode(mode_t mode)
+{
+  if(this->mode == mode)
+  {
+    switch(this->mode)
+    {
+    case TRACKBALL_ZOOM:
+    case TRACKBALL_SHIFT:
+    case TRACKBALL_ROTATE:
+      navigation.end_turntable();
+      break;
+    case IDLE:
+      break;
+    }
+
+    this->mode = IDLE;
+  }
 }
