@@ -28,23 +28,24 @@ Run with
 
     pointcloud_viewer/pointcloud_viewer
 
-## Typical usage
+## Typical usage: Animation
 
 1. Load a Point Cloud with the menu bar:
     > **Project > Import Pointcloud**
 2. You can navigate with
-    - Blender style turntable navigation
-        - hold `middle mouse button` and move mouse for rotating around the origin
-        - hold `middle mouse button` and hold `shift` and move mouse for shifting the camera
-        - hold `middle mouse button` and hold `ctrl` and move mouse for zooming the camera
-        - **Known issue: origin of the turntable is currently placed unintituively**
-    - Enter FPS mode with `Shift`+`F`
-        - Leave FPS mode with `Esc` or `Right Mouse Button` resetting the camera
-        - Leave FPS mode with `Return` or `Left Mouse Button` to keep the new camera location
-        - Move the camera up and down with `E` and `Q`
-        - Change movement speed with the mouse wheel
-        - Tilt the camera by scrolling the mouse wheel while holding `Ctrl` (hold `Ctrl`+`Shift` for faster tilting).
-            - Reset the tilt of the camera by pressing `Ctrl`+`Middle Mouse Button`
+    - Blender style navigation:
+        - turntable navigation
+            - mouse wheel for zooming            
+            - hold `middle mouse button` and move mouse for rotating around the origin
+            - hold `middle mouse button` and hold `shift` and move mouse for shifting the camera
+            - hold `middle mouse button` and hold `ctrl` and move mouse for zooming the camera
+        - Enter FPS mode with `Shift`+`F`
+            - Leave FPS mode with `Esc` or `Right Mouse Button` resetting the camera
+            - Leave FPS mode with `Return` or `Left Mouse Button` to keep the new camera location
+            - Move the camera up and down with `E` and `Q`
+            - Change movement speed with the mouse wheel
+            - Tilt the camera by scrolling the mouse wheel while holding `Ctrl` (hold `Ctrl`+`Shift` for faster tilting).
+                - Reset the tilt of the camera by pressing `Ctrl`+`Middle Mouse Button`
 3. Either import an already created animation with the menu bar:
     > **Flythrough > Import Path**
 
@@ -54,6 +55,12 @@ Run with
 6. In the left bar, you can start the Render process by pressing the big Render button
     - It is insensitive as long as there is no camera path
     - Currently, only one image per frame is saved
+
+## Typical usage: Analyze PointData
+
+1. Go to the Data Inspection Tab
+2. If the Kd Tree is not already built, you can build not the kd tree by using the big "Unlock Point Picker button". If the button is greyed out, the kd tree is alreada built.
+3. You can pick single points by clicking on them with the left mouse button
 
 ## Known Issues
 
