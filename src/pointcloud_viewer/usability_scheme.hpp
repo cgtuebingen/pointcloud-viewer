@@ -11,6 +11,7 @@
 
 class UsabilityScheme final : public QObject
 {
+  Q_OBJECT
 public:
   enum scheme_t
   {
@@ -33,6 +34,11 @@ public:
   void keyPressEvent(QKeyEvent* event);
   void keyReleaseEvent(QKeyEvent* event);
   void fps_mode_changed(bool enabled_fps_mode);
+
+  QKeySequence fps_activation_key_sequence();
+
+signals:
+  void fpsActivationKeySequenceChanged(QKeySequence keySequence);
 
 private:
   class Implementation;
@@ -63,5 +69,6 @@ public:
   virtual void keyPressEvent(QKeyEvent* event) = 0;
   virtual void keyReleaseEvent(QKeyEvent* event) = 0;
   virtual void fps_mode_changed(bool enabled_fps_mode) = 0;
+  virtual QKeySequence fps_activation_key_sequence() = 0;
 };
 #endif // POINTCLOUDVIEWER_USABILILTY_SCHEME_HPP_

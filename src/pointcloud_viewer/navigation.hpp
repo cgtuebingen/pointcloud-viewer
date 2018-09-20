@@ -25,6 +25,8 @@ public:
   Navigation(Viewport* viewport);
   ~Navigation();
 
+  UsabilityScheme& usabilityScheme();
+
 public slots:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);

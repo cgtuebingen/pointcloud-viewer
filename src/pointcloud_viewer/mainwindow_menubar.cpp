@@ -3,6 +3,7 @@
 #include <pointcloud_viewer/workers/export_pointcloud.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/version_text.hpp>
+#include <pointcloud_viewer/usability_scheme.hpp>
 #include <pointcloud/importer/abstract_importer.hpp>
 #include <pointcloud/exporter/abstract_exporter.hpp>
 
@@ -52,7 +53,8 @@ void MainWindow::initMenuBar()
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
   QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
 
-  action_view_navigation_fps->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_F));
+  action_view_navigation_fps->setShortcut(viewport.navigation.usabilityScheme().fps_activation_key_sequence());
+  connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::fpsActivationKeySequenceChanged, action_view_navigation_fps, &QAction::setShortcut);
   connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
   connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
   connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);

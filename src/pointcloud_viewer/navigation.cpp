@@ -35,6 +35,11 @@ Navigation::~Navigation()
   delete _controller;
 }
 
+UsabilityScheme& Navigation::usabilityScheme()
+{
+  return *_usability_scheme;
+}
+
 void Navigation::startFpsNavigation()
 {
   if(!fps_mode)

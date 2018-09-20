@@ -26,6 +26,7 @@ public:
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
+  QKeySequence fps_activation_key_sequence() override;
 
 private:
   mode_t mode = IDLE;
@@ -52,6 +53,7 @@ public:
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
+  QKeySequence fps_activation_key_sequence() override;
 };
 
 
@@ -87,7 +89,13 @@ void UsabilityScheme::enableScheme(scheme_t scheme)
   _implementation = implementations.value(scheme, implementations.value(BLENDER)).data();
 
   if(_implementation != nullptr)
+  {
     _implementation->on_enable();
+    fpsActivationKeySequenceChanged(_implementation->fps_activation_key_sequence());
+  }else
+  {
+    fpsActivationKeySequenceChanged(QKeySequence());
+  }
 }
 
 void UsabilityScheme::wheelEvent(QWheelEvent* event)
@@ -124,6 +132,11 @@ void UsabilityScheme::keyReleaseEvent(QKeyEvent* event)
 void UsabilityScheme::fps_mode_changed(bool enabled_fps_mode)
 {
   _implementation->fps_mode_changed(enabled_fps_mode);
+}
+
+QKeySequence UsabilityScheme::fps_activation_key_sequence()
+{
+  return _implementation->fps_activation_key_sequence();
 }
 
 // ==== Implementation ====
@@ -266,7 +279,6 @@ void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* ev
       if(event->key() == Qt::Key_F4)
       {
         navigation.stopFpsNavigation();
-        // TODO what about unsaved documents?
         QApplication::quit();
         return;
       }
@@ -294,6 +306,11 @@ void UsabilityScheme::Implementation::BlenderScheme::fps_mode_changed(bool enabl
     enableMode(FPS);
   else
     disableMode(FPS);
+}
+
+QKeySequence UsabilityScheme::Implementation::BlenderScheme::fps_activation_key_sequence()
+{
+  return QKeySequence(Qt::SHIFT + Qt::Key_F);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::enableMode(mode_t mode)
@@ -408,4 +425,9 @@ void UsabilityScheme::Implementation::MeshLabScheme::keyReleaseEvent(QKeyEvent* 
 void UsabilityScheme::Implementation::MeshLabScheme::fps_mode_changed(bool enabled_fps_mode)
 {
 
+}
+
+QKeySequence UsabilityScheme::Implementation::MeshLabScheme::fps_activation_key_sequence()
+{
+  return QKeySequence();
 }
