@@ -49,6 +49,10 @@ void MainWindow::initMenuBar()
   // -------- Navigation -----------------------------------------------------------------------------------------------
   // TODO: decide, whther to keep action_view_navigation_fps
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
+  menu_view_navigation->addSection("Usability &Scheme");
+  QAction* menu_view_navigation_scheme_blender = menu_view_navigation->addAction("&Blender");
+  QAction* menu_view_navigation_scheme_meshlab = menu_view_navigation->addAction("&MeshLab");
+  menu_view_navigation->addSeparator();
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
   QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
@@ -58,6 +62,27 @@ void MainWindow::initMenuBar()
   connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
   connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
   connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
+
+  QActionGroup* usability_schemes = new QActionGroup(this);
+  menu_view_navigation_scheme_blender->setActionGroup(usability_schemes);
+  menu_view_navigation_scheme_meshlab->setActionGroup(usability_schemes);
+  menu_view_navigation_scheme_blender->setCheckable(true);
+  menu_view_navigation_scheme_meshlab->setCheckable(true);
+  switch(viewport.navigation.usabilityScheme().enabled_scheme())
+  {
+  case UsabilityScheme::BLENDER:
+    menu_view_navigation_scheme_blender->setChecked(true);
+    break;
+  case UsabilityScheme::MESHLAB:
+    menu_view_navigation_scheme_meshlab->setChecked(true);
+    break;
+  }
+  connect(usability_schemes, &QActionGroup::triggered, [=](QAction* action){
+    if(action==menu_view_navigation_scheme_blender)
+      viewport.navigation.usabilityScheme().enableBlenderScheme();
+    else if(action==menu_view_navigation_scheme_meshlab)
+      viewport.navigation.usabilityScheme().enableMeshlabScheme();
+  });
 
   // -------- Visualization --------------------------------------------------------------------------------------------
   QMenu* menu_view_visualization = menu_view->addMenu("&Visualization");

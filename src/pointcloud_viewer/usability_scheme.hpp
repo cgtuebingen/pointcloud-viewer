@@ -26,6 +26,7 @@ public:
   void enableMeshlabScheme();
 
   void enableScheme(scheme_t scheme);
+  scheme_t enabled_scheme() const;
 
   void wheelEvent(QWheelEvent* event);
   void mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event);

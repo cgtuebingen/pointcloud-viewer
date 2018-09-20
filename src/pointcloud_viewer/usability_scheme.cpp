@@ -98,6 +98,14 @@ void UsabilityScheme::enableScheme(scheme_t scheme)
   }
 }
 
+UsabilityScheme::scheme_t UsabilityScheme::enabled_scheme() const
+{
+  for(auto scheme : implementations.values())
+    if(scheme == _implementation)
+      return implementations.key(scheme);
+  return BLENDER;
+}
+
 void UsabilityScheme::wheelEvent(QWheelEvent* event)
 {
   _implementation->wheelEvent(event);
