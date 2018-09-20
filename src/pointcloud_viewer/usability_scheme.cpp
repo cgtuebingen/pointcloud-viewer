@@ -221,6 +221,9 @@ void UsabilityScheme::Implementation::BlenderScheme::wheelEvent(QWheelEvent* eve
       navigation.tilt_camera(event->angleDelta().y());
     else if(event->modifiers() == Qt::CTRL+Qt::SHIFT)
       navigation.tilt_camera(event->angleDelta().y() * 4.);
+  }else
+  {
+    navigation.turntable_zoom(-event->angleDelta().y() / 120.f);
   }
 }
 
@@ -240,7 +243,7 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mo
     navigation.turntable_shift(mouse_force);
     break;
   case TURNTABLE_ZOOM:
-    navigation.turntable_zoom(mouse_force);
+    navigation.turntable_zoom(mouse_force.y);
     break;
   case FPS:
   case IDLE:

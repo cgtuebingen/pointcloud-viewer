@@ -48,6 +48,8 @@ public slots:
   int mouse_sensitivity_value() const;
   void set_mouse_sensitivity_value(int value);
 
+  void handle_new_point_cloud();
+
 protected:
   void timerEvent(QTimerEvent* timerEvent);
 
@@ -95,6 +97,8 @@ private:
   glm::vec3 find_best_turntable_origin();
   glm::vec3 _turntable_origin_relative_to_camera;
 
+  void setTurntableOrigin(glm::vec3 origin);
+
   void navigate_fps();
   void fps_rotation(glm::vec2 mouse_force);
 
@@ -130,7 +134,7 @@ public:
   void turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
   void turntable_rotate(glm::vec2 mouse_force);
   void turntable_shift(glm::vec2 mouse_force);
-  void turntable_zoom(glm::vec2 mouse_force);
+  void turntable_zoom(float mouse_force_y);
 
   glm::vec3 forward_vector() const;
   glm::vec3 up_vector() const;

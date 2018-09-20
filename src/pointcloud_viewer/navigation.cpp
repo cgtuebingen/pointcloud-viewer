@@ -185,6 +185,11 @@ void Navigation::set_mouse_sensitivity_value(int value)
   mouse_sensitivity_value_changed(value);
 }
 
+void Navigation::handle_new_point_cloud()
+{
+  setTurntableOrigin(find_best_turntable_origin());
+}
+
 void Navigation::timerEvent(QTimerEvent* timerEvent)
 {
   if(timerEvent->timerId() != fps_timer || !fps_mode)
@@ -261,6 +266,14 @@ glm::vec3 Navigation::find_best_turntable_origin()
     v = glm::clamp(v, aabb.min_point, aabb.max_point);
 
   return v;
+}
+
+void Navigation::setTurntableOrigin(glm::vec3 origin)
+{
+  turntable_origin = origin;
+
+  viewport->visualization().set_turntable_origin(turntable_origin);
+  viewport->update();
 }
 
 float Navigation::base_movement_speed() const
@@ -341,16 +354,12 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
 
 void Navigation::Controller::begin_turntable()
 {
-  navigation.turntable_origin = navigation.find_best_turntable_origin();
-
-  navigation.viewport->visualization().set_turntable_origin(navigation.find_best_turntable_origin());
-  navigation.viewport->update();
+  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
 
 void Navigation::Controller::end_turntable()
 {
-  navigation.viewport->visualization().set_turntable_origin(navigation.find_best_turntable_origin());
-  navigation.viewport->update();
+  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
 
 void Navigation::Controller::turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis)
@@ -381,14 +390,14 @@ void Navigation::Controller::turntable_shift(glm::vec2 mouse_force)
   navigation.viewport->update();
 }
 
-void Navigation::Controller::turntable_zoom(glm::vec2 mouse_force)
+void Navigation::Controller::turntable_zoom(float mouse_force_y)
 {
   const float factor = 0.5f;
   frame_t& view = navigation.camera.frame;
   const glm::vec3 turntable_origin = navigation.turntable_origin;
   const glm::vec3 previous_zoom = view.position - turntable_origin;
 
-  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force.y));
+  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
 
   if(zoom_factor * length(previous_zoom) > 1.e-2f)
     view.position = turntable_origin + zoom_factor * previous_zoom;

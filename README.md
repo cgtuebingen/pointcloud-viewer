@@ -35,10 +35,10 @@ Run with
 2. You can navigate with
     - Blender style navigation:
         - turntable navigation
+            - mouse wheel for zooming            
             - hold `middle mouse button` and move mouse for rotating around the origin
             - hold `middle mouse button` and hold `shift` and move mouse for shifting the camera
             - hold `middle mouse button` and hold `ctrl` and move mouse for zooming the camera
-            - **Known issue: origin of the turntable is currently placed unintituively**
         - Enter FPS mode with `Shift`+`F`
             - Leave FPS mode with `Esc` or `Right Mouse Button` resetting the camera
             - Leave FPS mode with `Return` or `Left Mouse Button` to keep the new camera location
