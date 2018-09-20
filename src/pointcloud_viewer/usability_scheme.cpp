@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/usability_scheme.hpp>
 
 #include <QApplication>
+#include <QSettings>
 
 class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
 {
@@ -62,13 +63,17 @@ UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
   implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme(navigation));
   implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
 
-  enableBlenderScheme();
+  QSettings settings;
+  enableScheme(scheme_from_string(settings.value("Navigation/usabilityScheme", scheme_as_string(BLENDER)).toString()));
 }
 
 UsabilityScheme::~UsabilityScheme()
 {
   if(_implementation != nullptr)
     _implementation->on_disable();
+
+  QSettings settings;
+  settings.setValue("Navigation/usabilityScheme", scheme_as_string(enabled_scheme()));
 }
 
 void UsabilityScheme::enableBlenderScheme()
@@ -145,6 +150,28 @@ void UsabilityScheme::fps_mode_changed(bool enabled_fps_mode)
 QKeySequence UsabilityScheme::fps_activation_key_sequence()
 {
   return _implementation->fps_activation_key_sequence();
+}
+
+QString UsabilityScheme::scheme_as_string(UsabilityScheme::scheme_t scheme)
+{
+  switch(scheme)
+  {
+  case BLENDER:
+    return "Blender";
+  case MESHLAB:
+    return "MeshLab";
+  }
+  return scheme_as_string(BLENDER);
+}
+
+UsabilityScheme::scheme_t UsabilityScheme::scheme_from_string(QString scheme)
+{
+  if(scheme == scheme_as_string(MESHLAB))
+    return MESHLAB;
+  else if(scheme == scheme_as_string(BLENDER))
+    return BLENDER;
+  else
+    return BLENDER;
 }
 
 // ==== Implementation ====

@@ -38,6 +38,9 @@ public:
 
   QKeySequence fps_activation_key_sequence();
 
+  static QString scheme_as_string(scheme_t scheme);
+  static scheme_t scheme_from_string(QString scheme);
+
 signals:
   void fpsActivationKeySequenceChanged(QKeySequence keySequence);
 
