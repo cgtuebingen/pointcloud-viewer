@@ -46,6 +46,7 @@ void MainWindow::initMenuBar()
   QMenu* menu_view = menuBar->addMenu("&View");
 
   // -------- Navigation -----------------------------------------------------------------------------------------------
+  // TODO: decide, whther to keep action_view_navigation_fps
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");

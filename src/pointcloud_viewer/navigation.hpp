@@ -1,4 +1,4 @@
-#ifndef POINTCLOUDVIEWER_NAVIGATION_HPP_
+﻿#ifndef POINTCLOUDVIEWER_NAVIGATION_HPP_
 #define POINTCLOUDVIEWER_NAVIGATION_HPP_
 
 #include <pointcloud_viewer/camera.hpp>
@@ -55,15 +55,6 @@ signals:
   void simpleLeftClick(glm::ivec2 point);
 
 private:
-  enum mode_t
-  {
-    IDLE,
-    FPS,
-    TURNTABLE_ROTATE,
-    TURNTABLE_SHIFT,
-    TURNTABLE_ZOOM,
-  };
-
   enum distance_t
   {
     CLOSE,
@@ -76,15 +67,10 @@ private:
   Controller* const _controller;
   UsabilityScheme* const _usability_scheme;
 
-  mode_t mode = IDLE;
+  bool fps_mode = false;
 
-
-  glm::vec3 key_direction = glm::vec3(0.f);
-  int key_speed = 0;
-  glm::vec3 key_force = glm::vec3(0.f);
-  glm::vec2 mouse_force = glm::vec2(0.f);
-
-  glm::ivec2 last_mouse_pos;
+  static glm::ivec2 invalid_last_mouse_pos(){return glm::ivec2(std::numeric_limits<int>::min());}
+  glm::ivec2 last_mouse_pos = invalid_last_mouse_pos();
 
   glm::ivec2 viewport_center() const;
   distance_t distance(glm::ivec2 difference, glm::ivec2 radius) const;
@@ -107,12 +93,7 @@ private:
   glm::vec3 find_best_turntable_origin();
   glm::vec3 _turntable_origin_relative_to_camera;
 
-  void update_key_force();
-
-  void navigate();
-
-  void enableMode(mode_t mode);
-  void disableMode(mode_t mode);
+  void navigate_fps();
 
   void set_mouse_pos(glm::ivec2 mouse_pos);
 };
@@ -120,11 +101,40 @@ private:
 class Navigation::Controller final
 {
 public:
+  glm::vec3 key_direction = glm::vec3(0.f);
+  int key_speed = 0;
+  glm::vec3 key_force = glm::vec3(0.f);
+
+  Camera& camera;
+
   Controller(const Controller&) = delete;
   Controller& operator=(const Controller&) = delete;
 
   Controller(Controller&&) = delete;
   Controller& operator=(Controller&&) = delete;
+
+  void pick_point(const glm::ivec2 screenspace_pixel);
+
+  void incr_base_movement_speed(int incr);
+  void tilt_camera(double factor);
+  void reset_camera_tilt();
+
+  void startFpsNavigation();
+  void stopFpsNavigation(bool keepNewFrame=true);
+  void fps_rotation(glm::vec2 mouse_force);
+
+  void begin_turntable();
+  void end_turntable();
+  void turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
+  void turntable_rotate(glm::vec2 mouse_force);
+  void turntable_shift(glm::vec2 mouse_force);
+  void turntable_zoom(glm::vec2 mouse_force);
+
+  glm::vec3 forward_vector() const;
+  glm::vec3 up_vector() const;
+  glm::vec3 right_vector() const;
+
+  void update_key_force();
 
 private:
   friend class Navigation;
