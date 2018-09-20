@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QTimer>
 
 class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
 {
@@ -79,8 +80,12 @@ UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
   implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme(navigation));
   implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
 
-  QSettings settings;
-  enableScheme(scheme_from_string(settings.value("Navigation/usabilityScheme", scheme_as_string(BLENDER)).toString()));
+  enableBlenderScheme();
+
+  QTimer::singleShot(0, [this](){
+    QSettings settings;
+    enableScheme(scheme_from_string(settings.value("Navigation/usabilityScheme", scheme_as_string(BLENDER)).toString()));
+  });
 }
 
 UsabilityScheme::~UsabilityScheme()
@@ -443,11 +448,12 @@ UsabilityScheme::Implementation::MeshLabScheme::MeshLabScheme(Navigation::Contro
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_enable()
 {
-
+  navigation.set_trackball_visible(true);
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_disable()
 {
+  navigation.set_trackball_visible(false);
   disableMode(mode);
 }
 

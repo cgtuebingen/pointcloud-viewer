@@ -129,6 +129,8 @@ public:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
 
+  void set_trackball_visible(bool visible);
+
   void begin_turntable();
   void end_turntable();
   void turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);

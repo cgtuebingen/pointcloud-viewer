@@ -21,6 +21,7 @@ public:
     bool enable_grid : 1;
     bool enable_axis : 1;
     bool enable_turntable_center : 1;
+    bool enable_trackball : 1;
     bool enable_camera_path : 1;
     bool enable_kdtree_as_aabb : 1;
     bool enable_picked_cone : 1;
@@ -55,6 +56,7 @@ private:
   DebugMesh world_axis;
   DebugMesh world_grid;
   DebugMesh turntable_origin;
+  DebugMesh trackball;
   DebugMesh camera_path;
   DebugMesh picked_cone;
   DebugMesh selected_point;

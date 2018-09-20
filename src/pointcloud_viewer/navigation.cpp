@@ -352,6 +352,12 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
   navigation.stopFpsNavigation(keepNewFrame);
 }
 
+void Navigation::Controller::set_trackball_visible(bool visible)
+{
+  navigation.viewport->visualization().settings.enable_trackball = visible;
+  navigation.viewport->update();
+}
+
 void Navigation::Controller::begin_turntable()
 {
   navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
