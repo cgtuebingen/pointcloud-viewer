@@ -394,8 +394,16 @@ void Navigation::Controller::begin_trackball_action()
 
 void Navigation::Controller::trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel)
 {
-  // TODO: incooperate the screenspace pixel
-  _rotate(navigation.trackball_center, mouse_force, up_vector(), right_vector());
+  glm::ivec2 viewport_size(navigation.viewport->width(), navigation.viewport->height());
+  glm::vec2 normalized_coordinate = glm::vec2(screenspace_pixel - viewport_size/2) / float(viewport_size.y) * 4.f;
+
+  float roll_strength = glm::clamp(glm::length(normalized_coordinate), 0.f, 1.f);
+
+  _rotate(navigation.trackball_center,
+          glm::mix(mouse_force, glm::vec2(0), roll_strength),
+          up_vector(),
+          right_vector());
+
 }
 
 void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
