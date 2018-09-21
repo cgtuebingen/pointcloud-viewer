@@ -114,14 +114,10 @@ void UsabilityScheme::enableScheme(scheme_t scheme)
 
   _implementation = implementations.value(scheme, implementations.value(BLENDER)).data();
 
-  if(_implementation != nullptr)
-  {
-    _implementation->on_enable();
-    fpsActivationKeySequenceChanged(_implementation->fps_activation_key_sequence());
-  }else
-  {
-    fpsActivationKeySequenceChanged(QKeySequence());
-  }
+  _implementation->on_enable();
+  fpsActivationKeySequenceChanged(_implementation->fps_activation_key_sequence());
+
+  schemeChanged(scheme);
 }
 
 UsabilityScheme::scheme_t UsabilityScheme::enabled_scheme() const

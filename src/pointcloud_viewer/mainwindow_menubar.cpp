@@ -68,15 +68,19 @@ void MainWindow::initMenuBar()
   menu_view_navigation_scheme_meshlab->setActionGroup(usability_schemes);
   menu_view_navigation_scheme_blender->setCheckable(true);
   menu_view_navigation_scheme_meshlab->setCheckable(true);
-  switch(viewport.navigation.usabilityScheme().enabled_scheme())
-  {
-  case UsabilityScheme::BLENDER:
-    menu_view_navigation_scheme_blender->setChecked(true);
-    break;
-  case UsabilityScheme::MESHLAB:
-    menu_view_navigation_scheme_meshlab->setChecked(true);
-    break;
-  }
+  auto update_ui_for_scheme = [menu_view_navigation_scheme_blender, menu_view_navigation_scheme_meshlab](UsabilityScheme::scheme_t scheme){
+    switch(scheme)
+    {
+    case UsabilityScheme::BLENDER:
+      menu_view_navigation_scheme_blender->setChecked(true);
+      break;
+    case UsabilityScheme::MESHLAB:
+      menu_view_navigation_scheme_meshlab->setChecked(true);
+      break;
+    }
+  };
+  update_ui_for_scheme(viewport.navigation.usabilityScheme().enabled_scheme());
+  connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::schemeChanged, update_ui_for_scheme);
   connect(usability_schemes, &QActionGroup::triggered, [=](QAction* action){
     if(action==menu_view_navigation_scheme_blender)
       viewport.navigation.usabilityScheme().enableBlenderScheme();

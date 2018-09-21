@@ -43,6 +43,7 @@ public:
 
 signals:
   void fpsActivationKeySequenceChanged(QKeySequence keySequence);
+  void schemeChanged(scheme_t scheme);
 
 private:
   class Implementation;
