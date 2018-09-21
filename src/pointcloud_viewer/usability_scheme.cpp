@@ -478,7 +478,7 @@ void UsabilityScheme::Implementation::MeshLabScheme::wheelEvent(QWheelEvent* eve
 {
   if(mode == IDLE)
   {
-    navigation.turntable_zoom(event->angleDelta().y() / 120.f);
+    navigation.trackball_zoom(event->angleDelta().y() / 120.f);
   }
 }
 
