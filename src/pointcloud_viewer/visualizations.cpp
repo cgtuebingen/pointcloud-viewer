@@ -76,6 +76,11 @@ void Visualization::select_picked_point(glm::vec3 coordinate, glm::u8vec3 color,
   this->selected_point = DebugMesh::highlighted_point(coordinate, glm::vec3(color) / 255.f, radius);
 }
 
+void Visualization::set_trackball(glm::vec3 center, float radius)
+{
+  trackball = DebugMesh::trackball(center, radius);
+}
+
 Visualization::settings_t Visualization::settings_t::enable_all()
 {
   settings_t settings;

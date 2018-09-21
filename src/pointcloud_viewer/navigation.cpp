@@ -3,6 +3,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/usability_scheme.hpp>
+#include <geometry/plane.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -352,9 +353,53 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
   navigation.stopFpsNavigation(keepNewFrame);
 }
 
-void Navigation::Controller::set_trackball_visible(bool visible)
+void Navigation::Controller::show_trackball()
 {
-  navigation.viewport->visualization().settings.enable_trackball = visible;
+  begin_trackball();
+  end_trackball();
+
+  navigation.viewport->visualization().settings.enable_trackball = true;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::begin_trackball()
+{
+  const ray_t camera_center_ray = camera.ray_for_clipspace_point(glm::vec2(0));
+  const ray_t camera_upper_half_ray = camera.ray_for_clipspace_point(glm::vec2(0, 0.5f));
+  glm::vec3 trackball_center = camera_center_ray.get_point(10.f);
+  plane_t origin_plane = plane_t::from_normal(camera_center_ray.direction, trackball_center);
+  float trackball_radius = glm::distance(trackball_center, camera_upper_half_ray.get_point(origin_plane.intersection_distance(camera_upper_half_ray)));
+
+  navigation.viewport->visualization().set_trackball(trackball_center, trackball_radius);
+  navigation.trackball_center = trackball_center;
+  navigation.trackball_radius = trackball_radius;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel)
+{
+  // TODO: incooperate the screenspace pixel
+  _rotate(navigation.trackball_center, mouse_force, up_vector(), right_vector());
+}
+
+void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
+{
+  navigation.trackball_center += _shift(mouse_force);
+  navigation.viewport->visualization().set_trackball(navigation.trackball_center, navigation.trackball_radius);
+}
+
+void Navigation::Controller::trackball_zoom(float mouse_force_y)
+{
+  _zoom(navigation.trackball_center, mouse_force_y);
+}
+
+void Navigation::Controller::end_trackball()
+{
+}
+
+void Navigation::Controller::hide_trackball()
+{
+  navigation.viewport->visualization().settings.enable_trackball = false;
   navigation.viewport->update();
 }
 
@@ -368,45 +413,21 @@ void Navigation::Controller::end_turntable()
   navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
 
-void Navigation::Controller::turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis)
-{
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
-  const glm::vec3 turntable_origin = navigation.turntable_origin;
-
-  view.position -= turntable_origin;
-  view = frame_t(turntable_origin, glm::angleAxis(factor * -mouse_force.x, x_rotation_axis) * glm::angleAxis(factor * -mouse_force.y, y_rotation_axis)) * view;
-  navigation.viewport->update();
-}
-
 void Navigation::Controller::turntable_rotate(glm::vec2 mouse_force)
 {
-  turntable_rotate(mouse_force, glm::vec3(0,0,1), right_vector());
+  _rotate(navigation.turntable_origin, mouse_force, glm::vec3(0,0,1), right_vector());
 }
 
 void Navigation::Controller::turntable_shift(glm::vec2 mouse_force)
 {
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
-  glm::vec3& turntable_origin = navigation.turntable_origin;
-
-  const glm::vec3 shift = up_vector() * mouse_force.y - right_vector() * mouse_force.x;
-  view.position += factor * shift;
-  turntable_origin += shift;
-  navigation.viewport->update();
+  navigation.turntable_origin += _shift(mouse_force);
 }
 
 void Navigation::Controller::turntable_zoom(float mouse_force_y)
 {
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
   const glm::vec3 turntable_origin = navigation.turntable_origin;
-  const glm::vec3 previous_zoom = view.position - turntable_origin;
 
-  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
-
-  if(zoom_factor * length(previous_zoom) > 1.e-2f)
-    view.position = turntable_origin + zoom_factor * previous_zoom;
+  _zoom(turntable_origin, mouse_force_y);
 
   navigation._turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
   navigation.viewport->update();
@@ -445,4 +466,38 @@ Navigation::Controller::Controller(Navigation& navigation)
   : camera(navigation.camera),
     navigation(navigation)
 {
+}
+
+void Navigation::Controller::_rotate(glm::vec3 rotation_origin, glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+
+  view.position -= rotation_origin;
+  view = frame_t(rotation_origin, glm::angleAxis(factor * -mouse_force.x, x_rotation_axis) * glm::angleAxis(factor * -mouse_force.y, y_rotation_axis)) * view;
+  navigation.viewport->update();
+}
+
+glm::vec3 Navigation::Controller::_shift(glm::vec2 mouse_force)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+
+  glm::vec3 shift = up_vector() * mouse_force.y - right_vector() * mouse_force.x;
+  shift *= factor;
+  view.position += shift;
+  navigation.viewport->update();
+  return shift;
+}
+
+void Navigation::Controller::_zoom(glm::vec3 origin, float mouse_force_y)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+  const glm::vec3 previous_zoom = view.position - origin;
+
+  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
+
+  if(zoom_factor * length(previous_zoom) > 1.e-2f)
+    view.position = origin + zoom_factor * previous_zoom;
 }

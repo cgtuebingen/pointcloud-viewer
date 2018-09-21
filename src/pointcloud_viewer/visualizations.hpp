@@ -47,6 +47,9 @@ public:
   void deselect_picked_point();
   void select_picked_point(glm::vec3 coordinate, glm::u8vec3 color, float radius);
 
+  void set_trackball(glm::vec3 center, float radius);
+  void set_trackball(glm::vec3 center);
+
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;
   typedef renderer::gl450::DebugMesh DebugMesh;

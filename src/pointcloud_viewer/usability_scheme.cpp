@@ -444,12 +444,12 @@ UsabilityScheme::Implementation::MeshLabScheme::MeshLabScheme(Navigation::Contro
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_enable()
 {
-  navigation.set_trackball_visible(true);
+  navigation.show_trackball();
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::on_disable()
 {
-  navigation.set_trackball_visible(false);
+  navigation.hide_trackball();
   disableMode(mode);
 }
 
@@ -465,16 +465,18 @@ void UsabilityScheme::Implementation::MeshLabScheme::mouseMoveEvent(glm::vec2 mo
 {
   Q_UNUSED(event);
 
+  const glm::ivec2 screenspace_pixel = glm::ivec2(event->x(), event->y());
+
   switch(mode)
   {
   case TRACKBALL_ROTATE:
-    navigation.turntable_rotate(mouse_force);
+    navigation.trackball_rotate(mouse_force, screenspace_pixel); // TODO: is this the right direction?
     break;
   case TRACKBALL_SHIFT:
-    navigation.turntable_shift(mouse_force);
+    navigation.trackball_shift(mouse_force); // TODO: is this the right direction?
     break;
   case TRACKBALL_ZOOM:
-    navigation.turntable_zoom(mouse_force.y);
+    navigation.trackball_zoom(mouse_force.y); // TODO: is this the right direction?
     break;
   case IDLE:
     break;
@@ -540,7 +542,7 @@ void UsabilityScheme::Implementation::MeshLabScheme::enableMode(mode_t mode)
     case TRACKBALL_ZOOM:
     case TRACKBALL_SHIFT:
     case TRACKBALL_ROTATE:
-      navigation.begin_turntable();
+      navigation.begin_trackball();
       break;
     case IDLE:
       break;
@@ -557,7 +559,7 @@ void UsabilityScheme::Implementation::MeshLabScheme::disableMode(mode_t mode)
     case TRACKBALL_ZOOM:
     case TRACKBALL_SHIFT:
     case TRACKBALL_ROTATE:
-      navigation.end_turntable();
+      navigation.end_trackball();
       break;
     case IDLE:
       break;

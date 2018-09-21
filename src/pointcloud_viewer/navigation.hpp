@@ -73,6 +73,9 @@ private:
 
   bool fps_mode = false;
 
+  glm::vec3 trackball_center = glm::vec3(0);
+  float trackball_radius = 1.f;
+
   static glm::ivec2 invalid_last_mouse_pos(){return glm::ivec2(std::numeric_limits<int>::min());}
   glm::ivec2 last_mouse_pos = invalid_last_mouse_pos();
 
@@ -129,11 +132,16 @@ public:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
 
-  void set_trackball_visible(bool visible);
+  void show_trackball();
+  void begin_trackball();
+  void trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel);
+  void trackball_shift(glm::vec2 mouse_force);
+  void trackball_zoom(float mouse_force_y);
+  void end_trackball();
+  void hide_trackball();
 
   void begin_turntable();
   void end_turntable();
-  void turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
   void turntable_rotate(glm::vec2 mouse_force);
   void turntable_shift(glm::vec2 mouse_force);
   void turntable_zoom(float mouse_force_y);
@@ -150,6 +158,10 @@ private:
   Navigation& navigation;
 
   Controller(Navigation& navigation);
+
+  void _rotate(glm::vec3 rotation_center, glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
+  glm::vec3 _shift(glm::vec2 mouse_force);
+  void _zoom(glm::vec3 origin, float mouse_force_y);
 };
 
 
