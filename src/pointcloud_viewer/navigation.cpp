@@ -399,11 +399,19 @@ void Navigation::Controller::trackball_rotate(glm::vec2 mouse_force, glm::ivec2 
 
   float roll_strength = glm::clamp(glm::length(normalized_coordinate), 0.f, 1.f);
 
+  roll_strength = roll_strength * roll_strength;
+
   _rotate(navigation.trackball_center,
           glm::mix(mouse_force, glm::vec2(0), roll_strength),
           up_vector(),
           right_vector());
 
+  float rolling_movement = -glm::cross(glm::vec3(mouse_force, 0.f), glm::vec3(glm::normalize(normalized_coordinate), 0.f)).z;
+
+  _rotate(navigation.trackball_center,
+          glm::mix(glm::vec2(0), glm::vec2(rolling_movement, 0.f), roll_strength),
+          forward_vector(),
+          right_vector());
 }
 
 void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
