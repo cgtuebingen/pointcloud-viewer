@@ -307,7 +307,7 @@ void UsabilityScheme::Implementation::BlenderScheme::mousePressEvent(QMouseEvent
         enableMode(TURNTABLE_SHIFT);
       else if(event->modifiers() == Qt::ControlModifier)
         enableMode(TURNTABLE_ZOOM);
-    }else if(event->button() == Qt::LeftButton)
+    }else if(event->button() == Qt::RightButton)
     {
       if(event->modifiers() == Qt::NoModifier)
       {
@@ -523,6 +523,10 @@ void UsabilityScheme::Implementation::MeshLabScheme::mousePressEvent(QMouseEvent
         enableMode(TRACKBALL_ZOOM);
       else if(event->modifiers() == Qt::ControlModifier)
         enableMode(TRACKBALL_SHIFT);
+    }else if(event->button() == Qt::RightButton)
+    {
+      const glm::ivec2 screenspace_pixel = glm::ivec2(event->x(), event->y());
+      navigation.pick_point(screenspace_pixel);
     }
   }
 }
