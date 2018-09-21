@@ -109,7 +109,7 @@ DebugMesh DebugMesh::trackball(glm::vec3 origin, float r)
 
     target[dim] = 1;
 
-    generator.next_attribute.color = axis_colors[dim];
+    generator.next_attribute.color = axis_colors[dim].with_saturation(Color(0xcc8080));
     generator.push_matrix(origin, target);
     generator.add_circle(r, 64);
     generator.pop_matrix();
