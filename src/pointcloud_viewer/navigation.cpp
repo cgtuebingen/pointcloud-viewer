@@ -156,6 +156,11 @@ void Navigation::mouseReleaseEvent(QMouseEvent* event)
   _usability_scheme->mouseReleaseEvent(event);
 }
 
+void Navigation::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  _usability_scheme->mouseDoubleClickEvent(event);
+}
+
 void Navigation::keyPressEvent(QKeyEvent* event)
 {
   _usability_scheme->keyPressEvent(event);

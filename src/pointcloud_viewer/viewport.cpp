@@ -183,6 +183,11 @@ void Viewport::mouseReleaseEvent(QMouseEvent* event)
   navigation.mouseReleaseEvent(event);
 }
 
+void Viewport::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  navigation.mouseDoubleClickEvent(event);
+}
+
 void Viewport::keyPressEvent(QKeyEvent* event)
 {
   navigation.keyPressEvent(event);

@@ -1,4 +1,4 @@
-#include <pointcloud_viewer/usability_scheme.hpp>
+﻿#include <pointcloud_viewer/usability_scheme.hpp>
 
 #include <QApplication>
 #include <QSettings>
@@ -8,6 +8,7 @@ class UsabilityScheme::Implementation::DummyScheme final : public UsabilitySchem
 {
 public:
   DummyScheme(Navigation::Controller& navigation):Implementation(navigation){}
+  ~DummyScheme() override;
 
   void on_enable() override{}
   void on_disable() override{}
@@ -16,11 +17,14 @@ public:
   void mouseMoveEvent(glm::vec2, QMouseEvent*) override{}
   void mousePressEvent(QMouseEvent*) override{}
   void mouseReleaseEvent(QMouseEvent*) override{}
+  void mouseDoubleClickEvent(QMouseEvent*) override{}
   void keyPressEvent(QKeyEvent*) override{}
   void keyReleaseEvent(QKeyEvent*) override{}
   void fps_mode_changed(bool) override{}
   QKeySequence fps_activation_key_sequence() override{return QKeySequence();}
 };
+
+UsabilityScheme::Implementation::DummyScheme::~DummyScheme(){}
 
 class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
 {
@@ -43,6 +47,7 @@ public:
   void mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
@@ -79,6 +84,7 @@ public:
   void mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
@@ -166,6 +172,11 @@ void UsabilityScheme::mousePressEvent(QMouseEvent* event)
 void UsabilityScheme::mouseReleaseEvent(QMouseEvent* event)
 {
   _implementation->mouseReleaseEvent(event);
+}
+
+void UsabilityScheme::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  _implementation->mouseDoubleClickEvent(event);
 }
 
 void UsabilityScheme::keyPressEvent(QKeyEvent* event)
@@ -327,6 +338,11 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseReleaseEvent(QMouseEve
     disableMode(TURNTABLE_SHIFT);
     disableMode(TURNTABLE_ZOOM);
   }
+}
+
+void UsabilityScheme::Implementation::BlenderScheme::mouseDoubleClickEvent(QMouseEvent* event)
+{
+
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* event)
@@ -537,7 +553,6 @@ void UsabilityScheme::Implementation::MeshLabScheme::mousePressEvent(QMouseEvent
   }
 }
 
-// TODO zoom to point if double clicked
 
 void UsabilityScheme::Implementation::MeshLabScheme::mouseReleaseEvent(QMouseEvent* event)
 {
@@ -546,6 +561,11 @@ void UsabilityScheme::Implementation::MeshLabScheme::mouseReleaseEvent(QMouseEve
     if(event->button() == Qt::LeftButton)
       disableMode(mode);
   }
+}
+
+void UsabilityScheme::Implementation::MeshLabScheme::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  // TODO zoom to point if double clicked
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::keyPressEvent(QKeyEvent* event)

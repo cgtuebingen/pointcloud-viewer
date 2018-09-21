@@ -40,6 +40,7 @@ public slots:
   void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseReleaseEvent(QMouseEvent* event);
+  void mouseDoubleClickEvent(QMouseEvent* event);
   void keyPressEvent(QKeyEvent* event);
   void keyReleaseEvent(QKeyEvent* event);
   void focusOutEvent(QFocusEvent* event);
