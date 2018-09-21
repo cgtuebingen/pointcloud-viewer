@@ -355,6 +355,11 @@ void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* ev
     navigation.key_speed += speed_for_key(event);
     navigation.update_key_force();
   }
+
+  if(mode == IDLE)
+  {
+    // TODO zoom to selected point, if numpad comma was pressed
+  }
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::keyReleaseEvent(QKeyEvent* event)
@@ -424,6 +429,7 @@ void UsabilityScheme::Implementation::BlenderScheme::disableMode(mode_t mode)
   }
 }
 
+// FIXME: FPS navigation is totally broken
 glm::vec3 UsabilityScheme::Implementation::BlenderScheme::direction_for_key(QKeyEvent* event)
 {
   glm::vec3 key_direction;
@@ -530,6 +536,8 @@ void UsabilityScheme::Implementation::MeshLabScheme::mousePressEvent(QMouseEvent
     }
   }
 }
+
+// TODO zoom to point if double clicked
 
 void UsabilityScheme::Implementation::MeshLabScheme::mouseReleaseEvent(QMouseEvent* event)
 {
