@@ -4,6 +4,24 @@
 #include <QSettings>
 #include <QTimer>
 
+class UsabilityScheme::Implementation::DummyScheme final : public UsabilityScheme::Implementation
+{
+public:
+  DummyScheme(Navigation::Controller& navigation):Implementation(navigation){}
+
+  void on_enable() override{}
+  void on_disable() override{}
+
+  void wheelEvent(QWheelEvent*) override{}
+  void mouseMoveEvent(glm::vec2, QMouseEvent*) override{}
+  void mousePressEvent(QMouseEvent*) override{}
+  void mouseReleaseEvent(QMouseEvent*) override{}
+  void keyPressEvent(QKeyEvent*) override{}
+  void keyReleaseEvent(QKeyEvent*) override{}
+  void fps_mode_changed(bool) override{}
+  QKeySequence fps_activation_key_sequence() override{return QKeySequence();}
+};
+
 class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
 {
 public:
@@ -77,10 +95,11 @@ private:
 
 UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
 {
+  implementations[DUMMY] = QSharedPointer<Implementation>(new Implementation::DummyScheme(navigation));
   implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme(navigation));
   implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
 
-  enableBlenderScheme();
+  enableScheme(DUMMY);
 
   QTimer::singleShot(0, [this](){
     QSettings settings;
@@ -173,6 +192,8 @@ QString UsabilityScheme::scheme_as_string(UsabilityScheme::scheme_t scheme)
 {
   switch(scheme)
   {
+  case DUMMY:
+    return scheme_as_string(BLENDER);
   case BLENDER:
     return "Blender";
   case MESHLAB:

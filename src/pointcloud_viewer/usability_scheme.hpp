@@ -15,8 +15,9 @@ class UsabilityScheme final : public QObject
 public:
   enum scheme_t
   {
-    BLENDER = 0,
-    MESHLAB = 1,
+    DUMMY,
+    BLENDER,
+    MESHLAB,
   };
 
   UsabilityScheme(Navigation::Controller& navigation);
@@ -56,6 +57,7 @@ private:
 class UsabilityScheme::Implementation
 {
 public:
+  class DummyScheme;
   class BlenderScheme;
   class MeshLabScheme;
 
