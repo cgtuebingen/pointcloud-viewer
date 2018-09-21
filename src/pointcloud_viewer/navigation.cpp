@@ -108,7 +108,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
 
-  bool handle_event = event->source() == Qt::MouseEventNotSynthesized;
+  bool handle_event = true;
 
   if(fps_mode)
   {
@@ -118,6 +118,9 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
       this->set_mouse_pos(center);
 
     if(distance(current_mouse_pos - last_mouse_pos, center) != CLOSE)
+      handle_event = false;
+
+    if(event->source() != Qt::MouseEventNotSynthesized)
       handle_event = false;
   }
 
