@@ -98,6 +98,7 @@ Visualization::settings_t Visualization::settings_t::default_settings()
   settings.enable_kdtree_as_aabb = false;
   settings.enable_picked_cone = false;
   settings.enable_trackball = false;
+  settings.enable_grid = false;
 
   return settings;
 }

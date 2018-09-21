@@ -230,11 +230,12 @@ UsabilityScheme::Implementation::BlenderScheme::BlenderScheme(Navigation::Contro
 
 void UsabilityScheme::Implementation::BlenderScheme::on_enable()
 {
-
+  navigation.show_grid();
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::on_disable()
 {
+  navigation.hide_grid();
   disableMode(mode);
 }
 
@@ -250,7 +251,9 @@ void UsabilityScheme::Implementation::BlenderScheme::wheelEvent(QWheelEvent* eve
       navigation.tilt_camera(event->angleDelta().y() * 4.);
   }else
   {
+    navigation.begin_turntable_action();
     navigation.turntable_zoom(-event->angleDelta().y() / 120.f);
+    navigation.end_turntable_action();
   }
 }
 
@@ -388,7 +391,7 @@ void UsabilityScheme::Implementation::BlenderScheme::enableMode(mode_t mode)
     case TURNTABLE_ZOOM:
     case TURNTABLE_SHIFT:
     case TURNTABLE_ROTATE:
-       navigation.begin_turntable();
+       navigation.begin_turntable_action();
       break;
     case IDLE:
       break;
@@ -408,7 +411,7 @@ void UsabilityScheme::Implementation::BlenderScheme::disableMode(mode_t mode)
     case TURNTABLE_ZOOM:
     case TURNTABLE_SHIFT:
     case TURNTABLE_ROTATE:
-      navigation.end_turntable();
+      navigation.end_turntable_action();
       break;
     case IDLE:
       break;
@@ -478,7 +481,9 @@ void UsabilityScheme::Implementation::MeshLabScheme::wheelEvent(QWheelEvent* eve
 {
   if(mode == IDLE)
   {
+    navigation.begin_trackball_action();
     navigation.trackball_zoom(event->angleDelta().y() / 120.f);
+    navigation.end_trackball_action();
   }
 }
 
@@ -563,7 +568,7 @@ void UsabilityScheme::Implementation::MeshLabScheme::enableMode(mode_t mode)
     case TRACKBALL_ZOOM:
     case TRACKBALL_SHIFT:
     case TRACKBALL_ROTATE:
-      navigation.begin_trackball();
+      navigation.begin_trackball_action();
       break;
     case IDLE:
       break;
@@ -580,7 +585,7 @@ void UsabilityScheme::Implementation::MeshLabScheme::disableMode(mode_t mode)
     case TRACKBALL_ZOOM:
     case TRACKBALL_SHIFT:
     case TRACKBALL_ROTATE:
-      navigation.end_trackball();
+      navigation.end_trackball_action();
       break;
     case IDLE:
       break;

@@ -133,15 +133,17 @@ public:
   void stopFpsNavigation(bool keepNewFrame=true);
 
   void show_trackball();
-  void begin_trackball();
+  void begin_trackball_action();
   void trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel);
   void trackball_shift(glm::vec2 mouse_force);
   void trackball_zoom(float mouse_force_y);
-  void end_trackball();
+  void end_trackball_action();
   void hide_trackball();
 
-  void begin_turntable();
-  void end_turntable();
+  void show_grid();
+  void hide_grid();
+  void begin_turntable_action();
+  void end_turntable_action();
   void turntable_rotate(glm::vec2 mouse_force);
   void turntable_shift(glm::vec2 mouse_force);
   void turntable_zoom(float mouse_force_y);

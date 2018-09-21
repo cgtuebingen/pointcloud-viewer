@@ -358,25 +358,21 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
 
 void Navigation::Controller::show_trackball()
 {
-  begin_trackball();
-  end_trackball();
-
-  navigation.viewport->visualization().settings.enable_trackball = true;
-  navigation.viewport->update();
-}
-
-void Navigation::Controller::begin_trackball()
-{
   const ray_t camera_center_ray = camera.ray_for_clipspace_point(glm::vec2(0));
   const ray_t camera_upper_half_ray = camera.ray_for_clipspace_point(glm::vec2(0, 0.5f));
-  glm::vec3 trackball_center = camera_center_ray.get_point(10.f);
+  glm::vec3 trackball_center = camera_center_ray.get_point(Camera().frame.position.length());
   plane_t origin_plane = plane_t::from_normal(camera_center_ray.direction, trackball_center);
   float trackball_radius = glm::distance(trackball_center, camera_upper_half_ray.get_point(origin_plane.intersection_distance(camera_upper_half_ray)));
 
+  navigation.viewport->visualization().settings.enable_trackball = true;
   navigation.viewport->visualization().set_trackball(trackball_center, trackball_radius);
   navigation.trackball_center = trackball_center;
   navigation.trackball_radius = trackball_radius;
   navigation.viewport->update();
+}
+
+void Navigation::Controller::begin_trackball_action()
+{
 }
 
 void Navigation::Controller::trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel)
@@ -393,10 +389,11 @@ void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
 
 void Navigation::Controller::trackball_zoom(float mouse_force_y)
 {
+  // TODO zooms to the wrong pixel
   _zoom(navigation.trackball_center, mouse_force_y);
 }
 
-void Navigation::Controller::end_trackball()
+void Navigation::Controller::end_trackball_action()
 {
 }
 
@@ -406,12 +403,24 @@ void Navigation::Controller::hide_trackball()
   navigation.viewport->update();
 }
 
-void Navigation::Controller::begin_turntable()
+void Navigation::Controller::show_grid()
+{
+  navigation.viewport->visualization().settings.enable_grid = true;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::hide_grid()
+{
+  navigation.viewport->visualization().settings.enable_grid = false;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::begin_turntable_action()
 {
   navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
 
-void Navigation::Controller::end_turntable()
+void Navigation::Controller::end_turntable_action()
 {
   navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
@@ -503,4 +512,5 @@ void Navigation::Controller::_zoom(glm::vec3 origin, float mouse_force_y)
 
   if(zoom_factor * length(previous_zoom) > 1.e-2f)
     view.position = origin + zoom_factor * previous_zoom;
+  navigation.viewport->update();
 }
