@@ -75,6 +75,8 @@ private:
 
   glm::vec3 trackball_center = glm::vec3(0);
   float trackball_radius = 1.f;
+  void update_trackball_radius();
+  glm::vec3 trackball_position_right_infront_of_camera() const;
 
   static glm::ivec2 invalid_last_mouse_pos(){return glm::ivec2(std::numeric_limits<int>::min());}
   glm::ivec2 last_mouse_pos = invalid_last_mouse_pos();

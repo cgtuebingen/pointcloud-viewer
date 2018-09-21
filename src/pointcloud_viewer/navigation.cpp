@@ -80,9 +80,12 @@ void Navigation::resetCameraLocation()
 {
   camera.frame = Camera().frame;
 
+  trackball_center = glm::vec3(0);
   turntable_origin = glm::vec3(0);
   _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
 
+  trackball_center = trackball_position_right_infront_of_camera();
+  update_trackball_radius();
   viewport->update();
 }
 
@@ -204,6 +207,26 @@ void Navigation::timerEvent(QTimerEvent* timerEvent)
   viewport->update();
 
   ++num_frames_in_fps_mode;
+}
+
+void Navigation::update_trackball_radius()
+{
+  const ray_t camera_center_ray = camera.ray_for_clipspace_point(glm::vec2(0));
+  const ray_t camera_upper_half_ray = camera.ray_for_clipspace_point(glm::vec2(0, 0.5f));
+
+  plane_t origin_plane = plane_t::from_normal(camera_center_ray.direction, trackball_center);
+
+  trackball_radius = glm::distance(trackball_center, camera_upper_half_ray.get_point(origin_plane.intersection_distance(camera_upper_half_ray)));
+
+  viewport->visualization().set_trackball(trackball_center, trackball_radius);
+  viewport->update();
+}
+
+glm::vec3 Navigation::trackball_position_right_infront_of_camera() const
+{
+  const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0, -1);
+
+  return camera.frame.position + forward * glm::length(Camera().frame.position);
 }
 
 glm::ivec2 Navigation::viewport_center() const
@@ -358,16 +381,10 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
 
 void Navigation::Controller::show_trackball()
 {
-  const ray_t camera_center_ray = camera.ray_for_clipspace_point(glm::vec2(0));
-  const ray_t camera_upper_half_ray = camera.ray_for_clipspace_point(glm::vec2(0, 0.5f));
-  glm::vec3 trackball_center = camera_center_ray.get_point(Camera().frame.position.length());
-  plane_t origin_plane = plane_t::from_normal(camera_center_ray.direction, trackball_center);
-  float trackball_radius = glm::distance(trackball_center, camera_upper_half_ray.get_point(origin_plane.intersection_distance(camera_upper_half_ray)));
+  navigation.trackball_center = navigation.trackball_position_right_infront_of_camera();
+  navigation.update_trackball_radius();
 
   navigation.viewport->visualization().settings.enable_trackball = true;
-  navigation.viewport->visualization().set_trackball(trackball_center, trackball_radius);
-  navigation.trackball_center = trackball_center;
-  navigation.trackball_radius = trackball_radius;
   navigation.viewport->update();
 }
 
@@ -391,6 +408,8 @@ void Navigation::Controller::trackball_zoom(float mouse_force_y)
 {
   // TODO zooms to the wrong pixel
   _zoom(navigation.trackball_center, mouse_force_y);
+
+  navigation.update_trackball_radius();
 }
 
 void Navigation::Controller::end_trackball_action()
