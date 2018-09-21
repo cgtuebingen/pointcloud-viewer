@@ -10,6 +10,8 @@ add_library(geometry STATIC
   frame.inl
   perpendicular.hpp
   perpendicular.inl
+  plane.hpp
+  plane.inl
   ray.hpp
   ray.inl
   swizzle.hpp
