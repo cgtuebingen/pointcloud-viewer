@@ -47,7 +47,6 @@ void MainWindow::initMenuBar()
   QMenu* menu_view = menuBar->addMenu("&View");
 
   // -------- Navigation -----------------------------------------------------------------------------------------------
-  // TODO: decide, whther to keep action_view_navigation_fps
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   menu_view_navigation->addSection("Usability &Scheme");
   QAction* menu_view_navigation_scheme_blender = menu_view_navigation->addAction("&Blender");
@@ -71,6 +70,8 @@ void MainWindow::initMenuBar()
   auto update_ui_for_scheme = [menu_view_navigation_scheme_blender, menu_view_navigation_scheme_meshlab](UsabilityScheme::scheme_t scheme){
     switch(scheme)
     {
+    case UsabilityScheme::DUMMY:
+      break;
     case UsabilityScheme::BLENDER:
       menu_view_navigation_scheme_blender->setChecked(true);
       break;

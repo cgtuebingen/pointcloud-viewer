@@ -422,7 +422,6 @@ void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
 
 void Navigation::Controller::trackball_zoom(float mouse_force_y)
 {
-  // TODO zooms to the wrong pixel
   _zoom(navigation.trackball_center, mouse_force_y);
 
   navigation.update_trackball_radius();

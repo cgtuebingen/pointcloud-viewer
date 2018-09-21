@@ -496,13 +496,13 @@ void UsabilityScheme::Implementation::MeshLabScheme::mouseMoveEvent(glm::vec2 mo
   switch(mode)
   {
   case TRACKBALL_ROTATE:
-    navigation.trackball_rotate(mouse_force, screenspace_pixel); // TODO: is this the right direction?
+    navigation.trackball_rotate(mouse_force, screenspace_pixel);
     break;
   case TRACKBALL_SHIFT:
-    navigation.trackball_shift(mouse_force); // TODO: is this the right direction?
+    navigation.trackball_shift(mouse_force);
     break;
   case TRACKBALL_ZOOM:
-    navigation.trackball_zoom(mouse_force.y); // TODO: is this the right direction?
+    navigation.trackball_zoom(-mouse_force.y);
     break;
   case IDLE:
     break;
