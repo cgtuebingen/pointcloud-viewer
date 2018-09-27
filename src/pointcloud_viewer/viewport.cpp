@@ -106,7 +106,7 @@ int Viewport::pointSize() const
 
 void Viewport::setBackgroundColor(int backgroundColor)
 {
-  if (m_backgroundColor == backgroundColor)
+  if(m_backgroundColor == backgroundColor)
     return;
 
   m_backgroundColor = backgroundColor;
@@ -117,8 +117,10 @@ void Viewport::setBackgroundColor(int backgroundColor)
 
 void Viewport::setPointSize(int pointSize)
 {
-  if (m_pointSize == pointSize)
+  if(m_pointSize == pointSize)
     return;
+
+  pointSize = glm::clamp<int>(pointSize, 1, 16);
 
   m_pointSize = pointSize;
   emit pointSizeChanged(m_pointSize);

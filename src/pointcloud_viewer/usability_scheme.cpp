@@ -1,4 +1,5 @@
 ﻿#include <pointcloud_viewer/usability_scheme.hpp>
+#include <core_library/print.hpp>
 
 #include <QApplication>
 #include <QSettings>
@@ -503,9 +504,15 @@ void UsabilityScheme::Implementation::MeshLabScheme::wheelEvent(QWheelEvent* eve
 {
   if(mode == IDLE)
   {
-    navigation.begin_trackball_action();
-    navigation.trackball_zoom(event->angleDelta().y() / 120.f);
-    navigation.end_trackball_action();
+    if(event->modifiers() == Qt::NoModifier)
+    {
+      navigation.begin_trackball_action();
+      navigation.trackball_zoom(event->angleDelta().y() / 120.f);
+      navigation.end_trackball_action();
+    }else if(event->modifiers() == Qt::AltModifier)
+    {
+      navigation.incr_point_render_size(int(glm::round((event->angleDelta().x() + event->angleDelta().y()) / 120.f)));
+    }
   }
 }
 

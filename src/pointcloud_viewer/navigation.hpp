@@ -151,6 +151,8 @@ public:
   void turntable_shift(glm::vec2 mouse_force);
   void turntable_zoom(float mouse_force_y);
 
+  void incr_point_render_size(int incr);
+
   glm::vec3 forward_vector() const;
   glm::vec3 up_vector() const;
   glm::vec3 right_vector() const;

@@ -484,6 +484,11 @@ void Navigation::Controller::turntable_zoom(float mouse_force_y)
   navigation.viewport->update();
 }
 
+void Navigation::Controller::incr_point_render_size(int incr)
+{
+  navigation.viewport->setPointSize(navigation.viewport->pointSize() + incr);
+}
+
 glm::vec3 Navigation::Controller::forward_vector() const
 {
   const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0, -1);
