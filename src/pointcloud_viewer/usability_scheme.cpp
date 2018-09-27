@@ -468,10 +468,9 @@ void UsabilityScheme::Implementation::BlenderScheme::disableMode(mode_t mode)
   }
 }
 
-// FIXME: FPS navigation is totally broken
 glm::vec3 UsabilityScheme::Implementation::BlenderScheme::direction_for_key(QKeyEvent* event)
 {
-  glm::vec3 key_direction;
+  glm::vec3 key_direction = glm::vec3(0);
   if(event->key() == Qt::Key_W)
     key_direction.y += 1.f;
   if(event->key() == Qt::Key_Up)
