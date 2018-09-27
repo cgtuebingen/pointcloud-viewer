@@ -55,12 +55,17 @@ void MainWindow::initMenuBar()
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
   QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
+  menu_view_navigation->addSeparator();
+  QAction* action_view_navigation_zoom_to_current_point = menu_view_navigation->addAction("Zoom to Current &Point");
 
   action_view_navigation_fps->setShortcut(viewport.navigation.usabilityScheme().fps_activation_key_sequence());
+  action_view_navigation_zoom_to_current_point->setShortcut(viewport.navigation.usabilityScheme().zoom_to_current_point_activation_key_sequence());
   connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::fpsActivationKeySequenceChanged, action_view_navigation_fps, &QAction::setShortcut);
+  connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::zoomToCurrentPointActivationKeySequenceChanged, action_view_navigation_zoom_to_current_point, &QAction::setShortcut);
   connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
   connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
   connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
+  connect(action_view_navigation_zoom_to_current_point, &QAction::triggered, &viewport.navigation.usabilityScheme(), &UsabilityScheme::zoom_to_current_point);
 
   QActionGroup* usability_schemes = new QActionGroup(this);
   menu_view_navigation_scheme_blender->setActionGroup(usability_schemes);

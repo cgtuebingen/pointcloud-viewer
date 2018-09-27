@@ -27,6 +27,9 @@ public:
 
   UsabilityScheme& usabilityScheme();
 
+  void unsetSelectedPoint();
+  void setSelectedPoint(glm::vec3 selectedPoint);
+
 public slots:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
@@ -100,6 +103,9 @@ private:
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
 
+  bool _has_selected_point = false;
+  glm::vec3 _selected_point;
+
   glm::vec3 find_best_turntable_origin();
   glm::vec3 _turntable_origin_relative_to_camera;
 
@@ -142,6 +148,7 @@ public:
   void trackball_zoom(float mouse_force_y);
   void end_trackball_action();
   void hide_trackball();
+  void zoom_trackball_to_current_point();
 
   void show_grid();
   void hide_grid();
@@ -150,6 +157,7 @@ public:
   void turntable_rotate(glm::vec2 mouse_force);
   void turntable_shift(glm::vec2 mouse_force);
   void turntable_zoom(float mouse_force_y);
+  void zoom_turntable_to_current_point();
 
   void incr_point_render_size(int incr);
 

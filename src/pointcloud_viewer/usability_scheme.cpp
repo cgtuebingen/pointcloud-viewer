@@ -1,4 +1,4 @@
-﻿#include <pointcloud_viewer/usability_scheme.hpp>
+#include <pointcloud_viewer/usability_scheme.hpp>
 #include <core_library/print.hpp>
 
 #include <QApplication>
@@ -22,7 +22,9 @@ public:
   void keyPressEvent(QKeyEvent*) override{}
   void keyReleaseEvent(QKeyEvent*) override{}
   void fps_mode_changed(bool) override{}
+  void zoom_to_current_point() override{}
   QKeySequence fps_activation_key_sequence() override{return QKeySequence();}
+  QKeySequence zoom_to_current_point_activation_key_sequence() override{return QKeySequence();}
 };
 
 UsabilityScheme::Implementation::DummyScheme::~DummyScheme(){}
@@ -52,7 +54,9 @@ public:
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
+  void zoom_to_current_point() override;
   QKeySequence fps_activation_key_sequence() override;
+  QKeySequence zoom_to_current_point_activation_key_sequence() override;
 
 private:
   mode_t mode = IDLE;
@@ -89,7 +93,9 @@ public:
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
+  void zoom_to_current_point() override;
   QKeySequence fps_activation_key_sequence() override;
+  QKeySequence zoom_to_current_point_activation_key_sequence() override;
 
 private:
   mode_t mode = IDLE;
@@ -142,6 +148,7 @@ void UsabilityScheme::enableScheme(scheme_t scheme)
 
   _implementation->on_enable();
   fpsActivationKeySequenceChanged(_implementation->fps_activation_key_sequence());
+  zoomToCurrentPointActivationKeySequenceChanged(_implementation->zoom_to_current_point_activation_key_sequence());
 
   schemeChanged(scheme);
 }
@@ -195,7 +202,17 @@ void UsabilityScheme::fps_mode_changed(bool enabled_fps_mode)
   _implementation->fps_mode_changed(enabled_fps_mode);
 }
 
-QKeySequence UsabilityScheme::fps_activation_key_sequence()
+void UsabilityScheme::zoom_to_current_point()
+{
+  _implementation->zoom_to_current_point();
+}
+
+QKeySequence UsabilityScheme::zoom_to_current_point_activation_key_sequence() const
+{
+  return _implementation->zoom_to_current_point_activation_key_sequence();
+}
+
+QKeySequence UsabilityScheme::fps_activation_key_sequence() const
 {
   return _implementation->fps_activation_key_sequence();
 }
@@ -343,7 +360,7 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseReleaseEvent(QMouseEve
 
 void UsabilityScheme::Implementation::BlenderScheme::mouseDoubleClickEvent(QMouseEvent* event)
 {
-
+  Q_UNUSED(event);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* event)
@@ -372,11 +389,6 @@ void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* ev
     navigation.key_speed += speed_for_key(event);
     navigation.update_key_force();
   }
-
-  if(mode == IDLE)
-  {
-    // TODO zoom to selected point, if numpad comma was pressed
-  }
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::keyReleaseEvent(QKeyEvent* event)
@@ -397,9 +409,19 @@ void UsabilityScheme::Implementation::BlenderScheme::fps_mode_changed(bool enabl
     disableMode(FPS);
 }
 
+void UsabilityScheme::Implementation::BlenderScheme::zoom_to_current_point()
+{
+  navigation.zoom_turntable_to_current_point();
+}
+
 QKeySequence UsabilityScheme::Implementation::BlenderScheme::fps_activation_key_sequence()
 {
   return QKeySequence(Qt::SHIFT + Qt::Key_F);
+}
+
+QKeySequence UsabilityScheme::Implementation::BlenderScheme::zoom_to_current_point_activation_key_sequence()
+{
+  return QKeySequence(Qt::Key_Comma);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::enableMode(mode_t mode)
@@ -572,7 +594,15 @@ void UsabilityScheme::Implementation::MeshLabScheme::mouseReleaseEvent(QMouseEve
 
 void UsabilityScheme::Implementation::MeshLabScheme::mouseDoubleClickEvent(QMouseEvent* event)
 {
-  // TODO zoom to point if double clicked
+  if(event->modifiers() == Qt::NoModifier)
+  {
+    if(event->button() == Qt::LeftButton || event->button() == Qt::MidButton)
+    {
+      const glm::ivec2 screenspace_pixel = glm::ivec2(event->x(), event->y());
+      navigation.pick_point(screenspace_pixel);
+      zoom_to_current_point();
+    }
+  }
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::keyPressEvent(QKeyEvent* event)
@@ -591,7 +621,17 @@ void UsabilityScheme::Implementation::MeshLabScheme::fps_mode_changed(bool enabl
   Q_UNREACHABLE();
 }
 
+void UsabilityScheme::Implementation::MeshLabScheme::zoom_to_current_point()
+{
+  navigation.zoom_trackball_to_current_point();
+}
+
 QKeySequence UsabilityScheme::Implementation::MeshLabScheme::fps_activation_key_sequence()
+{
+  return QKeySequence();
+}
+
+QKeySequence UsabilityScheme::Implementation::MeshLabScheme::zoom_to_current_point_activation_key_sequence()
 {
   return QKeySequence();
 }

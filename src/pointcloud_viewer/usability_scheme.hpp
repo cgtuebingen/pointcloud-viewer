@@ -1,4 +1,4 @@
-#ifndef POINTCLOUDVIEWER_USABILILTY_SCHEME_HPP_
+﻿#ifndef POINTCLOUDVIEWER_USABILILTY_SCHEME_HPP_
 #define POINTCLOUDVIEWER_USABILILTY_SCHEME_HPP_
 
 #include <QMouseEvent>
@@ -37,14 +37,17 @@ public:
   void keyPressEvent(QKeyEvent* event);
   void keyReleaseEvent(QKeyEvent* event);
   void fps_mode_changed(bool enabled_fps_mode);
+  void zoom_to_current_point();
 
-  QKeySequence fps_activation_key_sequence();
+  QKeySequence fps_activation_key_sequence() const;
+  QKeySequence zoom_to_current_point_activation_key_sequence() const;
 
   static QString scheme_as_string(scheme_t scheme);
   static scheme_t scheme_from_string(QString scheme);
 
 signals:
   void fpsActivationKeySequenceChanged(QKeySequence keySequence);
+  void zoomToCurrentPointActivationKeySequenceChanged(QKeySequence keySequence);
   void schemeChanged(scheme_t scheme);
 
 private:
@@ -78,6 +81,8 @@ public:
   virtual void keyPressEvent(QKeyEvent* event) = 0;
   virtual void keyReleaseEvent(QKeyEvent* event) = 0;
   virtual void fps_mode_changed(bool enabled_fps_mode) = 0;
+  virtual void zoom_to_current_point() = 0;
   virtual QKeySequence fps_activation_key_sequence() = 0;
+  virtual QKeySequence zoom_to_current_point_activation_key_sequence() = 0;
 };
 #endif // POINTCLOUDVIEWER_USABILILTY_SCHEME_HPP_

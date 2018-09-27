@@ -41,6 +41,17 @@ UsabilityScheme& Navigation::usabilityScheme()
   return *_usability_scheme;
 }
 
+void Navigation::unsetSelectedPoint()
+{
+  _has_selected_point = false;
+}
+
+void Navigation::setSelectedPoint(glm::vec3 selectedPoint)
+{
+  _has_selected_point = true;
+  _selected_point = selectedPoint;
+}
+
 void Navigation::startFpsNavigation()
 {
   if(!fps_mode)
@@ -442,6 +453,21 @@ void Navigation::Controller::hide_trackball()
   navigation.viewport->update();
 }
 
+void Navigation::Controller::zoom_trackball_to_current_point()
+{
+  if(navigation._has_selected_point)
+  {
+    glm::vec3 shift = navigation._selected_point - navigation.trackball_center;
+
+    navigation.trackball_center = navigation._selected_point;
+
+    camera.frame.position += shift;
+
+    trackball_zoom(-2.f);
+    navigation.viewport->update();
+  }
+}
+
 void Navigation::Controller::show_grid()
 {
   navigation.viewport->visualization().settings.enable_grid = true;
@@ -482,6 +508,25 @@ void Navigation::Controller::turntable_zoom(float mouse_force_y)
 
   navigation._turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
   navigation.viewport->update();
+}
+
+void Navigation::Controller::zoom_turntable_to_current_point()
+{
+  if(navigation._has_selected_point)
+  {
+    ray_t ray;
+    ray.origin = camera.frame.position;
+    ray.direction = forward_vector();
+
+    glm::vec3 shift = navigation._selected_point - ray.nearest_point(navigation._selected_point);
+
+    navigation.turntable_origin = navigation._selected_point;
+
+    camera.frame.position += shift;
+
+    turntable_zoom(-2.f);
+    navigation.viewport->update();
+  }
 }
 
 void Navigation::Controller::incr_point_render_size(int incr)
