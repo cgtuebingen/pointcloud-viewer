@@ -3,6 +3,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/usability_scheme.hpp>
+#include <geometry/plane.hpp>
 #include <core_library/print.hpp>
 
 #include <glm/gtx/io.hpp>
@@ -38,6 +39,17 @@ Navigation::~Navigation()
 UsabilityScheme& Navigation::usabilityScheme()
 {
   return *_usability_scheme;
+}
+
+void Navigation::unsetSelectedPoint()
+{
+  _has_selected_point = false;
+}
+
+void Navigation::setSelectedPoint(glm::vec3 selectedPoint)
+{
+  _has_selected_point = true;
+  _selected_point = selectedPoint;
 }
 
 void Navigation::startFpsNavigation()
@@ -79,9 +91,12 @@ void Navigation::resetCameraLocation()
 {
   camera.frame = Camera().frame;
 
+  trackball_center = glm::vec3(0);
   turntable_origin = glm::vec3(0);
   _turntable_origin_relative_to_camera = Camera().frame.inverse() * glm::vec3(0);
 
+  trackball_center = trackball_position_right_infront_of_camera();
+  update_trackball_radius();
   viewport->update();
 }
 
@@ -107,7 +122,7 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
 
   const glm::ivec2 current_mouse_pos(event->x(), event->y());
 
-  bool handle_event = event->source() == Qt::MouseEventNotSynthesized;
+  bool handle_event = true;
 
   if(fps_mode)
   {
@@ -117,6 +132,9 @@ void Navigation::mouseMoveEvent(QMouseEvent* event)
       this->set_mouse_pos(center);
 
     if(distance(current_mouse_pos - last_mouse_pos, center) != CLOSE)
+      handle_event = false;
+
+    if(event->source() != Qt::MouseEventNotSynthesized)
       handle_event = false;
   }
 
@@ -147,6 +165,11 @@ void Navigation::mouseReleaseEvent(QMouseEvent* event)
 {
   last_mouse_pos = glm::ivec2(event->x(), event->y());
   _usability_scheme->mouseReleaseEvent(event);
+}
+
+void Navigation::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  _usability_scheme->mouseDoubleClickEvent(event);
 }
 
 void Navigation::keyPressEvent(QKeyEvent* event)
@@ -200,6 +223,26 @@ void Navigation::timerEvent(QTimerEvent* timerEvent)
   viewport->update();
 
   ++num_frames_in_fps_mode;
+}
+
+void Navigation::update_trackball_radius()
+{
+  const ray_t camera_center_ray = camera.ray_for_clipspace_point(glm::vec2(0));
+  const ray_t camera_upper_half_ray = camera.ray_for_clipspace_point(glm::vec2(0, 0.5f));
+
+  plane_t origin_plane = plane_t::from_normal(camera_center_ray.direction, trackball_center);
+
+  trackball_radius = glm::distance(trackball_center, camera_upper_half_ray.get_point(origin_plane.intersection_distance(camera_upper_half_ray)));
+
+  viewport->visualization().set_trackball(trackball_center, trackball_radius);
+  viewport->update();
+}
+
+glm::vec3 Navigation::trackball_position_right_infront_of_camera() const
+{
+  const glm::vec3 forward = camera.frame.orientation * glm::vec3(0, 0, -1);
+
+  return camera.frame.position + forward * glm::length(Camera().frame.position);
 }
 
 glm::ivec2 Navigation::viewport_center() const
@@ -352,58 +395,143 @@ void Navigation::Controller::stopFpsNavigation(bool keepNewFrame)
   navigation.stopFpsNavigation(keepNewFrame);
 }
 
-void Navigation::Controller::begin_turntable()
+void Navigation::Controller::show_trackball()
 {
-  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
-}
+  navigation.trackball_center = navigation.trackball_position_right_infront_of_camera();
+  navigation.update_trackball_radius();
 
-void Navigation::Controller::end_turntable()
-{
-  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
-}
-
-void Navigation::Controller::turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis)
-{
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
-  const glm::vec3 turntable_origin = navigation.turntable_origin;
-
-  view.position -= turntable_origin;
-  view = frame_t(turntable_origin, glm::angleAxis(factor * -mouse_force.x, x_rotation_axis) * glm::angleAxis(factor * -mouse_force.y, y_rotation_axis)) * view;
+  navigation.viewport->visualization().settings.enable_trackball = true;
   navigation.viewport->update();
+}
+
+void Navigation::Controller::begin_trackball_action()
+{
+}
+
+void Navigation::Controller::trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel)
+{
+  glm::ivec2 viewport_size(navigation.viewport->width(), navigation.viewport->height());
+  glm::vec2 normalized_coordinate = glm::vec2(screenspace_pixel - viewport_size/2) / float(viewport_size.y) * 4.f;
+
+  float roll_strength = glm::clamp(glm::length(normalized_coordinate), 0.f, 1.f);
+
+  roll_strength = roll_strength * roll_strength;
+
+  _rotate(navigation.trackball_center,
+          glm::mix(mouse_force, glm::vec2(0), roll_strength),
+          up_vector(),
+          right_vector());
+
+  float rolling_movement = -glm::cross(glm::vec3(mouse_force, 0.f), glm::vec3(glm::normalize(normalized_coordinate), 0.f)).z;
+
+  _rotate(navigation.trackball_center,
+          glm::mix(glm::vec2(0), glm::vec2(rolling_movement, 0.f), roll_strength),
+          forward_vector(),
+          right_vector());
+}
+
+void Navigation::Controller::trackball_shift(glm::vec2 mouse_force)
+{
+  navigation.trackball_center += _shift(mouse_force);
+  navigation.viewport->visualization().set_trackball(navigation.trackball_center, navigation.trackball_radius);
+}
+
+void Navigation::Controller::trackball_zoom(float mouse_force_y)
+{
+  _zoom(navigation.trackball_center, mouse_force_y);
+
+  navigation.update_trackball_radius();
+}
+
+void Navigation::Controller::end_trackball_action()
+{
+}
+
+void Navigation::Controller::hide_trackball()
+{
+  navigation.viewport->visualization().settings.enable_trackball = false;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::zoom_trackball_to_current_point()
+{
+  if(navigation._has_selected_point)
+  {
+    glm::vec3 shift = navigation._selected_point - navigation.trackball_center;
+
+    navigation.trackball_center = navigation._selected_point;
+
+    camera.frame.position += shift;
+
+    trackball_zoom(-2.f);
+    navigation.viewport->update();
+  }
+}
+
+void Navigation::Controller::show_grid()
+{
+  navigation.viewport->visualization().settings.enable_grid = true;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::hide_grid()
+{
+  navigation.viewport->visualization().settings.enable_grid = false;
+  navigation.viewport->update();
+}
+
+void Navigation::Controller::begin_turntable_action()
+{
+  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
+}
+
+void Navigation::Controller::end_turntable_action()
+{
+  navigation.setTurntableOrigin(navigation.find_best_turntable_origin());
 }
 
 void Navigation::Controller::turntable_rotate(glm::vec2 mouse_force)
 {
-  turntable_rotate(mouse_force, glm::vec3(0,0,1), right_vector());
+  _rotate(navigation.turntable_origin, mouse_force, glm::vec3(0,0,1), right_vector());
 }
 
 void Navigation::Controller::turntable_shift(glm::vec2 mouse_force)
 {
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
-  glm::vec3& turntable_origin = navigation.turntable_origin;
-
-  const glm::vec3 shift = up_vector() * mouse_force.y - right_vector() * mouse_force.x;
-  view.position += factor * shift;
-  turntable_origin += shift;
-  navigation.viewport->update();
+  navigation.turntable_origin += _shift(mouse_force);
 }
 
 void Navigation::Controller::turntable_zoom(float mouse_force_y)
 {
-  const float factor = 0.5f;
-  frame_t& view = navigation.camera.frame;
   const glm::vec3 turntable_origin = navigation.turntable_origin;
-  const glm::vec3 previous_zoom = view.position - turntable_origin;
 
-  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
-
-  if(zoom_factor * length(previous_zoom) > 1.e-2f)
-    view.position = turntable_origin + zoom_factor * previous_zoom;
+  _zoom(turntable_origin, mouse_force_y);
 
   navigation._turntable_origin_relative_to_camera = camera.frame.inverse() * turntable_origin;
   navigation.viewport->update();
+}
+
+void Navigation::Controller::zoom_turntable_to_current_point()
+{
+  if(navigation._has_selected_point)
+  {
+    ray_t ray;
+    ray.origin = camera.frame.position;
+    ray.direction = forward_vector();
+
+    glm::vec3 shift = navigation._selected_point - ray.nearest_point(navigation._selected_point);
+
+    navigation.turntable_origin = navigation._selected_point;
+
+    camera.frame.position += shift;
+
+    turntable_zoom(-2.f);
+    navigation.viewport->update();
+  }
+}
+
+void Navigation::Controller::incr_point_render_size(int incr)
+{
+  navigation.viewport->setPointSize(navigation.viewport->pointSize() + incr);
 }
 
 glm::vec3 Navigation::Controller::forward_vector() const
@@ -439,4 +567,39 @@ Navigation::Controller::Controller(Navigation& navigation)
   : camera(navigation.camera),
     navigation(navigation)
 {
+}
+
+void Navigation::Controller::_rotate(glm::vec3 rotation_origin, glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+
+  view.position -= rotation_origin;
+  view = frame_t(rotation_origin, glm::angleAxis(factor * -mouse_force.x, x_rotation_axis) * glm::angleAxis(factor * -mouse_force.y, y_rotation_axis)) * view;
+  navigation.viewport->update();
+}
+
+glm::vec3 Navigation::Controller::_shift(glm::vec2 mouse_force)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+
+  glm::vec3 shift = up_vector() * mouse_force.y - right_vector() * mouse_force.x;
+  shift *= factor;
+  view.position += shift;
+  navigation.viewport->update();
+  return shift;
+}
+
+void Navigation::Controller::_zoom(glm::vec3 origin, float mouse_force_y)
+{
+  const float factor = 0.5f;
+  frame_t& view = navigation.camera.frame;
+  const glm::vec3 previous_zoom = view.position - origin;
+
+  float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
+
+  if(zoom_factor * length(previous_zoom) > 1.e-2f)
+    view.position = origin + zoom_factor * previous_zoom;
+  navigation.viewport->update();
 }

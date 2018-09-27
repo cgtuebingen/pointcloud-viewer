@@ -6,6 +6,7 @@
 
 #include <QElapsedTimer>
 #include <QSettings>
+#include <QPainter>
 
 Viewport::Viewport()
   : navigation(this)
@@ -106,7 +107,7 @@ int Viewport::pointSize() const
 
 void Viewport::setBackgroundColor(int backgroundColor)
 {
-  if (m_backgroundColor == backgroundColor)
+  if(m_backgroundColor == backgroundColor)
     return;
 
   m_backgroundColor = backgroundColor;
@@ -117,8 +118,10 @@ void Viewport::setBackgroundColor(int backgroundColor)
 
 void Viewport::setPointSize(int pointSize)
 {
-  if (m_pointSize == pointSize)
+  if(m_pointSize == pointSize)
     return;
+
+  pointSize = glm::clamp<int>(pointSize, 1, 16);
 
   m_pointSize = pointSize;
   emit pointSizeChanged(m_pointSize);
@@ -163,6 +166,16 @@ void Viewport::paintGL()
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }
 
+void Viewport::paintEvent(QPaintEvent* event)
+{
+  QOpenGLWidget::paintEvent(event);
+
+  {
+    QPainter painter(this);
+    visualization().draw_overlay(painter, navigation.camera, pointSize(), glm::ivec2(this->width(), this->height()));
+  }
+}
+
 void Viewport::wheelEvent(QWheelEvent* event)
 {
   navigation.wheelEvent(event);
@@ -181,6 +194,11 @@ void Viewport::mousePressEvent(QMouseEvent* event)
 void Viewport::mouseReleaseEvent(QMouseEvent* event)
 {
   navigation.mouseReleaseEvent(event);
+}
+
+void Viewport::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  navigation.mouseDoubleClickEvent(event);
 }
 
 void Viewport::keyPressEvent(QKeyEvent* event)

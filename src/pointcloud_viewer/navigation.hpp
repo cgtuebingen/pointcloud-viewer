@@ -27,6 +27,9 @@ public:
 
   UsabilityScheme& usabilityScheme();
 
+  void unsetSelectedPoint();
+  void setSelectedPoint(glm::vec3 selectedPoint);
+
 public slots:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
@@ -40,6 +43,7 @@ public slots:
   void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseReleaseEvent(QMouseEvent* event);
+  void mouseDoubleClickEvent(QMouseEvent* event);
   void keyPressEvent(QKeyEvent* event);
   void keyReleaseEvent(QKeyEvent* event);
   void focusOutEvent(QFocusEvent* event);
@@ -73,6 +77,11 @@ private:
 
   bool fps_mode = false;
 
+  glm::vec3 trackball_center = glm::vec3(0);
+  float trackball_radius = 1.f;
+  void update_trackball_radius();
+  glm::vec3 trackball_position_right_infront_of_camera() const;
+
   static glm::ivec2 invalid_last_mouse_pos(){return glm::ivec2(std::numeric_limits<int>::min());}
   glm::ivec2 last_mouse_pos = invalid_last_mouse_pos();
 
@@ -93,6 +102,9 @@ private:
   frame_t fps_start_frame;
   int fps_timer = 0;
   int num_frames_in_fps_mode = 0;
+
+  bool _has_selected_point = false;
+  glm::vec3 _selected_point;
 
   glm::vec3 find_best_turntable_origin();
   glm::vec3 _turntable_origin_relative_to_camera;
@@ -129,12 +141,25 @@ public:
   void startFpsNavigation();
   void stopFpsNavigation(bool keepNewFrame=true);
 
-  void begin_turntable();
-  void end_turntable();
-  void turntable_rotate(glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
+  void show_trackball();
+  void begin_trackball_action();
+  void trackball_rotate(glm::vec2 mouse_force, glm::ivec2 screenspace_pixel);
+  void trackball_shift(glm::vec2 mouse_force);
+  void trackball_zoom(float mouse_force_y);
+  void end_trackball_action();
+  void hide_trackball();
+  void zoom_trackball_to_current_point();
+
+  void show_grid();
+  void hide_grid();
+  void begin_turntable_action();
+  void end_turntable_action();
   void turntable_rotate(glm::vec2 mouse_force);
   void turntable_shift(glm::vec2 mouse_force);
   void turntable_zoom(float mouse_force_y);
+  void zoom_turntable_to_current_point();
+
+  void incr_point_render_size(int incr);
 
   glm::vec3 forward_vector() const;
   glm::vec3 up_vector() const;
@@ -148,6 +173,10 @@ private:
   Navigation& navigation;
 
   Controller(Navigation& navigation);
+
+  void _rotate(glm::vec3 rotation_center, glm::vec2 mouse_force, glm::vec3 x_rotation_axis, glm::vec3 y_rotation_axis);
+  glm::vec3 _shift(glm::vec2 mouse_force);
+  void _zoom(glm::vec3 origin, float mouse_force_y);
 };
 
 

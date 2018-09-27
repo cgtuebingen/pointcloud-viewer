@@ -97,6 +97,27 @@ DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r, const glm::vec3 
   return generator.to_mesh();
 }
 
+DebugMesh DebugMesh::trackball(glm::vec3 origin, float r)
+{
+  Generator generator;
+  int brightness = 0;
+  Color axis_colors[3] = {color_palette::red[brightness], color_palette::green[brightness], color_palette::blue[brightness]};
+
+  for(int dim=0; dim<3; ++dim)
+  {
+    glm::vec3 target(0);
+
+    target[dim] = 1;
+
+    generator.next_attribute.color = axis_colors[dim].with_saturation(Color(0xcc8080));
+    generator.push_matrix(origin, target);
+    generator.add_circle(r, 64);
+    generator.pop_matrix();
+  }
+
+  return generator.to_mesh();
+}
+
 DebugMesh DebugMesh::axis(glm::bvec3 axis, float length, float tip_length)
 {
   Generator generator;

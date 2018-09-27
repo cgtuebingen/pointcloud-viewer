@@ -47,7 +47,6 @@ void MainWindow::initMenuBar()
   QMenu* menu_view = menuBar->addMenu("&View");
 
   // -------- Navigation -----------------------------------------------------------------------------------------------
-  // TODO: decide, whther to keep action_view_navigation_fps
   QMenu* menu_view_navigation = menu_view->addMenu("&Navigation");
   menu_view_navigation->addSection("Usability &Scheme");
   QAction* menu_view_navigation_scheme_blender = menu_view_navigation->addAction("&Blender");
@@ -56,27 +55,38 @@ void MainWindow::initMenuBar()
   QAction* action_view_navigation_fps = menu_view_navigation->addAction("&First Person Navigation");
   QAction* action_view_navigation_reset_camera_frame = menu_view_navigation->addAction("Reset Camera &Frame");
   QAction* action_view_navigation_reset_movement_speed = menu_view_navigation->addAction("Reset Movement &Velocity");
+  menu_view_navigation->addSeparator();
+  QAction* action_view_navigation_zoom_to_current_point = menu_view_navigation->addAction("Zoom to Current &Point");
 
   action_view_navigation_fps->setShortcut(viewport.navigation.usabilityScheme().fps_activation_key_sequence());
+  action_view_navigation_zoom_to_current_point->setShortcut(viewport.navigation.usabilityScheme().zoom_to_current_point_activation_key_sequence());
   connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::fpsActivationKeySequenceChanged, action_view_navigation_fps, &QAction::setShortcut);
+  connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::zoomToCurrentPointActivationKeySequenceChanged, action_view_navigation_zoom_to_current_point, &QAction::setShortcut);
   connect(action_view_navigation_fps, &QAction::triggered, &viewport.navigation, &Navigation::startFpsNavigation);
   connect(action_view_navigation_reset_camera_frame, &QAction::triggered, &viewport.navigation, &Navigation::resetCameraLocation);
   connect(action_view_navigation_reset_movement_speed, &QAction::triggered, &viewport.navigation, &Navigation::resetMovementSpeed);
+  connect(action_view_navigation_zoom_to_current_point, &QAction::triggered, &viewport.navigation.usabilityScheme(), &UsabilityScheme::zoom_to_current_point);
 
   QActionGroup* usability_schemes = new QActionGroup(this);
   menu_view_navigation_scheme_blender->setActionGroup(usability_schemes);
   menu_view_navigation_scheme_meshlab->setActionGroup(usability_schemes);
   menu_view_navigation_scheme_blender->setCheckable(true);
   menu_view_navigation_scheme_meshlab->setCheckable(true);
-  switch(viewport.navigation.usabilityScheme().enabled_scheme())
-  {
-  case UsabilityScheme::BLENDER:
-    menu_view_navigation_scheme_blender->setChecked(true);
-    break;
-  case UsabilityScheme::MESHLAB:
-    menu_view_navigation_scheme_meshlab->setChecked(true);
-    break;
-  }
+  auto update_ui_for_scheme = [menu_view_navigation_scheme_blender, menu_view_navigation_scheme_meshlab](UsabilityScheme::scheme_t scheme){
+    switch(scheme)
+    {
+    case UsabilityScheme::DUMMY:
+      break;
+    case UsabilityScheme::BLENDER:
+      menu_view_navigation_scheme_blender->setChecked(true);
+      break;
+    case UsabilityScheme::MESHLAB:
+      menu_view_navigation_scheme_meshlab->setChecked(true);
+      break;
+    }
+  };
+  update_ui_for_scheme(viewport.navigation.usabilityScheme().enabled_scheme());
+  connect(&viewport.navigation.usabilityScheme(), &UsabilityScheme::schemeChanged, update_ui_for_scheme);
   connect(usability_schemes, &QActionGroup::triggered, [=](QAction* action){
     if(action==menu_view_navigation_scheme_blender)
       viewport.navigation.usabilityScheme().enableBlenderScheme();

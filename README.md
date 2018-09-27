@@ -60,7 +60,7 @@ Run with
 
 1. Go to the Data Inspection Tab
 2. If the Kd Tree is not already built, you can build not the kd tree by using the big "Unlock Point Picker button". If the button is greyed out, the kd tree is alreada built.
-3. You can pick single points by clicking on them with the left mouse button
+3. You can pick single points by clicking on them with the right mouse button
 
 ## Known Issues
 

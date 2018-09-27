@@ -4,6 +4,8 @@
 #include <string>
 #include <sstream>
 
+#include <glm/gtx/io.hpp>
+
 /*
 Helper functions for operating with strings.
 
