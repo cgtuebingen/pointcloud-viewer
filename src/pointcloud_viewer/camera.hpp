@@ -32,6 +32,9 @@ public:
   static glm::vec2 screenspace_to_clipspace(glm::vec2 screenspace_point);
   static glm::vec2 pixel_to_screenspace(glm::ivec2 pixel, glm::ivec2 viewport_size);
 
+  static glm::vec2 clipspace_screenspace(glm::vec2 clipspace_point);
+  static glm::vec2 screenspace_to_pixel(glm::vec2 screenspace_point, glm::ivec2 viewport_size);
+
 private:
   static glm::vec3 default_camera_position()
   {

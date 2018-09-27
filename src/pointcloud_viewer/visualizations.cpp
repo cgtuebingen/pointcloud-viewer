@@ -1,7 +1,11 @@
-#include <pointcloud_viewer/visualizations.hpp>
 #include <core_library/color_palette.hpp>
+#include <core_library/print.hpp>
+#include <pointcloud_viewer/visualizations.hpp>
+#include <geometry/transform.hpp>
 
 #include <stdio.h>
+
+#include <QPainter>
 
 Visualization::Visualization()
   : world_axis(DebugMesh::axis()),
@@ -30,8 +34,6 @@ void Visualization::render()
     debug_mesh_renderer.render(camera_path);
   if(settings.enable_picked_cone)
     debug_mesh_renderer.render(picked_cone);
-  if(settings.enable_selected_point)
-    debug_mesh_renderer.render(selected_point);
   if(settings.enable_kdtree_as_aabb)
   {
     debug_mesh_renderer.render(kdtree_current_point);
@@ -68,12 +70,37 @@ void Visualization::set_picked_cone(cone_t picked_cone)
 
 void Visualization::deselect_picked_point()
 {
-  this->selected_point = DebugMesh();
+  this->has_selected_point = false;
 }
 
-void Visualization::select_picked_point(glm::vec3 coordinate, glm::u8vec3 color, float radius)
+void Visualization::select_picked_point(glm::vec3 coordinate, glm::u8vec3 color)
 {
-  this->selected_point = DebugMesh::highlighted_point(coordinate, glm::vec3(color) / 255.f, radius);
+  this->has_selected_point = true;
+  this->selected_point_coordinate = coordinate;
+  this->selected_point_color = color;
+}
+
+void Visualization::draw_overlay(QPainter& painter, const Camera& camera, int pointSize, glm::ivec2 viewport_size)
+{
+  if(this->has_selected_point)
+  {
+    const glm::mat4 view_perspective_matrix = camera.view_perspective_matrix();
+    const glm::vec3 selected_point = transform_point(view_perspective_matrix, this->selected_point_coordinate);
+
+    glm::ivec2 selected_point_pixel = glm::ivec2(glm::round(Camera::screenspace_to_pixel(Camera::clipspace_screenspace(selected_point), viewport_size)));
+
+    const bool is_bright_color = (selected_point_color.x + selected_point_color.y + selected_point_color.z) / 2 > 196;
+
+    QRect selection_box = QRect(selected_point_pixel.x-(pointSize)/2-2, selected_point_pixel.y-(pointSize)/2-2, pointSize+2, pointSize+2);
+
+    painter.setBrush(QBrush(Color(selected_point_color)));
+    painter.setPen(QColor::fromRgb(is_bright_color ? 0x000000 : 0xffffff));
+    painter.drawRect(selection_box);
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(QColor::fromRgb(is_bright_color ? 0xffffff : 0x000000));
+    selection_box.adjust(-1, -1, 1, 1);
+    painter.drawRect(selection_box);
+  }
 }
 
 void Visualization::set_trackball(glm::vec3 center, float radius)

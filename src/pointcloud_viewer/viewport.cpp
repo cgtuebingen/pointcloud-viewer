@@ -6,6 +6,7 @@
 
 #include <QElapsedTimer>
 #include <QSettings>
+#include <QPainter>
 
 Viewport::Viewport()
   : navigation(this)
@@ -163,6 +164,16 @@ void Viewport::paintGL()
   }
 
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
+}
+
+void Viewport::paintEvent(QPaintEvent* event)
+{
+  QOpenGLWidget::paintEvent(event);
+
+  {
+    QPainter painter(this);
+    visualization().draw_overlay(painter, navigation.camera, pointSize(), glm::ivec2(this->width(), this->height()));
+  }
 }
 
 void Viewport::wheelEvent(QWheelEvent* event)

@@ -5,6 +5,9 @@
 #include <renderer/gl450/debug/debug_mesh.hpp>
 
 #include <pointcloud_viewer/flythrough/keypoint.hpp>
+#include <pointcloud_viewer/camera.hpp>
+
+#include <QPainter>
 
 /**
 Class responsible for rendering visualizations
@@ -45,7 +48,9 @@ public:
   void set_picked_cone(cone_t picked_cone);
 
   void deselect_picked_point();
-  void select_picked_point(glm::vec3 coordinate, glm::u8vec3 color, float radius);
+  void select_picked_point(glm::vec3 coordinate, glm::u8vec3 color);
+
+  void draw_overlay(QPainter& painter, const Camera& camera, int pointSize, glm::ivec2 viewport_size);
 
   void set_trackball(glm::vec3 center, float radius);
   void set_trackball(glm::vec3 center);
@@ -53,6 +58,10 @@ public:
 private:
   typedef renderer::gl450::DebugMeshRenderer DebugMeshRenderer;
   typedef renderer::gl450::DebugMesh DebugMesh;
+
+  bool has_selected_point = false;
+  glm::vec3 selected_point_coordinate;
+  glm::u8vec3 selected_point_color;
 
   DebugMeshRenderer debug_mesh_renderer;
 
@@ -62,7 +71,6 @@ private:
   DebugMesh trackball;
   DebugMesh camera_path;
   DebugMesh picked_cone;
-  DebugMesh selected_point;
 
   DebugMesh kdtree_normal_aabb;
   DebugMesh kdtree_highlight_aabb;
