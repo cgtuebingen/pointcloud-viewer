@@ -60,7 +60,7 @@ protected:
 signals:
   void mouse_sensitivity_value_changed(int value);
 
-  void simpleLeftClick(glm::ivec2 point);
+  void picked_point(glm::ivec2 point);
 
 private:
   enum distance_t
@@ -115,6 +115,8 @@ private:
   void fps_rotation(glm::vec2 mouse_force);
 
   void set_mouse_pos(glm::ivec2 mouse_pos);
+
+  void pick_point(const glm::ivec2 screenspace_pixel);
 };
 
 class Navigation::Controller final

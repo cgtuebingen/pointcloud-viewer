@@ -1,12 +1,14 @@
 #include <pointcloud_viewer/pointcloud_inspector.hpp>
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
+#include <pointcloud_viewer/workers/kdtree_builder_dialog.hpp>
 #include <pointcloud/pointcloud.hpp>
 #include <core_library/types.hpp>
 #include <core_library/print.hpp>
 #include <glm/gtx/io.hpp>
 
 #include <QSettings>
+#include <QMessageBox>
 
 PointCloudInspector::PointCloudInspector(Viewport* viewport)
   : viewport(*viewport)
@@ -54,8 +56,24 @@ void PointCloudInspector::handle_new_point_cloud(QSharedPointer<PointCloud> poin
 
 void PointCloudInspector::pick_point(glm::ivec2 pixel)
 {
-  if(!point_cloud || !point_cloud->has_build_kdtree())
+  if(!point_cloud)
     return;
+
+  if(!point_cloud->has_build_kdtree())
+  {
+    QMessageBox msg_box(QMessageBox::Information,
+                        "No KD-Tree built",
+                        "In order to be able to pick points, a KD-Tree must have been built.\n\nBuild the KD-Tree now?",
+                        QMessageBox::Yes | QMessageBox::No,
+                        &viewport);
+    msg_box.setModal(true);
+
+    if(msg_box.exec() == QMessageBox::Yes)
+      ::build_kdtree(&viewport, this->point_cloud.data());
+
+    if(!point_cloud->has_build_kdtree())
+      return;
+  }
 
   float pick_radius = glm::max(4.f, glm::ceil(m_pickRadius + 2.f));
   glm::ivec2 viewport_size(viewport.width(), viewport.height());

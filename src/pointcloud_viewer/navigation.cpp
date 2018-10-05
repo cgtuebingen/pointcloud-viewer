@@ -359,9 +359,17 @@ void Navigation::set_mouse_pos(glm::ivec2 mouse_pos)
   viewport->setCursor(cursor);
 }
 
+void Navigation::pick_point(const glm::ivec2 screenspace_pixel)
+{
+  if(fps_mode)
+    return;
+
+  picked_point(screenspace_pixel);
+}
+
 void Navigation::Controller::pick_point(const glm::ivec2 screenspace_pixel)
 {
-  navigation.simpleLeftClick(screenspace_pixel);
+  navigation.pick_point(screenspace_pixel);
 }
 
 void Navigation::Controller::incr_base_movement_speed(int incr)
