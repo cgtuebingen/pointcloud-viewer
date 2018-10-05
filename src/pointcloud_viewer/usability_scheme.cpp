@@ -136,7 +136,7 @@ UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
 {
   implementations[DUMMY] = QSharedPointer<Implementation>(new Implementation::DummyScheme(navigation));
   implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderStyleFpsScheme<Implementation::BlenderScheme>(navigation));
-  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
+  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::BlenderStyleFpsScheme<Implementation::MeshLabScheme>(navigation));
 
   enableScheme(DUMMY);
 
@@ -734,7 +734,10 @@ void UsabilityScheme::Implementation::MeshLabScheme::keyReleaseEvent(QKeyEvent* 
 
 void UsabilityScheme::Implementation::MeshLabScheme::fps_mode_changed(bool enabled_fps_mode)
 {
-  Q_UNUSED(enabled_fps_mode);
+  if(enabled_fps_mode)
+    navigation.hide_trackball();
+  else
+    navigation.show_trackball();
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::zoom_to_current_point()
