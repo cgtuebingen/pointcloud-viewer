@@ -65,6 +65,9 @@ public:
   class BlenderScheme;
   class MeshLabScheme;
 
+  template<typename base_t>
+  class BlenderStyleFpsScheme;
+
   Navigation::Controller& navigation;
 
   Implementation(Navigation::Controller& navigation);
