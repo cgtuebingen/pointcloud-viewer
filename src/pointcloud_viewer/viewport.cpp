@@ -6,6 +6,7 @@
 
 #include <QElapsedTimer>
 #include <QSettings>
+#include <QPainter>
 
 Viewport::Viewport()
   : navigation(this)
@@ -54,23 +55,20 @@ void Viewport::unload_all_point_clouds()
 {
   point_renderer->clear_buffer();
   _aabb = aabb_t::invalid();
-}
-
-point_cloud_handle_t Viewport::load_point_cloud(PointCloud&& point_cloud)
-{
-  _aabb = point_cloud.aabb;
-
-  point_cloud_handle_t handle = point_cloud_handle_t(next_handle++);
-  PointCloud& p = point_clouds[size_t(handle)] = std::move(point_cloud);
-
-  if(Q_UNLIKELY(p.num_points>std::numeric_limits<GLsizei>::max()))
-    return point_cloud_handle_t::INVALID;
-
-  point_renderer->load_points(p.coordinate_color.data(), GLsizei(p.num_points));
+  this->point_cloud.clear();
 
   this->update();
+}
 
-  return point_cloud_handle_t(handle);
+void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
+{
+  this->point_cloud = point_cloud;
+
+  _aabb = point_cloud->aabb;
+
+  point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
+
+  this->update();
 }
 
 void Viewport::render_points(frame_t camera_frame, float aspect, std::function<void ()> additional_rendering) const
@@ -109,7 +107,7 @@ int Viewport::pointSize() const
 
 void Viewport::setBackgroundColor(int backgroundColor)
 {
-  if (m_backgroundColor == backgroundColor)
+  if(m_backgroundColor == backgroundColor)
     return;
 
   m_backgroundColor = backgroundColor;
@@ -120,8 +118,10 @@ void Viewport::setBackgroundColor(int backgroundColor)
 
 void Viewport::setPointSize(int pointSize)
 {
-  if (m_pointSize == pointSize)
+  if(m_pointSize == pointSize)
     return;
+
+  pointSize = glm::clamp<int>(pointSize, 1, 16);
 
   m_pointSize = pointSize;
   emit pointSizeChanged(m_pointSize);
@@ -166,6 +166,16 @@ void Viewport::paintGL()
   frame_rendered(timer.nsecsElapsed() * 1.e-9);
 }
 
+void Viewport::paintEvent(QPaintEvent* event)
+{
+  QOpenGLWidget::paintEvent(event);
+
+  {
+    QPainter painter(this);
+    visualization().draw_overlay(painter, navigation.camera, pointSize(), glm::ivec2(this->width(), this->height()));
+  }
+}
+
 void Viewport::wheelEvent(QWheelEvent* event)
 {
   navigation.wheelEvent(event);
@@ -184,6 +194,11 @@ void Viewport::mousePressEvent(QMouseEvent* event)
 void Viewport::mouseReleaseEvent(QMouseEvent* event)
 {
   navigation.mouseReleaseEvent(event);
+}
+
+void Viewport::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  navigation.mouseDoubleClickEvent(event);
 }
 
 void Viewport::keyPressEvent(QKeyEvent* event)

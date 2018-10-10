@@ -17,11 +17,6 @@ The viewport is owning the opengl context and delegating the point rendering to
 the renderer.
 */
 
-enum class point_cloud_handle_t : size_t
-{
-  INVALID = std::numeric_limits<size_t>::max(),
-};
-
 class Viewport final : public QOpenGLWidget
 {
   Q_OBJECT
@@ -39,7 +34,7 @@ public:
   void set_camera_frame(const frame_t& frame);
 
   void unload_all_point_clouds();
-  point_cloud_handle_t load_point_cloud(PointCloud&& point_cloud);
+  void load_point_cloud(QSharedPointer<PointCloud> point_cloud);
 
   void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
 
@@ -64,11 +59,13 @@ protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
   void paintGL() override;
+  void paintEvent(QPaintEvent* event) override;
 
   void wheelEvent(QWheelEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
 
@@ -82,7 +79,7 @@ private:
   Visualization* _visualization;
 
   aabb_t _aabb = aabb_t::invalid();
-  std::unordered_map<size_t, PointCloud> point_clouds;
+  QSharedPointer<PointCloud> point_cloud;
   size_t next_handle = 0;
   int m_backgroundColor = 0;
   int m_pointSize = 1;

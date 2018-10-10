@@ -2,10 +2,15 @@
 #define POINTCLOUDVIEWER_POINTCLOUD_HPP_
 
 #include <pointcloud/buffer.hpp>
+#include <pointcloud/kdtree_index.hpp>
 #include <geometry/aabb.hpp>
 
+#include <QVector>
+#include <QString>
+#include <QVariant>
+
 /*
-Stores the whole point cloud
+Stores the whole point cloud.
 */
 class PointCloud final
 {
@@ -25,18 +30,41 @@ public:
     padding<uint8_t> _padding;
   };
 
+  struct UserData
+  {
+    QVector<QString> names;
+    QVector<QVariant> values;
+  };
+
   Buffer coordinate_color, user_data;
+  KDTreeIndex kdtree_index;
   aabb_t aabb;
   size_t num_points;
   bool is_valid;
+
+  size_t user_data_stride;
+  QVector<QString> user_data_names;
+  QVector<size_t> user_data_offset;
+  QVector<data_type::base_type_t> user_data_types;
 
   PointCloud();
   PointCloud(PointCloud&& other);
   PointCloud& operator=(PointCloud&& other);
 
+  constexpr static const size_t stride = 4*4;
+
+  UserData all_values_of_point(size_t point_index) const;
+
   void clear();
   void resize(size_t num_points);
-  void set_data(column_t column, data_type_t input_data_type, const uint8_t* data, size_t first_vertex_to_set, size_t num_vertices_to_set);
+
+  void set_user_data_format(size_t user_data_stride, QVector<QString> user_data_names, QVector<size_t> user_data_offset, QVector<data_type::base_type_t> user_data_types);
+
+  void build_kd_tree(std::function<bool(size_t, size_t)> feedback);
+  bool can_build_kdtree() const;
+  bool has_build_kdtree() const;
 };
+
+QDebug operator<<(QDebug debug, const PointCloud::UserData& userData);
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_

@@ -1,4 +1,5 @@
 find_package(Qt5Core)
+find_package(Threads)
 
 ######## GLM ########
 # Used for math
@@ -21,3 +22,10 @@ add_subdirectory(glhelper)
 
 ######## pcl ########
 add_subdirectory(pcl)
+
+######## boost sort ########
+# Boost
+
+add_library(boost_sort INTERFACE)
+target_include_directories(boost_sort INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/boost_sort/include)
+target_link_libraries(boost_sort INTERFACE ${CMAKE_THREAD_LIBS_INIT})

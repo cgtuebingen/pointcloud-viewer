@@ -16,9 +16,35 @@ aabb_t aabb_t::invalid()
   return aabb;
 }
 
+bool aabb_t::contains(glm::vec3 point, float epsilon) const
+{
+  return glm::all(glm::lessThanEqual(this->min_point - epsilon, point))
+      && glm::all(glm::lessThanEqual(point, this->max_point + epsilon));
+}
+
+std::pair<aabb_t, aabb_t> aabb_t::split(int split_dimension, glm::vec3 split_point) const
+{
+  aabb_t left = *this;
+  aabb_t right = *this;
+
+  left.max_point[split_dimension] = glm::clamp(split_point[split_dimension],
+                                               min_point[split_dimension],
+                                               max_point[split_dimension]);
+  right.min_point[split_dimension] = glm::clamp(split_point[split_dimension],
+                                                min_point[split_dimension],
+                                                max_point[split_dimension]);
+
+  return std::make_pair(left, right);
+}
+
 glm::vec3 aabb_t::toUnitSpace(const glm::vec3& v) const
 {
   return (v-this->min_point) / (this->max_point-this->min_point);
+}
+
+glm::vec3 aabb_t::center_point() const
+{
+  return glm::mix(min_point, max_point, 0.5f);
 }
 
 glm::vec3 aabb_t::size() const

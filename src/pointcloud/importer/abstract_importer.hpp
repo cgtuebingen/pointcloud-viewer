@@ -18,6 +18,7 @@ public:
     RUNNING,
     SUCCEEDED,
     RUNTIME_ERROR,
+    INVALID_FILE,
     CANCELED,
   };
 
@@ -46,7 +47,7 @@ signals:
 
 protected:
   int64_t total_progress = 0;
-  bool handle_loaded_chunk(int64_t progress);
+  void handle_loaded_chunk(int64_t progress);
 
 protected slots:
   virtual bool import_implementation() = 0;

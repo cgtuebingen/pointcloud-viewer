@@ -50,9 +50,36 @@ DebugMesh& DebugMesh::operator=(DebugMesh&& mesh)
   return *this;
 }
 
-DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r)
+DebugMesh DebugMesh::aabb(aabb_t aabb, glm::vec3 color)
 {
   Generator generator;
+
+  generator.next_attribute.color = color;
+
+  auto point = [aabb](uint8_t index) {
+    return glm::vec3(index&0b001 ? aabb.min_point.x : aabb.max_point.x,
+                     index&0b010 ? aabb.min_point.y : aabb.max_point.y,
+                     index&0b100 ? aabb.min_point.z : aabb.max_point.z);
+  };
+
+  for(uint8_t a=0; a<8; ++a)
+  {
+    for(uint8_t swap=1; swap<8; swap<<=1)
+    {
+      uint8_t b = a ^ swap;
+      generator.add_vertex(point(a));
+      generator.add_vertex(point(b));
+    }
+  }
+
+  return generator.to_mesh();
+}
+
+DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r, const glm::vec3 color)
+{
+  Generator generator;
+
+  generator.next_attribute.color = color;
 
   for(int dim=0; dim<3; ++dim)
   {
@@ -64,6 +91,27 @@ DebugMesh DebugMesh::turntable_point(glm::vec3 origin, float r)
     generator.add_circle(r, 64);
     generator.add_vertex(0, 0,-r);
     generator.add_vertex(0, 0, r);
+    generator.pop_matrix();
+  }
+
+  return generator.to_mesh();
+}
+
+DebugMesh DebugMesh::trackball(glm::vec3 origin, float r)
+{
+  Generator generator;
+  int brightness = 0;
+  Color axis_colors[3] = {color_palette::red[brightness], color_palette::green[brightness], color_palette::blue[brightness]};
+
+  for(int dim=0; dim<3; ++dim)
+  {
+    glm::vec3 target(0);
+
+    target[dim] = 1;
+
+    generator.next_attribute.color = axis_colors[dim].with_saturation(Color(0xcc8080));
+    generator.push_matrix(origin, target);
+    generator.add_circle(r, 64);
     generator.pop_matrix();
   }
 
@@ -145,6 +193,55 @@ DebugMesh DebugMesh::path(int path_length, std::function<frame_t (int)> frame_fo
     prev_frame = frame;
   }
 
+  return generator.to_mesh();
+}
+
+DebugMesh DebugMesh::cone(cone_t cone)
+{
+  Generator generator;
+
+  generator.push_matrix(cone.origin, cone.direction);
+
+  float max_length = 1.;
+  float max_radius = cone.cone_radius_at(max_length);
+
+  generator.push_matrix(glm::vec3(0,0,max_length));
+  generator.add_circle(max_radius, 16);
+  generator.pop_matrix();
+
+  for(int i=0; i<4; ++i)
+  {
+    float angle = glm::radians(i * 360.f / 4.f);
+
+    generator.add_vertex(glm::vec3(0));
+    generator.add_vertex(glm::vec3(glm::cos(angle)*max_radius, glm::sin(angle)*max_radius, max_length));
+  }
+
+  generator.pop_matrix();
+
+  return generator.to_mesh();
+}
+
+DebugMesh DebugMesh::highlighted_point(glm::vec3 coordinate, glm::vec3 color, float radius)
+{
+  Generator generator;
+  generator.push_matrix(coordinate);
+
+  generator.next_attribute.color = color;
+
+  generator.add_sphere(radius, 64);
+
+  for(int d=0; d<3; ++d)
+  {
+    glm::vec3 p(0.f);
+
+    p[d] = radius;
+
+    generator.add_vertex(p);
+    generator.add_vertex(-p);
+  }
+
+  generator.pop_matrix();
   return generator.to_mesh();
 }
 

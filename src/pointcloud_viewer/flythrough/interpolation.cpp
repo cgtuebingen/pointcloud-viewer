@@ -20,7 +20,7 @@ double LinearInterpolation::path_length() const
 {
   double pathLength = 0;
   for(int i=1; i<keypoints.length(); ++i)
-    pathLength += double(glm::distance<float>(keypoints[i].frame.position, keypoints[i-1].frame.position));
+    pathLength += double(glm::distance(keypoints[i].frame.position, keypoints[i-1].frame.position));
 
   return pathLength;
 }
@@ -30,7 +30,7 @@ frame_t LinearInterpolation::frame_for_overcome_distance(double distance) const
   double prevDistance = 0;
   for(int i=1; i<keypoints.length(); ++i)
   {
-    double segmentLength = double(glm::distance<float>(keypoints[i].frame.position, keypoints[i-1].frame.position));
+    double segmentLength = double(glm::distance(keypoints[i].frame.position, keypoints[i-1].frame.position));
 
     double nextDistance = prevDistance + segmentLength;
 

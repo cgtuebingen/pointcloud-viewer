@@ -1,11 +1,13 @@
 #include <pointcloud/importer/abstract_importer.hpp>
+#include <pointcloud/importer/ply_importer.hpp>
+#include <pointcloud/importer/pcvd_importer.hpp>
 #include <core_library/print.hpp>
 #include <core_library/types.hpp>
-#include <pointcloud/importer/ply_importer.hpp>
 
 #include <QThread>
 #include <QSharedPointer>
 #include <QAbstractEventDispatcher>
+#include <QSettings>
 
 #include <iostream>
 
@@ -15,7 +17,10 @@ AbstractPointCloudImporter::~AbstractPointCloudImporter()
 
 QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerForSuffix(QString suffix, std::string filepath)
 {
-  if(suffix == "ply")
+  if(suffix == "pcvd")
+  {
+    return QSharedPointer<AbstractPointCloudImporter>(new PcvdImporter(filepath));
+  }else if(suffix == "ply")
   {
     return QSharedPointer<AbstractPointCloudImporter>(new PlyImporter(filepath));
   }else
@@ -24,7 +29,7 @@ QSharedPointer<AbstractPointCloudImporter> AbstractPointCloudImporter::importerF
 
 QString AbstractPointCloudImporter::allSupportedFiletypes()
 {
-  return "PLY (*.ply)";
+  return "All Supported (*.pcvd *.ply);;PCVD (*.pcvd);;PLY (*.ply)";
 }
 
 void AbstractPointCloudImporter::import()
@@ -39,8 +44,8 @@ void AbstractPointCloudImporter::import()
       this->state = RUNTIME_ERROR;
   }catch(QString message)
   {
-    print_error(message.toStdString());
-    this->state = RUNTIME_ERROR;
+    println_error(message.toStdString());
+    this->state = INVALID_FILE;
   }catch(canceled_t)
   {
     this->state = CANCELED;
@@ -63,7 +68,7 @@ void AbstractPointCloudImporter::cancel()
   this->state = CANCELED;
 }
 
-bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
+void AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
 {
   Q_ASSERT(current_progress <= total_progress);
 
@@ -86,5 +91,5 @@ bool AbstractPointCloudImporter::handle_loaded_chunk(int64_t current_progress)
 
   process_events();
 
-  return this->state == RUNNING;
+  Q_ASSERT(this->state == RUNNING);
 }

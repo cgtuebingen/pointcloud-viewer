@@ -14,10 +14,10 @@
 
 #include <fstream>
 
-PointCloud failed(){return PointCloud();}
+QSharedPointer<PointCloud> failed(){return QSharedPointer<PointCloud>(new PointCloud);}
 
 
-PointCloud import_point_cloud(QWidget* parent, QString filepath)
+QSharedPointer<PointCloud> import_point_cloud(QWidget* parent, QString filepath)
 {
   QFileInfo file(filepath);
 
@@ -76,14 +76,14 @@ PointCloud import_point_cloud(QWidget* parent, QString filepath)
   case AbstractPointCloudImporter::IDLE:
     QMessageBox::warning(parent, "Unknown Error", QString("Internal error"));
     return failed();
+  case AbstractPointCloudImporter::INVALID_FILE:
+    QMessageBox::warning(parent, "Import Error", QString("Couldn't import the corrupt file <%0>.").arg(file.fileName()));
+    return failed();
   case AbstractPointCloudImporter::RUNTIME_ERROR:
     QMessageBox::warning(parent, "Import Error", QString("Couldn't import the file <%0>. Probably an io error or invalid file.").arg(file.fileName()));
     return failed();
   case AbstractPointCloudImporter::SUCCEEDED:
-  {
-    PointCloud pointcloud(std::move(importer->pointcloud));
-    return pointcloud;
-  }
+    return QSharedPointer<PointCloud>(new PointCloud(std::move(importer->pointcloud)));
   }
 
   progressDialog.hide();

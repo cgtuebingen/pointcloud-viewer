@@ -14,8 +14,12 @@ add_executable(pointcloud_viewer
   flythrough/keypoint.hpp
   flythrough/playback.cpp
   flythrough/playback.hpp
+  workers/export_pointcloud.cpp
+  workers/export_pointcloud.hpp
   workers/import_pointcloud.cpp
   workers/import_pointcloud.hpp
+  workers/kdtree_builder_dialog.cpp
+  workers/kdtree_builder_dialog.hpp
   workers/offline_renderer.cpp
   workers/offline_renderer.hpp
   workers/offline_renderer_dialogs.cpp
@@ -23,6 +27,8 @@ add_executable(pointcloud_viewer
   camera.cpp
   camera.hpp
   declarations.hpp
+  kdtree_inspector.cpp
+  kdtree_inspector.hpp
   keypoint_list.cpp
   keypoint_list.hpp
   main.cpp
@@ -33,8 +39,10 @@ add_executable(pointcloud_viewer
   mainwindow.hpp
   navigation.cpp
   navigation.hpp
-  pointcloud_layers.cpp
-  pointcloud_layers.hpp
+  pointcloud_inspector.cpp
+  pointcloud_inspector.hpp
+  usability_scheme.cpp
+  usability_scheme.hpp
   version_text.cpp
   version_text.hpp
   viewport.cpp

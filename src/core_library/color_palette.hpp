@@ -8,10 +8,16 @@ class Color
 {
 public:
   Color(QRgb rgb);
+  Color(QColor color);
+  Color(glm::vec3 rgb);
+  Color(glm::dvec3 rgb);
+  Color(glm::u8vec3 rgb);
 
   Color with_hue(Color other) const;
   Color with_saturation(Color other) const;
   Color with_saturation(double saturation) const;
+
+  QString hexcode() const;
 
   operator QColor() const;
   operator glm::vec3() const;
