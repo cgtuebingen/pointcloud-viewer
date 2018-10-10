@@ -29,13 +29,43 @@ public:
 
 UsabilityScheme::Implementation::DummyScheme::~DummyScheme(){}
 
-class UsabilityScheme::Implementation::BlenderScheme final : public UsabilityScheme::Implementation
+template<typename base_t>
+class UsabilityScheme::Implementation::BlenderStyleFpsScheme : public base_t
+{
+public:
+  BlenderStyleFpsScheme(Navigation::Controller& navigation);
+
+  void on_enable() override;
+  void on_disable() override;
+
+  void wheelEvent(QWheelEvent* event) override;
+  void mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void keyPressEvent(QKeyEvent* event) override;
+  void keyReleaseEvent(QKeyEvent* event) override;
+  void fps_mode_changed(bool enabled_fps_mode) override;
+  void zoom_to_current_point() override;
+  QKeySequence fps_activation_key_sequence() override;
+  QKeySequence zoom_to_current_point_activation_key_sequence() override;
+
+private:
+  bool fps_mode_enabled = false;
+  uint8_t _padding[7];
+
+  static glm::vec3 direction_for_key(QKeyEvent* event);
+  static int speed_for_key(QKeyEvent* event);
+
+  Navigation::Controller& navigation(){return UsabilityScheme::Implementation::navigation;}
+};
+
+class UsabilityScheme::Implementation::BlenderScheme : public UsabilityScheme::Implementation
 {
 public:
   enum mode_t
   {
     IDLE,
-    FPS,
     TURNTABLE_ROTATE,
     TURNTABLE_SHIFT,
     TURNTABLE_ZOOM,
@@ -55,7 +85,6 @@ public:
   void keyReleaseEvent(QKeyEvent* event) override;
   void fps_mode_changed(bool enabled_fps_mode) override;
   void zoom_to_current_point() override;
-  QKeySequence fps_activation_key_sequence() override;
   QKeySequence zoom_to_current_point_activation_key_sequence() override;
 
 private:
@@ -64,12 +93,9 @@ private:
 
   void enableMode(mode_t mode);
   void disableMode(mode_t mode);
-
-  static glm::vec3 direction_for_key(QKeyEvent* event);
-  static int speed_for_key(QKeyEvent* event);
 };
 
-class UsabilityScheme::Implementation::MeshLabScheme final : public UsabilityScheme::Implementation
+class UsabilityScheme::Implementation::MeshLabScheme : public UsabilityScheme::Implementation
 {
 public:
   enum mode_t
@@ -109,8 +135,8 @@ private:
 UsabilityScheme::UsabilityScheme(Navigation::Controller& navigation)
 {
   implementations[DUMMY] = QSharedPointer<Implementation>(new Implementation::DummyScheme(navigation));
-  implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderScheme(navigation));
-  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::MeshLabScheme(navigation));
+  implementations[BLENDER] = QSharedPointer<Implementation>(new Implementation::BlenderStyleFpsScheme<Implementation::BlenderScheme>(navigation));
+  implementations[MESHLAB] = QSharedPointer<Implementation>(new Implementation::BlenderStyleFpsScheme<Implementation::MeshLabScheme>(navigation));
 
   enableScheme(DUMMY);
 
@@ -249,6 +275,200 @@ UsabilityScheme::Implementation::Implementation(Navigation::Controller& navigati
 
 }
 
+// ==== BlenderStyleFpsScheme ====
+
+
+template<typename base_t>
+UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::BlenderStyleFpsScheme(Navigation::Controller& navigation)
+  : base_t(navigation)
+{
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::on_enable()
+{
+  base_t::on_enable();
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::on_disable()
+{
+  navigation().stopFpsNavigation(false);
+  base_t::on_disable();
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::wheelEvent(QWheelEvent* event)
+{
+  if(fps_mode_enabled)
+  {
+    if(event->modifiers() == Qt::NoModifier)
+      navigation().incr_base_movement_speed(event->angleDelta().y() / 15);
+    else if(event->modifiers() == Qt::CTRL)
+      navigation().tilt_camera(event->angleDelta().y());
+    else if(event->modifiers() == Qt::CTRL+Qt::SHIFT)
+      navigation().tilt_camera(event->angleDelta().y() * 4.);
+  }else
+  {
+    base_t::wheelEvent(event);
+  }
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event)
+{
+  if(!fps_mode_enabled)
+    base_t::mouseMoveEvent(mouse_force, event);
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::mousePressEvent(QMouseEvent* event)
+{
+  if(fps_mode_enabled)
+  {
+    if(event->button() == Qt::LeftButton)
+      navigation().stopFpsNavigation();
+    if(event->button() == Qt::RightButton)
+      navigation().stopFpsNavigation(false);
+    if(event->button() == Qt::MiddleButton)
+    {
+      if(event->modifiers() == Qt::CTRL)
+        navigation().reset_camera_tilt();
+    }
+  }else
+  {
+    base_t::mousePressEvent(event);
+  }
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::mouseReleaseEvent(QMouseEvent* event)
+{
+  if(!fps_mode_enabled)
+    base_t::mouseReleaseEvent(event);
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  if(!fps_mode_enabled)
+    base_t::mouseDoubleClickEvent(event);
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::keyPressEvent(QKeyEvent* event)
+{
+  if(fps_mode_enabled)
+  {
+    if(event->modifiers() == Qt::NoModifier)
+    {
+      if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        navigation().stopFpsNavigation();
+      if(event->key() == Qt::Key_Escape)
+        navigation().stopFpsNavigation(false);
+    }
+
+    if(event->modifiers() == Qt::AltModifier)
+    {
+      if(event->key() == Qt::Key_F4)
+      {
+        navigation().stopFpsNavigation();
+        QApplication::quit();
+        return;
+      }
+    }
+
+    navigation().key_direction += direction_for_key(event);
+    navigation().key_speed += speed_for_key(event);
+    navigation().update_key_force();
+  }else
+  {
+    base_t::keyPressEvent(event);
+  }
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::keyReleaseEvent(QKeyEvent* event)
+{
+  if(fps_mode_enabled)
+  {
+    navigation().key_direction -= direction_for_key(event);
+    navigation().key_speed -= speed_for_key(event);
+    navigation().update_key_force();
+  }else
+  {
+    base_t::keyReleaseEvent(event);
+  }
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::fps_mode_changed(bool enabled_fps_mode)
+{
+  if(enabled_fps_mode)
+    navigation().startFpsNavigation();
+  else
+    navigation().stopFpsNavigation();
+
+  this->fps_mode_enabled = enabled_fps_mode;
+
+  base_t::fps_mode_changed(enabled_fps_mode);
+}
+
+template<typename base_t>
+void UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::zoom_to_current_point()
+{
+  if(!fps_mode_enabled)
+    base_t::zoom_to_current_point();
+}
+
+template<typename base_t>
+QKeySequence UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::fps_activation_key_sequence()
+{
+  return QKeySequence(Qt::SHIFT + Qt::Key_F);
+}
+
+template<typename base_t>
+QKeySequence UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::zoom_to_current_point_activation_key_sequence()
+{
+  return base_t::zoom_to_current_point_activation_key_sequence();
+}
+
+template<typename base_t>
+glm::vec3 UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::direction_for_key(QKeyEvent* event)
+{
+  glm::vec3 key_direction = glm::vec3(0);
+  if(event->key() == Qt::Key_W)
+    key_direction.y += 1.f;
+  if(event->key() == Qt::Key_Up)
+    key_direction.y += 1.f;
+  if(event->key() == Qt::Key_S)
+    key_direction.y -= 1.f;
+  if(event->key() == Qt::Key_Down)
+    key_direction.y -= 1.f;
+  if(event->key() == Qt::Key_A)
+    key_direction.x -= 1.f;
+  if(event->key() == Qt::Key_Left)
+    key_direction.x -= 1.f;
+  if(event->key() == Qt::Key_D)
+    key_direction.x += 1.f;
+  if(event->key() == Qt::Key_Right)
+    key_direction.x += 1.f;
+  if(event->key() == Qt::Key_E)
+    key_direction.z += 1.f;
+  if(event->key() == Qt::Key_Q)
+    key_direction.z -= 1.f;
+  return key_direction;
+}
+
+template<typename base_t>
+int UsabilityScheme::Implementation::BlenderStyleFpsScheme<base_t>::speed_for_key(QKeyEvent* event)
+{
+  int key_speed = 0;
+  if(event->key() == Qt::Key_Shift)
+    key_speed++;
+  return key_speed;
+}
+
 // ==== Blender ====
 
 UsabilityScheme::Implementation::BlenderScheme::BlenderScheme(Navigation::Controller& navigation)
@@ -270,28 +490,14 @@ void UsabilityScheme::Implementation::BlenderScheme::on_disable()
 
 void UsabilityScheme::Implementation::BlenderScheme::wheelEvent(QWheelEvent* event)
 {
-  if(mode == FPS)
-  {
-    if(event->modifiers() == Qt::NoModifier)
-      navigation.incr_base_movement_speed(event->angleDelta().y() / 15);
-    else if(event->modifiers() == Qt::CTRL)
-      navigation.tilt_camera(event->angleDelta().y());
-    else if(event->modifiers() == Qt::CTRL+Qt::SHIFT)
-      navigation.tilt_camera(event->angleDelta().y() * 4.);
-  }else
-  {
-    navigation.begin_turntable_action();
-    navigation.turntable_zoom(-event->angleDelta().y() / 120.f);
-    navigation.end_turntable_action();
-  }
+  navigation.begin_turntable_action();
+  navigation.turntable_zoom(-event->angleDelta().y() / 120.f);
+  navigation.end_turntable_action();
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mouse_force, QMouseEvent* event)
 {
   Q_UNUSED(event);
-
-  if(mode == IDLE || mode == FPS)
-    return;
 
   switch(mode)
   {
@@ -304,7 +510,6 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mo
   case TURNTABLE_ZOOM:
     navigation.turntable_zoom(mouse_force.y);
     break;
-  case FPS:
   case IDLE:
     break;
   }
@@ -312,19 +517,6 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseMoveEvent(glm::vec2 mo
 
 void UsabilityScheme::Implementation::BlenderScheme::mousePressEvent(QMouseEvent* event)
 {
-  if(mode == FPS)
-  {
-    if(event->button() == Qt::LeftButton)
-      navigation.stopFpsNavigation();
-    if(event->button() == Qt::RightButton)
-      navigation.stopFpsNavigation(false);
-    if(event->button() == Qt::MiddleButton)
-    {
-      if(event->modifiers() == Qt::CTRL)
-        navigation.reset_camera_tilt();
-    }
-  }
-
   if(mode == IDLE)
   {
     if(event->button() == Qt::MiddleButton)
@@ -365,58 +557,24 @@ void UsabilityScheme::Implementation::BlenderScheme::mouseDoubleClickEvent(QMous
 
 void UsabilityScheme::Implementation::BlenderScheme::keyPressEvent(QKeyEvent* event)
 {
-  if(mode == FPS)
-  {
-    if(event->modifiers() == Qt::NoModifier)
-    {
-      if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-        navigation.stopFpsNavigation();
-      if(event->key() == Qt::Key_Escape)
-        navigation.stopFpsNavigation(false);
-    }
-
-    if(event->modifiers() == Qt::AltModifier)
-    {
-      if(event->key() == Qt::Key_F4)
-      {
-        navigation.stopFpsNavigation();
-        QApplication::quit();
-        return;
-      }
-    }
-
-    navigation.key_direction += direction_for_key(event);
-    navigation.key_speed += speed_for_key(event);
-    navigation.update_key_force();
-  }
+  Q_UNUSED(event);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::keyReleaseEvent(QKeyEvent* event)
 {
-  if(mode == FPS)
-  {
-    navigation.key_direction -= direction_for_key(event);
-    navigation.key_speed -= speed_for_key(event);
-    navigation.update_key_force();
-  }
+  Q_UNUSED(event);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::fps_mode_changed(bool enabled_fps_mode)
 {
-  if(enabled_fps_mode)
-    enableMode(FPS);
-  else
-    disableMode(FPS);
+  Q_UNUSED(enabled_fps_mode);
+
+  disableMode(mode);
 }
 
 void UsabilityScheme::Implementation::BlenderScheme::zoom_to_current_point()
 {
   navigation.zoom_turntable_to_current_point();
-}
-
-QKeySequence UsabilityScheme::Implementation::BlenderScheme::fps_activation_key_sequence()
-{
-  return QKeySequence(Qt::SHIFT + Qt::Key_F);
 }
 
 QKeySequence UsabilityScheme::Implementation::BlenderScheme::zoom_to_current_point_activation_key_sequence()
@@ -439,9 +597,6 @@ void UsabilityScheme::Implementation::BlenderScheme::enableMode(mode_t mode)
       break;
     case IDLE:
       break;
-    case FPS:
-      navigation.startFpsNavigation();
-      break;
     }
   }
 }
@@ -459,47 +614,10 @@ void UsabilityScheme::Implementation::BlenderScheme::disableMode(mode_t mode)
       break;
     case IDLE:
       break;
-    case FPS:
-      navigation.stopFpsNavigation();
-      break;
     }
 
     this->mode = IDLE;
   }
-}
-
-glm::vec3 UsabilityScheme::Implementation::BlenderScheme::direction_for_key(QKeyEvent* event)
-{
-  glm::vec3 key_direction = glm::vec3(0);
-  if(event->key() == Qt::Key_W)
-    key_direction.y += 1.f;
-  if(event->key() == Qt::Key_Up)
-    key_direction.y += 1.f;
-  if(event->key() == Qt::Key_S)
-    key_direction.y -= 1.f;
-  if(event->key() == Qt::Key_Down)
-    key_direction.y -= 1.f;
-  if(event->key() == Qt::Key_A)
-    key_direction.x -= 1.f;
-  if(event->key() == Qt::Key_Left)
-    key_direction.x -= 1.f;
-  if(event->key() == Qt::Key_D)
-    key_direction.x += 1.f;
-  if(event->key() == Qt::Key_Right)
-    key_direction.x += 1.f;
-  if(event->key() == Qt::Key_E)
-    key_direction.z += 1.f;
-  if(event->key() == Qt::Key_Q)
-    key_direction.z -= 1.f;
-  return key_direction;
-}
-
-int UsabilityScheme::Implementation::BlenderScheme::speed_for_key(QKeyEvent* event)
-{
-  int key_speed = 0;
-  if(event->key() == Qt::Key_Shift)
-    key_speed++;
-  return key_speed;
 }
 
 // ==== Meshlab ====
@@ -616,8 +734,10 @@ void UsabilityScheme::Implementation::MeshLabScheme::keyReleaseEvent(QKeyEvent* 
 
 void UsabilityScheme::Implementation::MeshLabScheme::fps_mode_changed(bool enabled_fps_mode)
 {
-  Q_UNUSED(enabled_fps_mode);
-  Q_UNREACHABLE();
+  if(enabled_fps_mode)
+    navigation.hide_trackball();
+  else
+    navigation.show_trackball();
 }
 
 void UsabilityScheme::Implementation::MeshLabScheme::zoom_to_current_point()

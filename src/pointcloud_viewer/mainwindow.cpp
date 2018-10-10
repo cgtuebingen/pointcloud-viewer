@@ -15,7 +15,7 @@ MainWindow::MainWindow()
   connect(&viewport, &Viewport::frame_rendered, &flythrough.playback, &Playback::previous_frame_finished);
   connect(&viewport, &Viewport::openGlContextCreated, this, &MainWindow::handleApplicationArguments);
 
-  connect(&viewport.navigation, &Navigation::simpleLeftClick, &pointCloudInspector, &PointCloudInspector::pick_point);
+  connect(&viewport.navigation, &Navigation::picked_point, &pointCloudInspector, &PointCloudInspector::pick_point);
   connect(&viewport, &Viewport::pointSizeChanged, &pointCloudInspector, &PointCloudInspector::setPickRadius);
 
   connect(this, &MainWindow::pointcloud_unloaded, [this](){pointcloud.clear();});
