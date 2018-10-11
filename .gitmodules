@@ -7,3 +7,6 @@
 [submodule "boost_sort"]
 	path = src/external/boost_sort
 	url = https://github.com/boostorg/sort.git
+[submodule "src/external/nodeeditor"]
+	path = src/external/nodeeditor
+	url = git@github.com:paceholder/nodeeditor.git
