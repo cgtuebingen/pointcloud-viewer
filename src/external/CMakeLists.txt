@@ -23,6 +23,9 @@ add_subdirectory(glhelper)
 ######## pcl ########
 add_subdirectory(pcl)
 
+######## nodeeditor ########
+add_subdirectory(nodeeditor)
+
 ######## boost sort ########
 # Boost
 

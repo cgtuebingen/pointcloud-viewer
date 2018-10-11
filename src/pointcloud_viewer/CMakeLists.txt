@@ -51,4 +51,4 @@ add_executable(pointcloud_viewer
   visualizations.hpp
 )
 
-target_link_libraries(pointcloud_viewer Qt5::Widgets glm renderer geometry pointcloud)
+target_link_libraries(pointcloud_viewer Qt5::Widgets NodeEditor::nodes glm renderer geometry pointcloud)
