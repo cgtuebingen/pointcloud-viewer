@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/keypoint_list.hpp>
+#include <pointcloud_viewer/point_shader.hpp>
 #include <core_library/color_palette.hpp>
 
 #include <QGridLayout>
@@ -363,6 +364,8 @@ QDockWidget* MainWindow::initRenderDock()
   QDockWidget* dock = new QDockWidget("Render", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
+  QFormLayout* form;
+  QHBoxLayout* hbox;
 
   // ==== Render ====
   QWidget* root = new QWidget;
@@ -394,19 +397,126 @@ QDockWidget* MainWindow::initRenderDock()
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
+  // ---- save shader ----
+  QPushButton* exportShaderButton = new QPushButton("&Export");
+
+  // ---- import shader ----
+  QPushButton* importShaderButton = new QPushButton("&Import");
+
+  // ---- remove shader ----
+  QPushButton* removeShaderButton = new QPushButton("&Remove");
+
+  // ---- clone shader ----
+  QPushButton* cloneShaderButton = new QPushButton("&Clone");
+
+  // ---- edit shader ----
+  QPushButton* editShaderButton = new QPushButton("&Edit");
+
+  // ---- shader choice ----
+  auto is_builtin_visualization=[](int index){return index==0;};
+
+  QComboBox* shaderComboBox = new QComboBox;
+  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, is_builtin_visualization,removeShaderButton,editShaderButton](int index){
+    const bool enable_modifying_buttons = !is_builtin_visualization(index) && this->pointcloud!=nullptr;
+
+    removeShaderButton->setEnabled(enable_modifying_buttons);
+    editShaderButton->setEnabled(enable_modifying_buttons);
+  });
+
+  void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);
+  void pointcloud_unloaded();
+
+  shaderComboBox->addItem("auto");
+
+  auto current_point_shader = [shaderComboBox, this]() -> PointShader {
+    if(shaderComboBox->currentIndex() == 0)
+      return PointShader::autogenerate(this->pointcloud);
+    else
+      return shaderComboBox->currentData().value<PointShader>();
+  };
+
+  connect(cloneShaderButton, &QPushButton::clicked, [shaderComboBox, current_point_shader](){
+    PointShader pointShader = current_point_shader().clone();
+    shaderComboBox->addItem(pointShader.name(), QVariant::fromValue(pointShader));
+    shaderComboBox->setCurrentIndex(shaderComboBox->count()-1);
+  });
+
+  connect(removeShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization](){
+    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
+      shaderComboBox->removeItem(shaderComboBox->currentIndex());
+  });
+
+  connect(editShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization, current_point_shader, this](){
+    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
+      current_point_shader().edit(this);
+  });
+
+  connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){
+    // TODO FileDialog
+    QString filename;
+    if(!filename.isEmpty())
+    {
+      try {
+        PointShader pointShader = PointShader::import_from_file(filename);
+        shaderComboBox->addItem(pointShader.name(), QVariant::fromValue(pointShader));
+        shaderComboBox->setCurrentIndex(shaderComboBox->count()-1);
+      }catch(...)
+      {
+        // TODO msgbox
+      }
+    }
+  });
+
+  connect(exportShaderButton, &QPushButton::clicked, [current_point_shader, this](){
+    // TODO FileDialog
+    QString filename;
+    if(!filename.isEmpty())
+    {
+      try {
+        current_point_shader().export_to_file(filename);
+      }catch(...)
+      {
+        // TODO msgbox
+      }
+    }
+  });
+
   // -- render style --
   QGroupBox* styleGroup = new QGroupBox("Style");
-  QFormLayout* form = new QFormLayout;
+  form = new QFormLayout;
   styleGroup->setLayout((form));
 
   form->addRow("Background:", backgroundBrightness);
   form->addRow("Point Size:", pointSize);
+
+  // -- property visualization --
+  QGroupBox* propertyVisualizationGroup = new QGroupBox("Property Visualization");
+  form = new QFormLayout;
+  propertyVisualizationGroup->setLayout((form));
+
+  form->addRow("Visualization:", shaderComboBox);
+
+  hbox = new QHBoxLayout;
+  form->addRow(hbox);
+  hbox->addWidget(editShaderButton);
+
+  hbox = new QHBoxLayout;
+  form->addRow(hbox);
+  hbox->addWidget(exportShaderButton);
+  hbox->addWidget(importShaderButton);
+
+  hbox = new QHBoxLayout;
+  form->addRow(hbox);
+  hbox->addWidget(cloneShaderButton);
+  hbox->addWidget(removeShaderButton);
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
 
   vbox->addWidget(renderButton);
   vbox->addWidget(styleGroup);
+  vbox->addWidget(propertyVisualizationGroup);
+  vbox->addStretch(1);
 
   return dock;
 }
