@@ -608,24 +608,13 @@ void Navigation::Controller::_zoom(glm::vec3 origin, float mouse_force_y)
 
   float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
 
-  println("==== _zoom ====");
-  PRINT(zoom_factor);
-
   if(length(previous_zoom)>0.f)
   {
     zoom_factor = glm::max(zoom_factor, lower_limit / length(previous_zoom));
     view.position = origin + zoom_factor * previous_zoom;
-
-    println("length(previous_zoom)>0.f");
-    PRINT(lower_limit);
-    PRINT(zoom_factor);
-    PRINT(length(previous_zoom));
   }else
   {
     view.position = origin + lower_limit * -forward_vector();
-
-    println("length(previous_zoom)<=0.f");
-    PRINT(lower_limit);
   }
   navigation.viewport->update();
 }
