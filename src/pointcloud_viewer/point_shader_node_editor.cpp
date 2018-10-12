@@ -13,6 +13,7 @@ class ScalarExpression final : public QtNodes::NodeData
 {
 public:
   QString expression;
+  QStringList errors;
 
   ScalarExpression(QString expression="42"):expression(expression){}
 
@@ -27,8 +28,10 @@ QtNodes::NodeDataType ScalarExpression::type() const
 class PropertyNode final : public QtNodes::NodeDataModel
 {
 public:
+  PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames);
+
   QString caption() const override{return "Property";}
-  QString name() const override{return "property";}
+  QString name() const override{return "Property";}
   uint nPorts(QtNodes::PortType portType) const override;
   QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
 
@@ -39,8 +42,16 @@ public:
   QWidget* embeddedWidget() override;
 
 private:
+  QStringList supportedPropertyNames;
+  QStringList missingPropertyNames;
   std::shared_ptr<ScalarExpression> _property = std::make_shared<ScalarExpression>();
 };
+
+PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames)
+  : supportedPropertyNames(supportedPropertyNames),
+    missingPropertyNames(missingPropertyNames)
+{
+}
 
 uint PropertyNode::nPorts(QtNodes::PortType portType) const
 {
@@ -88,11 +99,25 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   QVBoxLayout* vbox = new QVBoxLayout;
 
+
+  QStringList supportedPropertyNames;
+  QStringList missingPropertyNames;
+  if(currentPointcloud == nullptr)
+    supportedPropertyNames << "x" << "y" << "z" << "red" << "green" << "blue";
+  else
+    supportedPropertyNames << currentPointcloud->user_data_names.toList();
+  for(Implementation::property_t property  : _implementation->usedProperties)
+    if(!supportedPropertyNames.contains(property.name))
+      missingPropertyNames << property.name;
+
   // TODO
 
   std::shared_ptr<QtNodes::DataModelRegistry> registry(new QtNodes::DataModelRegistry);
 
-  registry->registerModel<PropertyNode>("Input");
+  registry->registerModel<PropertyNode>("Input",
+                                        [supportedPropertyNames, missingPropertyNames]() {
+    return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames);
+  });
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
   QtNodes::FlowView* flowView = new QtNodes::FlowView(flowScene);
