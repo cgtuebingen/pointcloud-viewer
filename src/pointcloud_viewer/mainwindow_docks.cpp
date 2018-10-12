@@ -23,6 +23,8 @@
 #include <QLabel>
 #include <QDebug>
 #include <QClipboard>
+#include <QMessageBox>
+#include <QFileDialog>
 
 void MainWindow::initDocks()
 {
@@ -452,31 +454,57 @@ QDockWidget* MainWindow::initRenderDock()
   });
 
   connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){
-    // TODO FileDialog
-    QString filename;
+    QString dir;
+
+    {
+      QSettings settings;
+      dir = settings.value("VizualizationShaders/exportDir").toString();
+    }
+
+    QString filename = QFileDialog::getOpenFileName(this, "Import Visualization", dir, "Point Visualization (*.point-visualization)");
     if(!filename.isEmpty())
     {
-      try {
+      {
+        QSettings settings;
+        settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
+      }
+
+      try
+      {
         PointShader pointShader = PointShader::import_from_file(filename);
         shaderComboBox->addItem(pointShader.name(), QVariant::fromValue(pointShader));
         shaderComboBox->setCurrentIndex(shaderComboBox->count()-1);
       }catch(...)
       {
-        // TODO msgbox
+        QMessageBox::warning(this, "Import Error", "Couldn't import the Visualization");
       }
     }
   });
 
-  connect(exportShaderButton, &QPushButton::clicked, [current_point_shader, this](){
-    // TODO FileDialog
-    QString filename;
+  connect(exportShaderButton, &QPushButton::clicked, [current_point_shader, this]() {
+    QString dir;
+
+    {
+      QSettings settings;
+      dir = settings.value("VizualizationShaders/exportDir").toString();
+    }
+
+    QString filename = QFileDialog::getSaveFileName(this, "Export Visualization", dir, "Point Visualization (*.point-visualization)");
     if(!filename.isEmpty())
     {
-      try {
+      {
+        QSettings settings;
+        settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
+      }
+
+      try
+      {
+        if(!filename.toLower().endsWith(".point-visualization"))
+          filename += ".point-visualization";
         current_point_shader().export_to_file(filename);
       }catch(...)
       {
-        // TODO msgbox
+        QMessageBox::warning(this, "Export Error", "Couldn't export the Visualization");
       }
     }
   });
