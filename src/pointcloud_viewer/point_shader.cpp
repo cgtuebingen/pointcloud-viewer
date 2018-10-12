@@ -1,13 +1,6 @@
 #include <pointcloud_viewer/point_shader.hpp>
 #include <core_library/print.hpp>
 
-class PointShader::Implementation
-{
-public:
-  QString name;
-  QSharedPointer<PointShader::Implementation> clone() const;
-};
-
 PointShader::PointShader()
   : _implementation(autogenerate(QSharedPointer<PointCloud>())._implementation)
 {
@@ -68,11 +61,6 @@ PointShader PointShader::import_from_file(QString filename)
 void PointShader::export_to_file(QString filename) const
 {
   PRINT(filename.toStdString());
-  // TODO
-}
-
-void PointShader::edit(QWidget* parent)
-{
   // TODO
 }
 

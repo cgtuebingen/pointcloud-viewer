@@ -450,7 +450,7 @@ QDockWidget* MainWindow::initRenderDock()
 
   connect(editShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization, current_point_shader, this](){
     if(!is_builtin_visualization(shaderComboBox->currentIndex()))
-      current_point_shader().edit(this);
+      current_point_shader().edit(this, this->pointcloud);
   });
 
   connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){

@@ -25,7 +25,7 @@ public:
   static PointShader import_from_file(QString filename);
   void export_to_file(QString filename) const;
 
-  void edit(QWidget* parent);
+  void edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud);
 
 private:
   class Implementation;
@@ -33,6 +33,22 @@ private:
   QSharedPointer<Implementation>  _implementation;
 
   explicit PointShader(const QSharedPointer<Implementation>& implementation);
+};
+
+class PointShader::Implementation
+{
+public:
+  struct property_t
+  {
+    QString name;
+  };
+
+  QString name;
+
+  QVector<property_t> usedProperties;
+  QVector<property_t> unusedProperties;
+
+  QSharedPointer<PointShader::Implementation> clone() const;
 };
 
 Q_DECLARE_METATYPE(PointShader);

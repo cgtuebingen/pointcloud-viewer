@@ -41,6 +41,7 @@ add_executable(pointcloud_viewer
   navigation.hpp
   pointcloud_inspector.cpp
   pointcloud_inspector.hpp
+  point_shader_node_editor.cpp
   point_shader.cpp
   point_shader.hpp
   usability_scheme.cpp
