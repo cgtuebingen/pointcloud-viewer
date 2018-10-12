@@ -8,6 +8,11 @@
 class PointShader
 {
 public:
+  struct property_t
+  {
+    QString name;
+  };
+
   PointShader();
   ~PointShader();
 
@@ -18,6 +23,7 @@ public:
   PointShader& operator=(PointShader&& pointShader);
 
   QString name() const;
+  QVector<property_t> properties() const;
 
   static PointShader autogenerate(const QSharedPointer<PointCloud>& pointcloud);
   PointShader clone() const;
@@ -38,15 +44,9 @@ private:
 class PointShader::Implementation
 {
 public:
-  struct property_t
-  {
-    QString name;
-  };
-
   QString name;
 
-  QVector<property_t> usedProperties;
-  QVector<property_t> unusedProperties;
+  QVector<property_t> properties;
 
   QSharedPointer<PointShader::Implementation> clone() const;
 };

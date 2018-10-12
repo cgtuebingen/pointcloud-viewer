@@ -37,6 +37,11 @@ QString PointShader::name() const
   return _implementation->name;
 }
 
+QVector<PointShader::property_t> PointShader::properties() const
+{
+  return _implementation->properties;
+}
+
 PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointcloud)
 {
   QSharedPointer<Implementation> implementation(new Implementation);
