@@ -11,6 +11,7 @@ public:
   struct property_t
   {
     QString name;
+    data_type::base_type_t type;
   };
 
   PointShader();
