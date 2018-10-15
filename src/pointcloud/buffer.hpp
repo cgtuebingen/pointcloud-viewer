@@ -34,6 +34,8 @@ size_t read_value_from_buffer_to_stream(stream_t& stream, base_type_t input_type
 size_t size_of_type(base_type_t base_type);
 bool is_valid(base_type_t base_type);
 
+QString toString(base_type_t base_type);
+
 #define BASE_TYPE(c_type, enum_value) template<>struct base_type_of<c_type>{static constexpr base_type_t value(){return base_type_t::enum_value;}};
 BASE_TYPE(int8_t, INT8)
 BASE_TYPE(int16_t, INT16)

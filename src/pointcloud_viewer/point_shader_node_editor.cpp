@@ -22,7 +22,7 @@ class Value final : public QtNodes::NodeData
 {
 public:
   QString expression;
-  data_type::base_type_t base_type;
+  base_type_t base_type;
   uint num_components;
   QStringList errors;
 
@@ -42,7 +42,7 @@ QtNodes::NodeDataType Value::type() const
 class PropertyNode final : public QtNodes::NodeDataModel
 {
 public:
-  PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames);
+  PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, base_type_t> property_base_types);
 
   QString caption() const override{return "Property";}
   QString name() const override{return "Property";}
@@ -59,6 +59,7 @@ private slots:
   void changedProperty(QString name);
 
 private:
+  QMap<QString, base_type_t> property_base_types;
   QStringList supportedPropertyNames;
   QStringList missingPropertyNames;
   std::shared_ptr<Value> _property = std::make_shared<Value>();
@@ -68,8 +69,9 @@ private:
   QComboBox* _combobox;
 };
 
-PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames)
-  : supportedPropertyNames(supportedPropertyNames),
+PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, base_type_t> property_base_types)
+  : property_base_types(property_base_types),
+    supportedPropertyNames(supportedPropertyNames),
     missingPropertyNames(missingPropertyNames)
 {
   const QStyle* style = QApplication::style();
@@ -137,7 +139,7 @@ void PropertyNode::changedProperty(QString name)
 {
   _warning_widget->setVisible(!supportedPropertyNames.contains(name));
 
-  _property = std::make_shared<Value>(name, property_base_type[name], 1);
+  _property = std::make_shared<Value>(name, property_base_types[name], 1);
   dataUpdated(0);
 }
 
@@ -160,12 +162,30 @@ public:
   QWidget* embeddedWidget() override;
 
 private:
-  QLabel* _label;
+  QLabel* _label_expression;
+  QLabel* _label_type;
+  QWidget* _root;
 };
 
 SpyNode::SpyNode()
 {
-  _label = new QLabel;
+  _label_expression = new QLabel;
+  _label_type = new QLabel;
+
+  QVBoxLayout* vbox = new QVBoxLayout;
+  _root = new QWidget();
+  _root->setLayout(vbox);
+
+  vbox->addWidget(_label_expression);
+  vbox->addWidget(_label_type);
+  vbox->setMargin(0);
+
+  QFont font = _label_expression->font();
+  font.setStyleHint(QFont::Monospace);
+  font.setPointSizeF(font.pointSizeF()*1.5);
+  _label_expression->setFont(font);
+  _label_expression->setAlignment(Qt::AlignHCenter);
+  _label_type->setAlignment(Qt::AlignRight);
 }
 
 uint SpyNode::nPorts(QtNodes::PortType portType) const
@@ -193,9 +213,19 @@ void SpyNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::Po
 {
   Q_ASSERT(portIndex == 0);
 
-  auto value = std::dynamic_pointer_cast<Value>(nodeData);
+  if(nodeData == nullptr)
+  {
+    _label_expression->setText(QString());
+    _label_type->setText(QString());
+  }else
+  {
+    auto value = std::dynamic_pointer_cast<Value>(nodeData);
 
-  _label->setText(value->expression);
+    _label_expression->setText(value->expression.toHtmlEscaped());
+    _label_expression->setMinimumWidth(_label_expression->fontMetrics().width(_label_expression->text())+2);
+    _label_type->setText("(" + toString(value->base_type) + (value->num_components==1 ? QString() : QString("[%0]").arg(value->num_components)) + ")");
+    _label_type->setMinimumWidth(_label_type->fontMetrics().width(_label_type->text())+2);
+  }
 }
 
 std::shared_ptr<QtNodes::NodeData> SpyNode::outData(QtNodes::PortIndex portIndex)
@@ -206,7 +236,7 @@ std::shared_ptr<QtNodes::NodeData> SpyNode::outData(QtNodes::PortIndex portIndex
 
 QWidget* SpyNode::embeddedWidget()
 {
-  return _label;
+  return _root;
 }
 
 // ==== PointShader::edit ================
@@ -221,17 +251,24 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   QStringList supportedPropertyNames;
   QStringList missingPropertyNames;
+  QMap<QString, base_type_t> base_type_for_name;
   if(currentPointcloud == nullptr)
   {
     missingPropertyNames << "x" << "y" << "z" << "red" << "green" << "blue";
     for(property_t property  : properties())
       missingPropertyNames << property.name;
+
+    base_type_for_name["x"]   = base_type_for_name["y"]    = base_type_for_name["z"]     = BASE_TYPE::FLOAT32;
+    base_type_for_name["red"] = base_type_for_name["green"] = base_type_for_name["blue"] = BASE_TYPE::UINT8;
   }else
   {
     supportedPropertyNames << currentPointcloud->user_data_names.toList();
     for(property_t property  : properties())
       if(!supportedPropertyNames.contains(property.name))
         missingPropertyNames << property.name;
+
+    for(int i=0; i<currentPointcloud->user_data_names.length(); ++i)
+      base_type_for_name[currentPointcloud->user_data_names[i]] = currentPointcloud->user_data_types[i];
   }
 
   if(supportedPropertyNames.isEmpty())
@@ -241,9 +278,10 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   std::shared_ptr<QtNodes::DataModelRegistry> registry(new QtNodes::DataModelRegistry);
 
+  registry->registerModel<SpyNode>("Output");
   registry->registerModel<PropertyNode>("Input",
-                                        [supportedPropertyNames, missingPropertyNames]() {
-    return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames);
+                                        [supportedPropertyNames, missingPropertyNames, base_type_for_name]() {
+    return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name);
   });
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
