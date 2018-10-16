@@ -157,6 +157,11 @@ value_type_t result_type(value_type_t a, value_type_t b)
   return result;
 }
 
+value_type_t result_type(value_type_t a, value_type_t b, value_type_t c)
+{
+  return result_type(result_type(a, b), c);
+}
+
 class Value final : public QtNodes::NodeData
 {
 public:
@@ -636,7 +641,7 @@ void MakeVectorNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNo
   y = Value::cast(y, to_scalar(y->value_type));
   z = Value::cast(z, to_scalar(z->value_type));
 
-  value_type_t vector_type = to_vector(result_type(result_type(x->value_type, y->value_type), z->value_type));
+  value_type_t vector_type = to_vector(result_type(x->value_type, y->value_type, z->value_type));
   vector = std::make_shared<Value>(QString("%0(%1, %2, %3)").arg(format(vector_type)).arg(x->expression).arg(y->expression).arg(z->expression), vector_type);
   dataUpdated(0);
 }
