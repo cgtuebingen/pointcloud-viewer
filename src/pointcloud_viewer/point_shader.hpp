@@ -1,9 +1,17 @@
 #ifndef POINT_SHADER_HPP
 #define POINT_SHADER_HPP
 
-#include <QSharedPointer>
-
 #include <pointcloud/pointcloud.hpp>
+
+#include <QSharedPointer>
+#include <memory>
+
+namespace QtNodes
+{
+
+struct DataModelRegistry;
+
+} // namespace QtNodes
 
 class PointShader
 {
@@ -25,6 +33,7 @@ public:
 
   QString name() const;
   QVector<property_t> properties() const;
+  bool contains_property(const QString& name) const;
 
   static PointShader autogenerate(const QSharedPointer<PointCloud>& pointcloud);
   PointShader clone() const;
@@ -40,6 +49,8 @@ private:
   QSharedPointer<Implementation>  _implementation;
 
   explicit PointShader(const QSharedPointer<Implementation>& implementation);
+
+  std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud);
 };
 
 class PointShader::Implementation
@@ -48,6 +59,8 @@ public:
   QString name;
 
   QVector<property_t> properties;
+
+  QByteArray nodes;
 
   QSharedPointer<PointShader::Implementation> clone() const;
 };

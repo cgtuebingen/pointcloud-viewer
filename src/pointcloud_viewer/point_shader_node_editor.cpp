@@ -326,6 +326,8 @@ public:
 
   std::shared_ptr<QtNodes::NodeData> outData(QtNodes::PortIndex port) override;
 
+  void set_properties(const QString& nameX, const QString& nameY, const QString& nameZ);
+
   QWidget* embeddedWidget() override;
 
 private slots:
@@ -347,6 +349,10 @@ private:
   QLabel* x_warning_widget;
   QLabel* y_warning_widget;
   QLabel* z_warning_widget;
+
+  QComboBox* x_combobox;
+  QComboBox* y_combobox;
+  QComboBox* z_combobox;
 };
 
 VectorPropertyNode::VectorPropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types, QPixmap warning_icon)
@@ -354,9 +360,9 @@ VectorPropertyNode::VectorPropertyNode(QStringList supportedPropertyNames, QStri
     supportedPropertyNames(supportedPropertyNames),
     missingPropertyNames(missingPropertyNames)
 {
-  QComboBox* x_combobox = new QComboBox;
-  QComboBox* y_combobox = new QComboBox;
-  QComboBox* z_combobox = new QComboBox;
+  x_combobox = new QComboBox;
+  y_combobox = new QComboBox;
+  z_combobox = new QComboBox;
 
   x_warning_widget = new QLabel;
   x_warning_widget->setToolTip("The property is not existent within the pointcloud.");
@@ -427,6 +433,18 @@ std::shared_ptr<QtNodes::NodeData> VectorPropertyNode::outData(QtNodes::PortInde
 {
   Q_ASSERT(portIndex == 0);
   return _vector_property;
+}
+
+void VectorPropertyNode::set_properties(const QString& nameX, const QString& nameY, const QString& nameZ)
+{
+  auto set_property = [this](QComboBox* comboBox, QString name){
+    if(supportedPropertyNames.contains(name) || missingPropertyNames.contains(name))
+      comboBox->setCurrentText(name);
+  };
+
+  set_property(x_combobox, nameX);
+  set_property(y_combobox, nameY);
+  set_property(z_combobox, nameZ);
 }
 
 QWidget* VectorPropertyNode::embeddedWidget()
@@ -961,6 +979,93 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   QVBoxLayout* vbox = new QVBoxLayout;
 
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(currentPointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(_implementation->nodes);
+
+  QtNodes::FlowView* flowView = new QtNodes::FlowView(flowScene);
+  flowView->setMinimumSize(1024, 768);
+  vbox->addWidget(flowView);
+
+  QDialogButtonBox* buttonGroup = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+  vbox->addWidget(buttonGroup);
+  QObject::connect(buttonGroup, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+  QObject::connect(buttonGroup, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+  dialog.setLayout(vbox);
+
+  QObject::connect(&dialog, &QDialog::accepted, [flowScene, this](){
+    _implementation->nodes = flowScene->saveToMemory();
+  });
+
+  dialog.exec();
+}
+
+
+PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointcloud)
+{
+  QSharedPointer<Implementation> implementation(new Implementation);
+
+  implementation->name = "auto";
+
+  if(pointcloud != nullptr)
+  {
+    for(int i=0; i<pointcloud->user_data_names.length(); ++i)
+    {
+      property_t p;
+
+      p.name = pointcloud->user_data_names[i];
+      p.type = pointcloud->user_data_types[i];
+      implementation->properties << p;
+    }
+  }
+
+  PointShader point_shader(implementation);
+
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = point_shader.qt_nodes_model_registry(pointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+
+  QSizeF areaSize(1024, 768);
+  qreal margin = 16;
+
+  auto set_node_position = [flowScene, areaSize, margin](QtNodes::Node& node, QPointF relative) {
+    QSizeF node_size = flowScene->getNodeSize(node);
+    QPointF pos(relative.x() * (areaSize.width() - margin * 2. - node_size.width()) + margin,
+                relative.y() * (areaSize.height() - margin * 2. - node_size.height()) + margin);
+    flowScene->setNodePosition(node, pos);
+  };
+
+  QtNodes::Node& outputNode = flowScene->createNode(std::make_unique<OutputNode>());
+  set_node_position(outputNode, QPointF(1., 0.5));
+
+  if(point_shader.contains_property("x") && point_shader.contains_property("y") && point_shader.contains_property("z"))
+  {
+    std::unique_ptr<QtNodes::NodeDataModel> model = registry->create("VectorProperty");
+
+    VectorPropertyNode* node = dynamic_cast<VectorPropertyNode*>(model.get());
+    Q_ASSERT(node != nullptr);
+
+    if(node != nullptr)
+    {
+      node->set_properties("x", "y", "z");
+
+      QtNodes::Node& coordinates_node = flowScene->createNode(std::move(model));
+      set_node_position(coordinates_node, QPointF(0., 0.25));
+      flowScene->createConnection(outputNode, 0, coordinates_node, 0);
+    }
+  }
+
+  // TODO
+
+  point_shader._implementation->nodes = flowScene->saveToMemory();
+
+  return point_shader;
+}
+
+std::shared_ptr<QtNodes::DataModelRegistry> PointShader::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud)
+{
   QStyle* style = QApplication::style();
 
   QStringList supportedPropertyNames;
@@ -998,8 +1103,6 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
     base_type_for_name["x"]   = base_type_for_name["y"]    = base_type_for_name["z"]     = PROPERTY_TYPE::FLOAT32;
   }
 
-  // TODO
-
   std::shared_ptr<QtNodes::DataModelRegistry> registry(new QtNodes::DataModelRegistry);
 
   registry->registerModel<MakeVectorNode>("Vector");
@@ -1015,21 +1118,5 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
     return std::make_unique<VectorPropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon);
   });
 
-  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
-  QtNodes::FlowView* flowView = new QtNodes::FlowView(flowScene);
-  flowView->setMinimumSize(640, 480);
-  vbox->addWidget(flowView);
-
-  QDialogButtonBox* buttonGroup = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-  vbox->addWidget(buttonGroup);
-  QObject::connect(buttonGroup, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-  QObject::connect(buttonGroup, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-  dialog.setLayout(vbox);
-
-  QObject::connect(&dialog, &QDialog::accepted, [](){
-    // TODO
-  });
-
-  dialog.exec();
+  return registry;
 }

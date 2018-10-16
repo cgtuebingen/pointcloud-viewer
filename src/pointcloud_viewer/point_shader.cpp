@@ -42,14 +42,12 @@ QVector<PointShader::property_t> PointShader::properties() const
   return _implementation->properties;
 }
 
-PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointcloud)
+bool PointShader::contains_property(const QString& name) const
 {
-  QSharedPointer<Implementation> implementation(new Implementation);
-
-  implementation->name = "auto";
-
-  // TODO
-  return PointShader(implementation);
+  for(const property_t& property : _implementation->properties)
+    if(property.name == name)
+      return true;
+  return false;
 }
 
 PointShader PointShader::clone() const
@@ -79,6 +77,8 @@ QSharedPointer<PointShader::Implementation> PointShader::Implementation::clone()
   QSharedPointer<Implementation> implementation(new Implementation);
 
   implementation->name = this->name + " (Copy)";
+  implementation->properties = this->properties;
+  implementation->nodes = this->nodes;
 
   return implementation;
 }
