@@ -183,7 +183,7 @@ public:
       value = std::make_shared<Value>("to_scalar(" + value->expression + ")", to_scalar(value->value_type));
 
     if(!is_vector(value->value_type) && is_vector(expected_type))
-      value = std::make_shared<Value>("to_vector(" + value->expression + ")", to_vector(value->value_type));
+      value = std::make_shared<Value>(QString(format(to_vector(value->value_type))) + "(" + value->expression + ")", to_vector(value->value_type));
 
     if(value->value_type != expected_type)
       value = std::make_shared<Value>(QString(format(expected_type)) + "(" + value->expression + ")", to_scalar(value->value_type));
