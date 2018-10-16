@@ -310,6 +310,168 @@ void PropertyNode::changedProperty(QString name)
   dataUpdated(0);
 }
 
+// ==== VectorPropertyNode ================
+
+class VectorPropertyNode final : public QtNodes::NodeDataModel
+{
+public:
+  VectorPropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types, QPixmap warning_icon);
+
+  QString caption() const override{return "VectorProperty";}
+  QString name() const override{return "VectorProperty";}
+  uint nPorts(QtNodes::PortType portType) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+
+  void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
+
+  std::shared_ptr<QtNodes::NodeData> outData(QtNodes::PortIndex port) override;
+
+  QWidget* embeddedWidget() override;
+
+private slots:
+  void changedXProperty(QString name);
+  void changedYProperty(QString name);
+  void changedZProperty(QString name);
+  void changedProperty();
+
+private:
+  QMap<QString, property_type_t> property_base_types;
+  QStringList supportedPropertyNames;
+  QStringList missingPropertyNames;
+  std::shared_ptr<Value> _x_property = std::make_shared<Value>("0", VALUE_TYPE::INT);
+  std::shared_ptr<Value> _y_property = std::make_shared<Value>("0", VALUE_TYPE::INT);
+  std::shared_ptr<Value> _z_property = std::make_shared<Value>("0", VALUE_TYPE::INT);
+  std::shared_ptr<Value> _vector_property = std::make_shared<Value>("ivec3(0)", VALUE_TYPE::IVEC3);
+
+  QWidget* _root_widget;
+  QLabel* x_warning_widget;
+  QLabel* y_warning_widget;
+  QLabel* z_warning_widget;
+};
+
+VectorPropertyNode::VectorPropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types, QPixmap warning_icon)
+  : property_base_types(property_base_types),
+    supportedPropertyNames(supportedPropertyNames),
+    missingPropertyNames(missingPropertyNames)
+{
+  QComboBox* x_combobox = new QComboBox;
+  QComboBox* y_combobox = new QComboBox;
+  QComboBox* z_combobox = new QComboBox;
+
+  x_warning_widget = new QLabel;
+  x_warning_widget->setToolTip("The property is not existent within the pointcloud.");
+  x_warning_widget->setPixmap(warning_icon);
+
+  y_warning_widget = new QLabel;
+  y_warning_widget->setToolTip("The property is not existent within the pointcloud.");
+  y_warning_widget->setPixmap(warning_icon);
+
+  z_warning_widget = new QLabel;
+  z_warning_widget->setToolTip("The property is not existent within the pointcloud.");
+  z_warning_widget->setPixmap(warning_icon);
+
+  _root_widget = new QWidget;
+  QVBoxLayout* vbox = new QVBoxLayout(_root_widget);
+  vbox->setMargin(0);
+
+  auto add_row = [vbox, this, &supportedPropertyNames, &missingPropertyNames](QComboBox* combobox, QLabel* warning_widget, void(VectorPropertyNode::*changed_property)(QString)){
+    QHBoxLayout* hbox = new QHBoxLayout;
+    hbox->setMargin(0);
+    hbox->addWidget(combobox);
+    hbox->addWidget(warning_widget);
+
+    connect(combobox, &QComboBox::currentTextChanged, this, changed_property);
+
+    for(QString name : supportedPropertyNames)
+      combobox->addItem(name);
+    for(QString name : missingPropertyNames)
+      combobox->addItem(name);
+
+    vbox->addLayout(hbox);
+  };
+
+  add_row(x_combobox, x_warning_widget, &VectorPropertyNode::changedXProperty);
+  add_row(y_combobox, y_warning_widget, &VectorPropertyNode::changedYProperty);
+  add_row(z_combobox, z_warning_widget, &VectorPropertyNode::changedZProperty);
+}
+
+uint VectorPropertyNode::nPorts(QtNodes::PortType portType) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return 0;
+  case QtNodes::PortType::Out:
+    return 1;
+  case QtNodes::PortType::None:
+    return 0;
+  }
+  return 0;
+}
+
+QtNodes::NodeDataType VectorPropertyNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  Q_ASSERT(portType == QtNodes::PortType::Out);
+  Q_ASSERT(portIndex == 0);
+  return Value().type();
+}
+
+void VectorPropertyNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex portIndex)
+{
+  Q_UNREACHABLE();
+  Q_UNUSED(nodeData);
+  Q_UNUSED(portIndex);
+}
+
+std::shared_ptr<QtNodes::NodeData> VectorPropertyNode::outData(QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0);
+  return _vector_property;
+}
+
+QWidget* VectorPropertyNode::embeddedWidget()
+{
+  return _root_widget;
+}
+
+void VectorPropertyNode::changedXProperty(QString name)
+{
+  x_warning_widget->setVisible(!supportedPropertyNames.contains(name));
+
+  value_type_t type = property_to_value_type(property_base_types[name]);
+
+  _x_property = std::make_shared<Value>(name, type);
+  changedProperty();
+}
+
+void VectorPropertyNode::changedYProperty(QString name)
+{
+  y_warning_widget->setVisible(!supportedPropertyNames.contains(name));
+
+  value_type_t type = property_to_value_type(property_base_types[name]);
+
+  _y_property = std::make_shared<Value>(name, type);
+  changedProperty();
+}
+
+void VectorPropertyNode::changedZProperty(QString name)
+{
+  z_warning_widget->setVisible(!supportedPropertyNames.contains(name));
+
+  value_type_t type = property_to_value_type(property_base_types[name]);
+
+  _z_property = std::make_shared<Value>(name, type);
+  changedProperty();
+}
+
+void VectorPropertyNode::changedProperty()
+{
+  value_type_t type = to_vector(result_type(_x_property->value_type, _y_property->value_type, _z_property->value_type));
+
+  _vector_property = std::make_shared<Value>(QString("%0(%1, %2, %3)").arg(format(type)).arg(_x_property->expression).arg(_y_property->expression).arg(_z_property->expression), type);
+  dataUpdated(0);
+}
+
 // ==== SpyNode ================
 
 class SpyNode final : public QtNodes::NodeDataModel
@@ -847,6 +1009,10 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
   registry->registerModel<PropertyNode>("Input",
                                         [supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon]() {
     return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon);
+  });
+  registry->registerModel<VectorPropertyNode>("Input",
+                                        [supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon]() {
+    return std::make_unique<VectorPropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon);
   });
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
