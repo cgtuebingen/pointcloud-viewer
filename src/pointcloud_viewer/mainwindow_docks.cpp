@@ -419,14 +419,11 @@ QDockWidget* MainWindow::initRenderDock()
 
   QComboBox* shaderComboBox = new QComboBox;
   connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, is_builtin_visualization,removeShaderButton,editShaderButton](int index){
-    const bool enable_modifying_buttons = !is_builtin_visualization(index) && this->pointcloud!=nullptr;
+    const bool enable_modifying_buttons = !is_builtin_visualization(index);
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
   });
-
-  void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);
-  void pointcloud_unloaded();
 
   shaderComboBox->addItem("auto");
 
