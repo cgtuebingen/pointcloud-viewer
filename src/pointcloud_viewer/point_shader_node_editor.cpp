@@ -211,6 +211,9 @@ class PropertyNode final : public QtNodes::NodeDataModel
 public:
   PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_type, QPixmap warning_icons);
 
+  QJsonObject save() const override;
+  void restore(QJsonObject const & p) override;
+
   QString caption() const override{return "Property";}
   QString name() const override{return "Property";}
   uint nPorts(QtNodes::PortType portType) const override;
@@ -316,6 +319,9 @@ class VectorPropertyNode final : public QtNodes::NodeDataModel
 {
 public:
   VectorPropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types, QPixmap warning_icon);
+
+  QJsonObject save() const override;
+  void restore(QJsonObject const & p) override;
 
   QString caption() const override{return "VectorProperty";}
   QString name() const override{return "VectorProperty";}
@@ -1057,7 +1063,7 @@ PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointclo
     }
   }
 
-  // TODO
+  // TODO color
 
   point_shader._implementation->nodes = flowScene->saveToMemory();
 
