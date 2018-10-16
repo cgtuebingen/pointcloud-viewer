@@ -209,7 +209,7 @@ QtNodes::NodeDataType Value::type() const
 class PropertyNode final : public QtNodes::NodeDataModel
 {
 public:
-  PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types);
+  PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_type, QPixmap warning_icons);
 
   QString caption() const override{return "Property";}
   QString name() const override{return "Property";}
@@ -236,18 +236,16 @@ private:
   QComboBox* _combobox;
 };
 
-PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types)
+PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missingPropertyNames, QMap<QString, property_type_t> property_base_types, QPixmap warning_icon)
   : property_base_types(property_base_types),
     supportedPropertyNames(supportedPropertyNames),
     missingPropertyNames(missingPropertyNames)
 {
-  const QStyle* style = QApplication::style();
-
   _combobox = new QComboBox;
 
   _warning_widget = new QLabel;
   _warning_widget->setToolTip("The property is not existent within the pointcloud.");
-  _warning_widget->setPixmap(style->standardIcon(QStyle::SP_MessageBoxWarning).pixmap(QSize(22,22)));
+  _warning_widget->setPixmap(warning_icon);
 
   _hbox_widget = new QWidget;
   QHBoxLayout* hbox = new QHBoxLayout(_hbox_widget);
@@ -801,9 +799,11 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   QVBoxLayout* vbox = new QVBoxLayout;
 
+  QStyle* style = QApplication::style();
 
   QStringList supportedPropertyNames;
   QStringList missingPropertyNames;
+  QPixmap warning_icon = style->standardIcon(QStyle::SP_MessageBoxWarning).pixmap(QSize(22,22));
   QMap<QString, property_type_t> base_type_for_name;
   if(currentPointcloud == nullptr)
   {
@@ -845,8 +845,8 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
   registry->registerModel<OutputNode>("Output");
   registry->registerModel<SpyNode>("Output");
   registry->registerModel<PropertyNode>("Input",
-                                        [supportedPropertyNames, missingPropertyNames, base_type_for_name]() {
-    return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name);
+                                        [supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon]() {
+    return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon);
   });
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
