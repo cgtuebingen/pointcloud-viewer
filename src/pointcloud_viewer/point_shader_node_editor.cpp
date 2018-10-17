@@ -1111,7 +1111,22 @@ PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointclo
     }
   }
 
-  // TODO color
+  if(point_shader.contains_property("red") && point_shader.contains_property("green") && point_shader.contains_property("blue"))
+  {
+    std::unique_ptr<QtNodes::NodeDataModel> model = registry->create("VectorProperty");
+
+    VectorPropertyNode* node = dynamic_cast<VectorPropertyNode*>(model.get());
+    Q_ASSERT(node != nullptr);
+
+    if(node != nullptr)
+    {
+      node->set_properties("red", "green", "blue");
+
+      QtNodes::Node& coordinates_node = flowScene->createNode(std::move(model));
+      set_node_position(coordinates_node, QPointF(0., 0.75));
+      flowScene->createConnection(outputNode, 0, coordinates_node, 0);
+    }
+  }
 
   point_shader._implementation->nodes = flowScene->saveToMemory();
 
