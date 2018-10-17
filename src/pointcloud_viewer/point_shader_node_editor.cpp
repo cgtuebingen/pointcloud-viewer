@@ -214,6 +214,8 @@ public:
   QJsonObject save() const override;
   void restore(QJsonObject const & p) override;
 
+  void set_property(const QString& name);
+
   QString caption() const override{return "Property";}
   QString name() const override{return "Property";}
   uint nPorts(QtNodes::PortType portType) const override;
@@ -262,6 +264,32 @@ PropertyNode::PropertyNode(QStringList supportedPropertyNames, QStringList missi
     _combobox->addItem(name);
   for(QString name : missingPropertyNames)
     _combobox->addItem(name);
+}
+
+QJsonObject PropertyNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  jsonObject["property_name"] = _combobox->currentText();
+
+  return jsonObject;
+}
+
+void PropertyNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  set_property(jsonObject["property_name"].toString());
+}
+
+void PropertyNode::set_property(const QString& name)
+{
+  auto set_property = [this](QComboBox* comboBox, QString name){
+    if(supportedPropertyNames.contains(name) || missingPropertyNames.contains(name))
+      comboBox->setCurrentText(name);
+  };
+
+  set_property(_combobox, name);
 }
 
 uint PropertyNode::nPorts(QtNodes::PortType portType) const
@@ -405,6 +433,26 @@ VectorPropertyNode::VectorPropertyNode(QStringList supportedPropertyNames, QStri
   add_row(x_combobox, x_warning_widget, &VectorPropertyNode::changedXProperty);
   add_row(y_combobox, y_warning_widget, &VectorPropertyNode::changedYProperty);
   add_row(z_combobox, z_warning_widget, &VectorPropertyNode::changedZProperty);
+}
+
+QJsonObject VectorPropertyNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  jsonObject["property_x_name"] = x_combobox->currentText();
+  jsonObject["property_y_name"] = y_combobox->currentText();
+  jsonObject["property_z_name"] = z_combobox->currentText();
+
+  return jsonObject;
+}
+
+void VectorPropertyNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  set_properties(jsonObject["property_x_name"].toString(),
+      jsonObject["property_y_name"].toString(),
+      jsonObject["property_z_name"].toString());
 }
 
 uint VectorPropertyNode::nPorts(QtNodes::PortType portType) const
