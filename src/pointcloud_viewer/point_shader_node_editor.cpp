@@ -14,6 +14,7 @@
 #include <QLabel>
 #include <QStyle>
 #include <QApplication>
+#include <QLineEdit>
 
 // ==== AnyExpression ================
 
@@ -32,6 +33,9 @@ enum class value_type_t
   DVEC3,
 };
 typedef value_type_t VALUE_TYPE;
+Q_DECLARE_METATYPE(value_type_t);
+
+const value_type_t all_value_types[] = {VALUE_TYPE::INT, VALUE_TYPE::UINT, VALUE_TYPE::FLOAT, VALUE_TYPE::DOUBLE, VALUE_TYPE::IVEC3, VALUE_TYPE::UVEC3, VALUE_TYPE::VEC3, VALUE_TYPE::DVEC3};
 
 value_type_t property_to_value_type(property_type_t property_type)
 {
@@ -81,6 +85,14 @@ const char* format(value_type_t value_type)
 
   Q_UNREACHABLE();
   return "<unknown type>";
+}
+
+value_type_t value_type_from_string(const QString& string, value_type_t fallback)
+{
+  for(value_type_t value_type : all_value_types)
+    if(string == format(value_type))
+      return value_type;
+  return fallback;
 }
 
 bool is_vector(value_type_t value_type)
@@ -1024,6 +1036,334 @@ QWidget* SplitVectorNode::embeddedWidget()
   return nullptr;
 }
 
+// ==== Math Operator ================
+
+class MathOperatorNode final : public QtNodes::NodeDataModel
+{
+public:
+  MathOperatorNode();
+
+  QJsonObject save() const override;
+  void restore(QJsonObject const & p) override;
+
+  void set_operator(QString op);
+
+  QString caption() const override{return "Operator";}
+  QString name() const override{return "Operator";}
+  uint nPorts(QtNodes::PortType portType) const override;
+  QString portCaption(QtNodes::PortType, QtNodes::PortIndex) const override;
+  bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+
+  void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
+
+  std::shared_ptr<QtNodes::NodeData> outData(QtNodes::PortIndex port) override;
+
+  QWidget* embeddedWidget() override;
+
+private:
+  std::shared_ptr<Value> x, y;
+  std::shared_ptr<Value> result;
+  QString operator_symbol;
+  QComboBox* _combobox_op;
+
+  void update_result();
+  void update_operator();
+};
+
+MathOperatorNode::MathOperatorNode()
+{
+  x = std::make_shared<Value>("0", VALUE_TYPE::INT);
+  y = std::make_shared<Value>("0", VALUE_TYPE::INT);
+  result = std::make_shared<Value>("0", VALUE_TYPE::INT);
+
+  _combobox_op = new QComboBox;
+  _combobox_op->addItem("add (x + y)", "+");
+  _combobox_op->addItem("subtract (x - z)", "-");
+  _combobox_op->addItem("multiplicate (x * z)", "*");
+  _combobox_op->addItem("divide (x / z)", "/");
+  _combobox_op->addItem("bitwise and (x & z)", "&");
+  _combobox_op->addItem("bitwise or (x | z)", "|");
+  _combobox_op->addItem("bitwise xor (x ^ z)", "^");
+
+  connect(_combobox_op, &QComboBox::currentTextChanged, this, &MathOperatorNode::update_operator);
+  update_operator();
+}
+
+QJsonObject MathOperatorNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  jsonObject["operator"] = _combobox_op->currentData().toString();
+
+  return jsonObject;
+}
+
+void MathOperatorNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  set_operator(jsonObject["operator"].toString());
+}
+
+void MathOperatorNode::set_operator(QString op)
+{
+  int index = _combobox_op->findData(op);
+
+  if(index >= 0)
+    _combobox_op->setCurrentIndex(index);
+}
+
+uint MathOperatorNode::nPorts(QtNodes::PortType portType) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return 2;
+  case QtNodes::PortType::Out:
+    return 1;
+  case QtNodes::PortType::None:
+    return 0;
+  }
+  return 0;
+}
+
+QString MathOperatorNode::portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    if(portIndex == 0)
+      return "X";
+    else if(portIndex == 1)
+      return "Y";
+    break;
+  case QtNodes::PortType::Out:
+    return "Result";
+  case QtNodes::PortType::None:
+    break;
+  }
+
+  Q_UNREACHABLE();
+  return "";
+}
+
+bool MathOperatorNode::portCaptionVisible(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return portIndex>=0 && portIndex < 2;
+  case QtNodes::PortType::Out:
+    return false;
+  case QtNodes::PortType::None:
+    break;
+  }
+
+  return false;
+}
+
+QtNodes::NodeDataType MathOperatorNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
+{
+  return Value().type();
+}
+
+void MathOperatorNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0 || portIndex == 1 || portIndex == 2);
+
+  if(portIndex == 0)
+  {
+    if(nodeData == nullptr)
+      x = std::make_shared<Value>("0", VALUE_TYPE::INT);
+    else
+      x = std::dynamic_pointer_cast<Value>(nodeData);
+    x = Value::cast(x, x->value_type);
+  }else
+  {
+    if(nodeData == nullptr)
+      y = std::make_shared<Value>("0", VALUE_TYPE::INT);
+    else
+      y = std::dynamic_pointer_cast<Value>(nodeData);
+    y = Value::cast(y, y->value_type);
+  }
+
+  update_result();
+}
+
+std::shared_ptr<QtNodes::NodeData> MathOperatorNode::outData(QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0);
+
+  return result;
+}
+
+QWidget* MathOperatorNode::embeddedWidget()
+{
+  return _combobox_op;
+}
+
+void MathOperatorNode::update_result()
+{
+  value_type_t result_type = to_vector(::result_type(x->value_type, y->value_type));
+  result = std::make_shared<Value>(QString("%0 %2 %1").arg(x->expression).arg(y->expression).arg(operator_symbol), result_type);
+  dataUpdated(0);
+}
+
+void MathOperatorNode::update_operator()
+{
+  operator_symbol = _combobox_op->currentData().toString();
+  update_result();
+}
+
+// ==== ValueNode ================
+
+class ValueNode final : public QtNodes::NodeDataModel
+{
+public:
+  ValueNode();
+
+  QJsonObject save() const override;
+  void restore(QJsonObject const & p) override;
+
+  void set_value(QString value, value_type_t value_type);
+
+  QString caption() const override{return "Value";}
+  QString name() const override{return "Value";}
+  uint nPorts(QtNodes::PortType portType) const override;
+  QString portCaption(QtNodes::PortType, QtNodes::PortIndex) const override;
+  bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+
+  void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
+
+  std::shared_ptr<QtNodes::NodeData> outData(QtNodes::PortIndex port) override;
+
+  QWidget* embeddedWidget() override;
+
+private:
+  std::shared_ptr<Value> value;
+  QString operator_symbol;
+  QLineEdit* _content_box;
+  QComboBox* _combobox_type;
+  QWidget* _root;
+
+  void update_value_expression();
+  void update_value_type();
+};
+
+ValueNode::ValueNode()
+{
+  _combobox_type = new QComboBox;
+  for(value_type_t value_type : all_value_types)
+    _combobox_type->addItem(format(value_type), QVariant::fromValue(value_type));
+
+  _content_box = new QLineEdit();
+
+  set_value("vec3(0, 0, 0)", VALUE_TYPE::VEC3);
+
+  connect(_content_box, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &ValueNode::update_value_expression);
+  connect(_combobox_type, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ValueNode::update_value_type);
+
+  _root = new QWidget;
+  QBoxLayout* box = new QHBoxLayout(_root);
+  box->setMargin(0);
+  box->addWidget(_content_box);
+  box->addWidget(_combobox_type);
+}
+
+QJsonObject ValueNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  jsonObject["value_expression"] = value->expression;
+  jsonObject["value_type"] = QString(format(value->value_type));
+
+  return jsonObject;
+}
+
+void ValueNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  set_value(jsonObject["value_expression"].toString(),
+      value_type_from_string(jsonObject["value_type"].toString(), /*fallback*/VALUE_TYPE::DVEC3));
+}
+
+void ValueNode::set_value(QString value, value_type_t value_type)
+{
+  this->value = std::make_shared<Value>(value, value_type);
+
+  int index = _combobox_type->findData(QVariant::fromValue(value_type));
+  if(index >= 0)
+    _combobox_type->setCurrentIndex(index);
+  _content_box->setText(value);
+  dataUpdated(0);
+}
+
+uint ValueNode::nPorts(QtNodes::PortType portType) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return 0;
+  case QtNodes::PortType::Out:
+    return 1;
+  case QtNodes::PortType::None:
+    return 0;
+  }
+  return 0;
+}
+
+QString ValueNode::portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  Q_ASSERT(portType == QtNodes::PortType::Out);
+  Q_ASSERT(portIndex == 0);
+
+  return "Value";
+}
+
+bool ValueNode::portCaptionVisible(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  Q_ASSERT(portType == QtNodes::PortType::Out);
+  Q_ASSERT(portIndex == 0);
+
+  return false;
+}
+
+QtNodes::NodeDataType ValueNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
+{
+  return Value().type();
+}
+
+void ValueNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex portIndex)
+{
+  Q_UNUSED(nodeData);
+  Q_UNUSED(portIndex);
+}
+
+std::shared_ptr<QtNodes::NodeData> ValueNode::outData(QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0);
+
+  return value;
+}
+
+QWidget* ValueNode::embeddedWidget()
+{
+  return _root;
+}
+
+void ValueNode::update_value_expression()
+{
+  set_value(_content_box->text(), value->value_type);
+}
+
+void ValueNode::update_value_type()
+{
+  set_value(value->expression, _combobox_type->currentData().value<value_type_t>());
+}
+
 // ==== PointShader::edit ================
 
 void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud)
@@ -1174,6 +1514,8 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShader::qt_nodes_model_registry
 
   std::shared_ptr<QtNodes::DataModelRegistry> registry(new QtNodes::DataModelRegistry);
 
+  registry->registerModel<MathOperatorNode>("Math");
+  registry->registerModel<ValueNode>("Math");
   registry->registerModel<MakeVectorNode>("Vector");
   registry->registerModel<SplitVectorNode>("Vector");
   registry->registerModel<OutputNode>("Output");
