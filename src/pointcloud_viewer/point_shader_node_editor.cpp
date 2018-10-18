@@ -179,7 +179,6 @@ class Value final : public QtNodes::NodeData
 public:
   QString expression;
   value_type_t value_type;
-  QStringList errors;
 
   Value()
     : Value("0.0", VALUE_TYPE::FLOAT)
@@ -659,6 +658,9 @@ class OutputNode final : public QtNodes::NodeDataModel
 public:
   OutputNode();
 
+  std::shared_ptr<Value> coordinate;
+  std::shared_ptr<Value> color;
+
   QString caption() const override{return "Output";}
   QString name() const override{return "Output";}
   uint nPorts(QtNodes::PortType portType) const override;
@@ -673,9 +675,6 @@ public:
   QWidget* embeddedWidget() override;
 
 private:
-  std::shared_ptr<Value> coordinate;
-  std::shared_ptr<Value> color;
-
   void reset_coordinate();
   void reset_color();
 };
@@ -760,12 +759,12 @@ QWidget* OutputNode::embeddedWidget()
 
 void OutputNode::reset_coordinate()
 {
-  coordinate = std::make_shared<Value>("vec3(0)", VALUE_TYPE::VEC3);
+  coordinate.reset();
 }
 
 void OutputNode::reset_color()
 {
-  coordinate = std::make_shared<Value>("uvec3(255)", VALUE_TYPE::UVEC3);
+  color.reset();
 }
 
 // ==== Make Vector ================
@@ -1366,7 +1365,7 @@ void ValueNode::update_value_type()
 
 // ==== PointShader::edit ================
 
-void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud)
+bool PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud)
 {
   QDialog dialog(parent);
   dialog.setModal(true);
@@ -1389,11 +1388,105 @@ void PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
 
   dialog.setLayout(vbox);
 
-  QObject::connect(&dialog, &QDialog::accepted, [flowScene, this](){
+  bool accepted = false;
+
+  QObject::connect(&dialog, &QDialog::accepted, [flowScene, this, &accepted](){
     _implementation->nodes = flowScene->saveToMemory();
+    accepted = true;
   });
 
   dialog.exec();
+
+  return accepted;
+}
+
+QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const
+{
+  QString code;
+  code += "#version 450 core\n";
+  code += "\n";
+
+  // https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
+  // https://www.khronos.org/files/opengl45-quick-reference-card.pdf
+
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(currentPointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(_implementation->nodes);
+
+  QString coordinate_code;
+  QString color_code;
+
+  flowScene->iterateOverNodeData([&coordinate_code, &color_code, &code](QtNodes::NodeDataModel* model){
+    OutputNode* outputNode = dynamic_cast<OutputNode*>(model);
+
+    if(outputNode!=nullptr)
+    {
+      if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
+      {
+        if(!coordinate_code.isEmpty())
+          code += "#error Multiple Output Nodes\n";
+        coordinate_code = outputNode->coordinate->expression;
+      }
+      if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
+      {
+        if(!color_code.isEmpty())
+          code += "#error Multiple Output Nodes\n";
+        color_code = outputNode->color->expression;
+      }
+    }
+
+  });
+
+  if(coordinate_code.isEmpty())
+    coordinate_code = "vec3(0) /* not set */";
+  if(color_code.isEmpty())
+    color_code = "uvec3(255) /* not set */";
+
+  code += "\n";
+  code += "// ==== Input Buffer ====\n";
+  for(int i=0; i<currentPointcloud->user_data_names.length(); ++i)
+  {
+    code += "layout(location = " + QString::number(i)+ ")\n";
+    code += "in " + QString(format(property_to_value_type(currentPointcloud->user_data_types[i]))) + " " + currentPointcloud->user_data_names[i] + ";\n";
+  }
+  code += "\n";
+
+  code += "// ==== Output Buffer ====\n";
+  code += "struct vertex_t\n";
+  code += "{\n";
+  code += "  vec3 coordinate;\n";
+  code += "  uint color;\n";
+  code += "};\n";
+  code += "\n";
+  code += "layout(std430, binding=0)\n";
+  code += "buffer __output_buffer__\n";
+  code += "{\n";
+  code += "  vertex_t vertex[];\n";
+  code += "};\n";
+  code += "\n";
+
+  // TODO:::: lesen: https://stackoverflow.com/questions/12752279/opengl-vertices-in-shader-storage-buffer
+  code += "// ==== Helper Functions ====\n";
+  code += "int    to_scalar(int ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "uint   to_scalar(int uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "float  to_scalar(int  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "double to_scalar(int dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "\n";
+  code += "// ==== Actual execution ====\n";
+  code += "void main()\n";
+  code += "{\n";
+  code += "  vec3 __coordinate__;\n";
+  code += "  uvec3 __color__;\n";
+  code += "  {\n";
+  code += "    __coordinate__ = " + coordinate_code + ";\n";
+  code += "    __color__ = " + color_code + ";\n";
+  code += "  }\n";
+  code += "  vertex[gl_VertexID].coordinate = __coordinate__;\n";
+  code += "  vertex[gl_VertexID].color = packUnorm4x8(vec4(__color__, 0) / 255.);\n";
+  code += "}\n";
+
+  return code;
 }
 
 
@@ -1464,7 +1557,7 @@ PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointclo
 
       QtNodes::Node& coordinates_node = flowScene->createNode(std::move(model));
       set_node_position(coordinates_node, QPointF(0., 0.75));
-      flowScene->createConnection(outputNode, 0, coordinates_node, 0);
+      flowScene->createConnection(outputNode, 1, coordinates_node, 0);
     }
   }
 
@@ -1473,7 +1566,7 @@ PointShader PointShader::autogenerate(const QSharedPointer<PointCloud>& pointclo
   return point_shader;
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> PointShader::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud)
+std::shared_ptr<QtNodes::DataModelRegistry> PointShader::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud) const
 {
   QStyle* style = QApplication::style();
 

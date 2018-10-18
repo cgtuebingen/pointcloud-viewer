@@ -41,7 +41,9 @@ public:
   static PointShader import_from_file(QString filename);
   void export_to_file(QString filename) const;
 
-  void edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud);
+  bool edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud);
+
+  QString shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const;
 
 private:
   class Implementation;
@@ -50,7 +52,7 @@ private:
 
   explicit PointShader(const QSharedPointer<Implementation>& implementation);
 
-  std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud);
+  std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud) const;
 };
 
 class PointShader::Implementation

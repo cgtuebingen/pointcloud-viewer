@@ -4,6 +4,7 @@
 #include <pointcloud_viewer/keypoint_list.hpp>
 #include <pointcloud_viewer/point_shader.hpp>
 #include <core_library/color_palette.hpp>
+#include <core_library/print.hpp>
 
 #include <QGridLayout>
 #include <QApplication>
@@ -446,8 +447,13 @@ QDockWidget* MainWindow::initRenderDock()
   });
 
   connect(editShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization, current_point_shader, this](){
-    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
-      current_point_shader().edit(this, this->pointcloud);
+    if(is_builtin_visualization(shaderComboBox->currentIndex()))
+      return;
+
+    const bool was_changed = current_point_shader().edit(this, this->pointcloud);
+
+    if(was_changed && this->pointcloud!=nullptr)
+      println(current_point_shader().shader_code_glsl450(this->pointcloud).toStdString());
   });
 
   connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){
