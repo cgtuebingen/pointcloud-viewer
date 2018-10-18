@@ -452,8 +452,8 @@ QDockWidget* MainWindow::initRenderDock()
 
     const bool was_changed = current_point_shader().edit(this, this->pointcloud);
 
-    if(was_changed && this->pointcloud!=nullptr)
-      println(current_point_shader().shader_code_glsl450(this->pointcloud).toStdString());
+    if(was_changed)
+      current_point_shader().apply_shader(this->pointcloud);
   });
 
   connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){

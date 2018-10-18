@@ -1,4 +1,5 @@
 #include <pointcloud_viewer/point_shader.hpp>
+#include <renderer/gl450/point_remapper.hpp>
 #include <core_library/print.hpp>
 
 PointShader::PointShader()
@@ -65,6 +66,16 @@ void PointShader::export_to_file(QString filename) const
 {
   PRINT(filename.toStdString());
   // TODO
+}
+
+void PointShader::apply_shader(const QSharedPointer<PointCloud>& currentPointcloud) const
+{
+  if(currentPointcloud == nullptr)
+    return;
+
+  std::string shader_code_glsl450 = this->shader_code_glsl450(currentPointcloud).toStdString();
+
+  renderer::gl450::remap_points(shader_code_glsl450, currentPointcloud.data());
 }
 
 PointShader::PointShader(const QSharedPointer<PointShader::Implementation>& implementation)

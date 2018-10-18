@@ -1426,6 +1426,7 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
   QString coordinate_code;
   QString color_code;
 
+  // Lambda filling used_properties with all property names, which are actually used
   auto collectProperties = [&used_properties, flowScene](QtNodes::Node* node){
     QHash<QtNodes::Node*, QSet<QtNodes::Node*>> incoming_nodes;
     for(auto _connection : flowScene->connections())
@@ -1461,6 +1462,9 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
     }
   };
 
+  // Find the output nodes to
+  // a) collect all actually used attributes with collectProperties
+  // b) generate the actual expression
   flowScene->iterateOverNodes([&coordinate_code, &color_code, &code, collectProperties](QtNodes::Node* node){
     OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
 
