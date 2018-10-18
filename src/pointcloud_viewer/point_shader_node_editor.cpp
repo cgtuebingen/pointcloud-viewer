@@ -6,7 +6,10 @@
 #include <nodes/FlowScene>
 #include <nodes/FlowView>
 #include <nodes/NodeDataModel>
+#include <nodes/Node>
 
+#include <QQueue>
+#include <QSet>
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
@@ -226,6 +229,7 @@ public:
   void restore(QJsonObject const & p) override;
 
   void set_property(const QString& name);
+  QString property_name() const {return _combobox->currentText();}
 
   QString caption() const override{return "Property";}
   QString name() const override{return "Property";}
@@ -366,6 +370,8 @@ public:
   QString name() const override{return "VectorProperty";}
   uint nPorts(QtNodes::PortType portType) const override;
   QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+
+  QVector<QString> vector_properties_names() const {return QVector<QString>({x_combobox->currentText(), y_combobox->currentText(), z_combobox->currentText()});}
 
   void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
 
@@ -1414,14 +1420,54 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
   flowScene->loadFromMemory(_implementation->nodes);
 
+  QSet<QString> used_properties;
+  QVector<int> property_bindings;
+
   QString coordinate_code;
   QString color_code;
 
-  flowScene->iterateOverNodeData([&coordinate_code, &color_code, &code](QtNodes::NodeDataModel* model){
-    OutputNode* outputNode = dynamic_cast<OutputNode*>(model);
+  auto collectProperties = [&used_properties, flowScene](QtNodes::Node* node){
+    QHash<QtNodes::Node*, QSet<QtNodes::Node*>> incoming_nodes;
+    for(auto _connection : flowScene->connections())
+    {
+      std::shared_ptr<QtNodes::Connection> connection = _connection.second;
+      incoming_nodes[connection->getNode(QtNodes::PortType::In)].insert(connection->getNode(QtNodes::PortType::Out));
+    }
+
+    QSet<QtNodes::Node*> done_nodes;
+    QQueue<QtNodes::Node*> queued_nodes;
+
+    queued_nodes.enqueue(node);
+
+    while(queued_nodes.isEmpty() == false)
+    {
+      node = queued_nodes.dequeue();
+
+      if(done_nodes.contains(node))
+        continue;
+
+      PropertyNode* property = dynamic_cast<PropertyNode*>(node->nodeDataModel());
+      VectorPropertyNode* vectorProperty = dynamic_cast<VectorPropertyNode*>(node->nodeDataModel());
+
+      if(property != nullptr)
+        used_properties << property->property_name();
+      if(vectorProperty != nullptr)
+        for(QString n : vectorProperty->vector_properties_names())
+          used_properties << n;
+
+      for(QtNodes::Node* n : incoming_nodes[node])
+        if(!done_nodes.contains(n) && !queued_nodes.contains(n))
+          queued_nodes.enqueue(n);
+    }
+  };
+
+  flowScene->iterateOverNodes([&coordinate_code, &color_code, &code, collectProperties](QtNodes::Node* node){
+    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
 
     if(outputNode!=nullptr)
     {
+      collectProperties(node);
+
       if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
       {
         if(!coordinate_code.isEmpty())
@@ -1445,10 +1491,24 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
 
   code += "\n";
   code += "// ==== Input Buffer ====\n";
+  int binding_index = 0;
   for(int i=0; i<currentPointcloud->user_data_names.length(); ++i)
   {
-    code += "layout(location = " + QString::number(i)+ ")\n";
-    code += "in " + QString(format(property_to_value_type(currentPointcloud->user_data_types[i]))) + " " + currentPointcloud->user_data_names[i] + ";\n";
+    QString type = format(property_to_value_type(currentPointcloud->user_data_types[i]));
+    QString name = currentPointcloud->user_data_names[i];
+
+    if(used_properties.contains(name) == false)
+    {
+      property_bindings<< -1;
+      continue;
+    }
+
+    property_bindings << binding_index;
+
+    code += "layout(location = " + QString::number(binding_index)+ ")\n";
+    code += "in " + type + " " + name + ";\n";
+
+    binding_index++;
   }
   code += "\n";
 
