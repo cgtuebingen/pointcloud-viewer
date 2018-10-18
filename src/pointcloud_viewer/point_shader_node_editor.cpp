@@ -1524,30 +1524,29 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
   code += "};\n";
   code += "\n";
   code += "layout(std430, binding=0)\n";
-  code += "buffer __output_buffer__\n";
+  code += "buffer impl_output_buffer\n";
   code += "{\n";
-  code += "  vertex_t vertex[];\n";
+  code += "  vertex_t impl_output_vertex[];\n";
   code += "};\n";
   code += "\n";
 
   // TODO:::: lesen: https://stackoverflow.com/questions/12752279/opengl-vertices-in-shader-storage-buffer
   code += "// ==== Helper Functions ====\n";
-  code += "int    to_scalar(int ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "uint   to_scalar(int uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "float  to_scalar(int  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "double to_scalar(int dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "int    to_scalar(in ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "uint   to_scalar(in uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "float  to_scalar(in  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "double to_scalar(in dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
   code += "\n";
   code += "// ==== Actual execution ====\n";
   code += "void main()\n";
   code += "{\n";
-  code += "  vec3 __coordinate__;\n";
-  code += "  uvec3 __color__;\n";
-  code += "  {\n";
-  code += "    __coordinate__ = " + coordinate_code + ";\n";
-  code += "    __color__ = " + color_code + ";\n";
-  code += "  }\n";
-  code += "  vertex[gl_VertexID].coordinate = __coordinate__;\n";
-  code += "  vertex[gl_VertexID].color = packUnorm4x8(vec4(__color__, 0) / 255.);\n";
+  code += "  impl_output_vertex[gl_VertexID].coordinate = \n\n"
+          "      // ==== COORDINATE ====\n"
+          "      " + coordinate_code + ";\n"
+          "      // ====================\n\n";
+  code += "  impl_output_vertex[gl_VertexID].color = packUnorm4x8(vec4(vec3(\n\n"
+          "      // ==== COLOR =========\n"
+          "      " + color_code + "\n      // ====================\n\n  ), 0) / 255.);\n";
   code += "}\n";
 
   return code;
