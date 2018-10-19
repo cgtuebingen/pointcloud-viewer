@@ -110,7 +110,6 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
 
   GL_CALL(glDrawArrays, GL_POINTS, 0, num_points);
   shader_object.Deactivate();
-  vertex_array_object.ResetBinding();
 
   output_buffer.Get(pointCloud->coordinate_color.data(), 0, output_buffer.GetSize());
 
@@ -121,6 +120,7 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
       glBindVertexBuffer(bindings[i], 0, 0, 0);
     }
   }
+  vertex_array_object.ResetBinding();
 }
 
 } //namespace gl450
