@@ -35,13 +35,11 @@ PointCloud::UserData PointCloud::all_values_of_point(size_t point_index) const
     case BASE_TYPE::UINT8:
     case BASE_TYPE::UINT16:
     case BASE_TYPE::UINT32:
-    case BASE_TYPE::UINT64:
       value = qulonglong(data_type::read_value_from_buffer<uint64_t>(user_data_types[i], data + user_data_offset[i]));
       break;
     case BASE_TYPE::INT8:
     case BASE_TYPE::INT16:
     case BASE_TYPE::INT32:
-    case BASE_TYPE::INT64:
       value = qlonglong(data_type::read_value_from_buffer<int64_t>(user_data_types[i], data + user_data_offset[i]));
       break;
     case BASE_TYPE::FLOAT32:

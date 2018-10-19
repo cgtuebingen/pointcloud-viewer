@@ -7,18 +7,19 @@
 
 namespace data_type {
 
+// The values are directly stored into binary files, so make sure not to change the ids
 enum class base_type_t : uint8_t
 {
-  INT8,
-  INT16,
-  INT32,
-  INT64,
-  UINT8,
-  UINT16,
-  UINT32,
-  UINT64,
-  FLOAT32,
-  FLOAT64,
+  INT8 = 0,
+  INT16 = 1,
+  INT32 = 2,
+  // INT64 = 3
+  UINT8 = 4,
+  UINT16 = 5,
+  UINT32 = 6,
+  // UINT64 = 7
+  FLOAT32 = 8,
+  FLOAT64 = 9,
 };
 typedef base_type_t BASE_TYPE;
 
@@ -40,11 +41,9 @@ QString toString(base_type_t base_type);
 BASE_TYPE(int8_t, INT8)
 BASE_TYPE(int16_t, INT16)
 BASE_TYPE(int32_t, INT32)
-BASE_TYPE(int64_t, INT64)
 BASE_TYPE(uint8_t, UINT8)
 BASE_TYPE(uint16_t, UINT16)
 BASE_TYPE(uint32_t, UINT32)
-BASE_TYPE(uint64_t, UINT64)
 BASE_TYPE(float32_t, FLOAT32)
 BASE_TYPE(float64_t, FLOAT64)
 #undef BASE_TYPE

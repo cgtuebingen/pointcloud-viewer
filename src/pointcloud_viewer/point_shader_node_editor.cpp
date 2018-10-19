@@ -47,8 +47,6 @@ value_type_t property_to_value_type(property_type_t property_type)
   case PROPERTY_TYPE::FLOAT32:
     return VALUE_TYPE::FLOAT;
   case PROPERTY_TYPE::FLOAT64:
-  case PROPERTY_TYPE::INT64:
-  case PROPERTY_TYPE::UINT64:
     return VALUE_TYPE::DOUBLE;
   case PROPERTY_TYPE::INT8:
   case PROPERTY_TYPE::INT16:
