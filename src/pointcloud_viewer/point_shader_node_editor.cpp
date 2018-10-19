@@ -1404,7 +1404,7 @@ bool PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& curren
   return accepted;
 }
 
-QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const
+std::tuple<QString, QVector<uint>> PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const
 {
   QString code;
   code += "#version 450 core\n";
@@ -1419,7 +1419,6 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
   flowScene->loadFromMemory(_implementation->nodes);
 
   QSet<QString> used_properties;
-  QVector<int> property_bindings;
 
   QString coordinate_code;
   QString color_code;
@@ -1493,7 +1492,8 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
 
   code += "\n";
   code += "// ==== Input Buffer ====\n";
-  int binding_index = 0;
+  uint binding_index = 0;
+  QVector<decltype(binding_index)> property_bindings;
   for(int i=0; i<currentPointcloud->user_data_names.length(); ++i)
   {
     QString type = format(property_to_value_type(currentPointcloud->user_data_types[i]));
@@ -1501,7 +1501,7 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
 
     if(used_properties.contains(name) == false)
     {
-      property_bindings<< -1;
+      property_bindings << std::numeric_limits<decltype(binding_index)>::max();
       continue;
     }
 
@@ -1547,7 +1547,7 @@ QString PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& curre
           "      " + color_code + "\n      // ====================\n\n  ), 0) / 255.);\n";
   code += "}\n";
 
-  return code;
+  return std::make_tuple(code, property_bindings);
 }
 
 

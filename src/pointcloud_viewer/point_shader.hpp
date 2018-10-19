@@ -46,7 +46,7 @@ public:
   bool edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud);
 
   void apply_shader(Viewport& viewport, const QSharedPointer<PointCloud>& currentPointcloud) const;
-  QString shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const;
+  std::tuple<QString, QVector<uint> > shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const;
 
 private:
   class Implementation;

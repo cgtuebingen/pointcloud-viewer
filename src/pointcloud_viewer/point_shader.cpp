@@ -74,12 +74,13 @@ void PointShader::apply_shader(Viewport& viewport, const QSharedPointer<PointClo
   if(currentPointcloud == nullptr)
     return;
 
-
   viewport.makeCurrent();
 
-  std::string shader_code_glsl450 = this->shader_code_glsl450(currentPointcloud).toStdString();
+  QString shader_code_glsl450;
+  QVector<uint> bindings;
+  std::tie(shader_code_glsl450, bindings) = this->shader_code_glsl450(currentPointcloud);
 
-  renderer::gl450::remap_points(shader_code_glsl450, currentPointcloud.data());
+  renderer::gl450::remap_points(shader_code_glsl450.toStdString(), bindings, currentPointcloud.data());
 
   viewport.doneCurrent();
 }
