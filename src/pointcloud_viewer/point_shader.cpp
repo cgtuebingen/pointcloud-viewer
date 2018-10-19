@@ -82,11 +82,12 @@ void PointShader::apply_shader(Viewport& viewport, const QSharedPointer<PointClo
 
   renderer::gl450::remap_points(shader_code_glsl450.toStdString(), bindings, currentPointcloud.data());
 
-  viewport.doneCurrent();
 
   viewport.load_point_cloud(currentPointcloud);
   // TODO: rebuild the KD tree?
   //TODO:  update selected point?
+
+  viewport.doneCurrent();
 }
 
 PointShader::PointShader(const QSharedPointer<PointShader::Implementation>& implementation)
