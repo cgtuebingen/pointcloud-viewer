@@ -11,6 +11,8 @@ namespace gl450 {
 
 void remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
 {
+  const uint invalid_binding = std::numeric_limits<uint>::max();
+
   gl::ShaderObject shader_object("point_remapper");
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX, vertex_shader,"generated vertex shader");
   if(gl::Result::FAILURE == shader_object.CreateProgram())
@@ -34,18 +36,19 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     println_error("=================================================");
   }
 
+  GLsizei num_points = GLsizei(pointCloud->num_points);
+
   std::vector<gl::VertexArrayObject::Attribute> attributes;
   attributes.reserve(size_t(bindings.length()));
-  size_t attribute_stride = pointCloud->user_data_stride;
+  const GLsizei attribute_stride = GLsizei(pointCloud->user_data_stride);
   for(int i=0; i<bindings.length(); ++i)
   {
     QString property_name = pointCloud->user_data_names[i];
     data_type::base_type_t property_type = pointCloud->user_data_types[i];
-    size_t property_offset = pointCloud->user_data_offset[i];
 
-    auto attribute_binding = bindings[i];
+    uint attribute_binding = bindings[i];
 
-    if(attribute_binding != std::numeric_limits<decltype(attribute_binding)>::max())
+    if(attribute_binding != invalid_binding)
     {
       gl::VertexArrayObject::Attribute::Type attribute_type = gl::VertexArrayObject::Attribute::Type::INT8;
 
@@ -81,9 +84,43 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
   }
 
+  constexpr const GLsizeiptr vertex_stride = sizeof(glm::vec3) + sizeof(glm::u8vec4);
+
   gl::VertexArrayObject vertex_array_object(std::move(attributes));
 
+  gl::Buffer input_buffer(num_points * attribute_stride,
+                          gl::Buffer::UsageFlag(gl::Buffer::MAP_WRITE | gl::Buffer::MAP_PERSISTENT | gl::Buffer::MAP_COHERENT),
+                          pointCloud->user_data.data());
+  gl::Buffer output_buffer(num_points * vertex_stride,
+                          gl::Buffer::UsageFlag(gl::Buffer::MAP_READ | gl::Buffer::SUB_DATA_UPDATE));
 
+  vertex_array_object.Bind();
+  for(int i=0; i<bindings.length(); ++i)
+  {
+    if(bindings[i] != invalid_binding)
+    {
+      size_t property_offset = pointCloud->user_data_offset[i];
+      input_buffer.BindVertexBuffer(uint(i), GLsizeiptr(property_offset), attribute_stride);
+    }
+  }
+
+  output_buffer.BindShaderStorageBuffer(0);
+
+  shader_object.Activate();
+
+  GL_CALL(glDrawArrays, GL_POINTS, 0, num_points);
+  shader_object.Deactivate();
+  vertex_array_object.ResetBinding();
+
+  output_buffer.Get(pointCloud->coordinate_color.data(), 0, output_buffer.GetSize());
+
+  for(int i=0; i<bindings.length(); ++i)
+  {
+    if(bindings[i] != invalid_binding)
+    {
+      glBindVertexBuffer(bindings[i], 0, 0, 0);
+    }
+  }
 }
 
 } //namespace gl450
