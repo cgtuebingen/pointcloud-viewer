@@ -9,7 +9,7 @@ This tool allows viewing huge point clouds.
 Install dependencies
 
     sudo apt install build-essential cmake
-    sudo apt install qt5-default libboost-all-dev
+    sudo apt install qt5-default libqt5opengl5-dev libboost-all-dev
 
 Clone with
 
