@@ -1007,9 +1007,9 @@ void SplitVectorNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtN
 
   if(is_vector(vector->value_type))
   {
-    x = std::make_shared<Value>(QString("(%0).x").arg(vector->expression), scalar_type);
-    y = std::make_shared<Value>(QString("(%0).y").arg(vector->expression), scalar_type);
-    z = std::make_shared<Value>(QString("(%0).z").arg(vector->expression), scalar_type);
+    x = std::make_shared<Value>(QString("%0.x").arg(vector->expression), scalar_type);
+    y = std::make_shared<Value>(QString("%0.y").arg(vector->expression), scalar_type);
+    z = std::make_shared<Value>(QString("%0.z").arg(vector->expression), scalar_type);
   }else
   {
     x = vector;
@@ -1209,7 +1209,7 @@ QWidget* MathOperatorNode::embeddedWidget()
 void MathOperatorNode::update_result()
 {
   value_type_t result_type = to_vector(::result_type(x->value_type, y->value_type));
-  result = std::make_shared<Value>(QString("%0 %2 %1").arg(x->expression).arg(y->expression).arg(operator_symbol), result_type);
+  result = std::make_shared<Value>(QString("(%0 %2 %1)").arg(x->expression).arg(y->expression).arg(operator_symbol), result_type);
   dataUpdated(0);
 }
 
@@ -1365,6 +1365,178 @@ void ValueNode::update_value_expression()
 void ValueNode::update_value_type()
 {
   set_value(value->expression, _combobox_type->currentData().value<value_type_t>());
+}
+
+// ==== RotateQuickly ================
+
+class RotateQuicklyNode final : public QtNodes::NodeDataModel
+{
+public:
+  RotateQuicklyNode();
+
+  QJsonObject save() const override;
+  void restore(QJsonObject const & p) override;
+
+  void set_operator(QString op);
+
+  QString caption() const override{return "RotateQuickly";}
+  QString name() const override{return "RotateQuickly";}
+  uint nPorts(QtNodes::PortType portType) const override;
+  QString portCaption(QtNodes::PortType, QtNodes::PortIndex) const override;
+  bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+
+  void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
+
+  std::shared_ptr<QtNodes::NodeData> outData(QtNodes::PortIndex port) override;
+
+  QWidget* embeddedWidget() override;
+
+private:
+  std::shared_ptr<Value> vector;
+  std::shared_ptr<Value> rotated;
+  QComboBox* _axis;
+
+  void update_result();
+};
+
+RotateQuicklyNode::RotateQuicklyNode()
+{
+  vector = std::make_shared<Value>("vec3(0)", VALUE_TYPE::VEC3);
+  rotated = std::make_shared<Value>("vec3(0)", VALUE_TYPE::VEC3);
+
+  _axis = new QComboBox;
+  _axis->addItem("+X", "%0.xzy");
+  _axis->addItem("-X", "(%0.xzy * ivec3(1, -1, 1))");
+
+  connect(_combobox_op, &QComboBox::currentTextChanged, this, &MathOperatorNode::update_operator);
+  update_operator();
+}
+
+QJsonObject RotateNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  jsonObject["operator"] = _combobox_op->currentData().toString();
+
+  return jsonObject;
+}
+
+void RotateNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  set_operator(jsonObject["operator"].toString());
+}
+
+void RotateNode::set_operator(QString op)
+{
+  int index = _combobox_op->findData(op);
+
+  if(index >= 0)
+    _combobox_op->setCurrentIndex(index);
+}
+
+uint RotateNode::nPorts(QtNodes::PortType portType) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return 2;
+  case QtNodes::PortType::Out:
+    return 1;
+  case QtNodes::PortType::None:
+    return 0;
+  }
+  return 0;
+}
+
+QString RotateNode::portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    if(portIndex == 0)
+      return "X";
+    else if(portIndex == 1)
+      return "Y";
+    break;
+  case QtNodes::PortType::Out:
+    return "Result";
+  case QtNodes::PortType::None:
+    break;
+  }
+
+  Q_UNREACHABLE();
+  return "";
+}
+
+bool RotateNode::portCaptionVisible(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+{
+  switch(portType)
+  {
+  case QtNodes::PortType::In:
+    return portIndex>=0 && portIndex < 2;
+  case QtNodes::PortType::Out:
+    return false;
+  case QtNodes::PortType::None:
+    break;
+  }
+
+  return false;
+}
+
+QtNodes::NodeDataType RotateNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
+{
+  return Value().type();
+}
+
+void RotateNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0 || portIndex == 1 || portIndex == 2);
+
+  if(portIndex == 0)
+  {
+    if(nodeData == nullptr)
+      x = std::make_shared<Value>("0", VALUE_TYPE::INT);
+    else
+      x = std::dynamic_pointer_cast<Value>(nodeData);
+    x = Value::cast(x, x->value_type);
+  }else
+  {
+    if(nodeData == nullptr)
+      y = std::make_shared<Value>("0", VALUE_TYPE::INT);
+    else
+      y = std::dynamic_pointer_cast<Value>(nodeData);
+    y = Value::cast(y, y->value_type);
+  }
+
+  update_result();
+}
+
+std::shared_ptr<QtNodes::NodeData> RotateNode::outData(QtNodes::PortIndex portIndex)
+{
+  Q_ASSERT(portIndex == 0);
+
+  return result;
+}
+
+QWidget* RotateNode::embeddedWidget()
+{
+  return _combobox_op;
+}
+
+void RotateNode::update_result()
+{
+  value_type_t result_type = to_vector(::result_type(x->value_type, y->value_type));
+  result = std::make_shared<Value>(QString("%0 %2 %1").arg(x->expression).arg(y->expression).arg(operator_symbol), result_type);
+  dataUpdated(0);
+}
+
+void RotateNode::update_operator()
+{
+  operator_symbol = _combobox_op->currentData().toString();
+  update_result();
 }
 
 // ==== PointShader::edit ================
