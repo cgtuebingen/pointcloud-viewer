@@ -88,6 +88,8 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
 
   gl::VertexArrayObject vertex_array_object(std::move(attributes));
 
+  // TODO do this blockwise for huge pointclouds?
+
   gl::Buffer input_buffer(num_points * attribute_stride,
                           gl::Buffer::UsageFlag(gl::Buffer::MAP_WRITE | gl::Buffer::MAP_PERSISTENT | gl::Buffer::MAP_COHERENT),
                           pointCloud->user_data.data());
