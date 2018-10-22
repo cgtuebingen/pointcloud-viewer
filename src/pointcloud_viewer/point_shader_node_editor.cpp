@@ -1181,14 +1181,12 @@ void MathOperatorNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, Qt
       x = std::make_shared<Value>("0", VALUE_TYPE::INT);
     else
       x = std::dynamic_pointer_cast<Value>(nodeData);
-    x = Value::cast(x, x->value_type);
   }else
   {
     if(nodeData == nullptr)
       y = std::make_shared<Value>("0", VALUE_TYPE::INT);
     else
       y = std::dynamic_pointer_cast<Value>(nodeData);
-    y = Value::cast(y, y->value_type);
   }
 
   update_result();
@@ -1208,7 +1206,7 @@ QWidget* MathOperatorNode::embeddedWidget()
 
 void MathOperatorNode::update_result()
 {
-  value_type_t result_type = to_vector(::result_type(x->value_type, y->value_type));
+  value_type_t result_type = ::result_type(x->value_type, y->value_type);
   result = std::make_shared<Value>(QString("(%0 %2 %1)").arg(x->expression).arg(y->expression).arg(operator_symbol), result_type);
   dataUpdated(0);
 }
