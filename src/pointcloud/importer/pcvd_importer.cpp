@@ -34,7 +34,7 @@ bool PcvdImporter::import_implementation()
   if(read_bytes != sizeof(pcvd_format::header_t))
     throw QString("Can't load corrupt file");
 
-  if(header.downwards_compatibility_version_number > 0)
+  if(header.downwards_compatibility_version_number > 1)
     throw QString("Incompatible file format version");
 
   if(header.number_points == 0)
@@ -48,7 +48,9 @@ bool PcvdImporter::import_implementation()
 
   if(header.file_version_number == 0 && (header.flags&0xfffc)!=0)
     throw QString("corrupt header (invalid flags)");
-  if(header.file_version_number == 0 && header.reserved!=0)
+  if(header.file_version_number == 1 && (header.flags&0xfff8)!=0)
+    throw QString("corrupt header (invalid flags)");
+  if(header.file_version_number <= 1 && header.reserved!=0)
     throw QString("corrupt header (invalid padding)");
   if(glm::any(glm::isnan(header.aabb.min_point)))
     throw QString("corrupt header (invalid aabb)");
@@ -61,6 +63,7 @@ bool PcvdImporter::import_implementation()
 
   const bool load_kd_tree = header.flags & 0b1;
   const bool load_vertex = header.flags & 0b10;
+  const bool load_shader = header.flags & 0b100;
 
   std::streamsize header_size = sizeof(pcvd_format::header_t);
   std::streamsize field_headers_size = sizeof(pcvd_format::field_description_t) * header.number_fields;
@@ -144,6 +147,7 @@ bool PcvdImporter::import_implementation()
 
   if(!load_vertex)
   {
+    // TODO: run the
     glm::ivec3 coord_src(-1);
     glm::ivec3 color_src(-1);
 
@@ -214,6 +218,33 @@ bool PcvdImporter::import_implementation()
     if(read_bytes != kd_tree_size)
       throw QString("Incomplete file!");
     handle_loaded_chunk(current_progress += kd_tree_size);
+  }
+
+  if(load_shader)
+  {
+    QByteArray text_data;
+    pcvd_format::shader_description_t shader_description;
+
+    read_bytes = read(&shader_description, sizeof(shader_description));
+    if(read_bytes != sizeof(pcvd_format::shader_description_t))
+      throw QString("Incomplete file!");
+    handle_loaded_chunk(current_progress += sizeof(pcvd_format::shader_description_t));
+
+    text_data.resize(shader_description.name_length);
+    read(text_data.data(), shader_description.name_length);
+    pointcloud.shader.name = QString::fromUtf8(text_data);
+
+    text_data.resize(shader_description.coordinate_expression_length);
+    read(text_data.data(), shader_description.name_length);
+    pointcloud.shader.coordinate_expression = QString::fromUtf8(text_data);
+
+    text_data.resize(shader_description.color_expression_length);
+    read(text_data.data(), shader_description.name_length);
+    pointcloud.shader.color_expression = QString::fromUtf8(text_data);
+
+    text_data.resize(shader_description.node_data_length);
+    read(text_data.data(), shader_description.name_length);
+    pointcloud.shader.node_data = QString::fromUtf8(text_data);
   }
 
   return true;

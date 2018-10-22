@@ -10,7 +10,9 @@
 #include <QVariant>
 
 /*
-Stores the whole point cloud.
+Stores the whole point cloud consisting out of the
+- coordinate_color -- coordinates and colors
+- user_data -- all property data
 */
 class PointCloud final
 {
@@ -36,8 +38,17 @@ public:
     QVector<QVariant> values;
   };
 
+  struct Shader
+  {
+    QString name;
+    QString coordinate_expression;
+    QString color_expression;
+    QString node_data;
+  };
+
   Buffer coordinate_color, user_data;
   KDTreeIndex kdtree_index;
+  Shader shader;
   aabb_t aabb;
   size_t num_points;
   bool is_valid;

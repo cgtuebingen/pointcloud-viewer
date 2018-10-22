@@ -10,6 +10,7 @@ public:
 
   bool save_kd_tree = true;
   bool save_vertex_data = false;
+  bool save_shader = true;
 
 protected:
   bool export_implementation() override;

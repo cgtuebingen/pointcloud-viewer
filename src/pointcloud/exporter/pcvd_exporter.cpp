@@ -14,7 +14,7 @@ bool PcvdExporter::export_implementation()
   pcvd_format::header_t header;
 
   header.magic_number = pcvd_format::header_t::expected_macic_number();
-  header.file_version_number = 0;
+  header.file_version_number = 1;
   header.downwards_compatibility_version_number = 0;
 
   header.number_points = pointcloud.num_points;
@@ -49,7 +49,7 @@ bool PcvdExporter::export_implementation()
 
   save_kd_tree = save_kd_tree && pointcloud.has_build_kdtree();
 
-  header.flags = (save_kd_tree ? 0b1 : 0) | (save_vertex_data ? 0b10 : 0);
+  header.flags = (save_kd_tree ? 0b1 : 0) | (save_vertex_data ? 0b10 : 0) | (save_shader ? 0b100 : 0);
 
   header.aabb = pointcloud.aabb;
 
@@ -84,6 +84,33 @@ bool PcvdExporter::export_implementation()
   {
     stream.write(reinterpret_cast<const char*>(pointcloud.kdtree_index.data()), kd_tree_size);
     handle_written_chunk(current_progress += kd_tree_size);
+  }
+
+  {
+    QByteArray name_bytes = pointcloud.shader.name.toUtf8();
+    QByteArray coordinate_bytes = pointcloud.shader.coordinate_expression.toUtf8();
+    QByteArray color_bytes = pointcloud.shader.color_expression.toUtf8();
+    QByteArray node_bytes = pointcloud.shader.node_data.toUtf8();
+    pcvd_format::shader_description_t shader_description;
+
+    if(name_bytes.length() > std::numeric_limits<decltype(shader_description.name_length)>::max())
+      throw QString("Can't save point cloud (shader name too long)");
+    if(coordinate_bytes.length() > std::numeric_limits<decltype(shader_description.coordinate_expression_length)>::max())
+      throw QString("Can't save point cloud (shader coordinate expression too long)");
+    if(color_bytes.length() > std::numeric_limits<decltype(shader_description.color_expression_length)>::max())
+      throw QString("Can't save point cloud (shader color expression too long)");
+    if(node_bytes.length() > std::numeric_limits<decltype(shader_description.node_data_length)>::max())
+      throw QString("Can't save point cloud (shader node data string too long)");
+
+    shader_description.name_length = static_cast<decltype(shader_description.name_length)>(name_bytes.length());
+    shader_description.coordinate_expression_length = static_cast<decltype(shader_description.coordinate_expression_length)>(coordinate_bytes.length());
+    shader_description.color_expression_length = static_cast<decltype(shader_description.color_expression_length)>(color_bytes.length());
+    shader_description.node_data_length = static_cast<decltype(shader_description.node_data_length)>(node_bytes.length());
+    stream.write(reinterpret_cast<const char*>(&shader_description), sizeof(shader_description));
+    stream.write(name_bytes.data(), name_bytes.length());
+    stream.write(coordinate_bytes.data(), name_bytes.length());
+    stream.write(color_bytes.data(), name_bytes.length());
+    stream.write(node_bytes.data(), name_bytes.length());
   }
 
   return true;
