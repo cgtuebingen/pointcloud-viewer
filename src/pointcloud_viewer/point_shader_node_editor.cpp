@@ -1711,7 +1711,6 @@ std::tuple<QString, QVector<uint>> PointShader::shader_code_glsl450(const QShare
   code += "};\n";
   code += "\n";
 
-  // TODO:::: lesen: https://stackoverflow.com/questions/12752279/opengl-vertices-in-shader-storage-buffer
   code += "// ==== Helper Functions ====\n";
   code += "int    to_scalar(in ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
   code += "uint   to_scalar(in uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
