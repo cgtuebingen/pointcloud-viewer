@@ -446,6 +446,7 @@ QDockWidget* MainWindow::initRenderDock()
       shaderComboBox->removeItem(shaderComboBox->currentIndex());
   });
 
+  // TODO: make the editor  window not a dialog but simply a second window
   connect(editShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization, current_point_shader, this](){
     if(is_builtin_visualization(shaderComboBox->currentIndex()))
       return;
