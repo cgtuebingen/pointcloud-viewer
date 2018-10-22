@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <renderer/gl450/point_remapper.hpp>
 #include <core_library/print.hpp>
+#include <QMessageBox>
 
 PointShader::PointShader()
   : _implementation(autogenerate(QSharedPointer<PointCloud>())._implementation)
@@ -80,7 +81,11 @@ void PointShader::apply_shader(Viewport& viewport, const QSharedPointer<PointClo
   QVector<uint> bindings;
   std::tie(shader_code_glsl450, bindings) = this->shader_code_glsl450(currentPointcloud);
 
-  renderer::gl450::remap_points(shader_code_glsl450.toStdString(), bindings, currentPointcloud.data());
+  if(!renderer::gl450::remap_points(shader_code_glsl450.toStdString(), bindings, currentPointcloud.data()))
+  {
+    QMessageBox::warning(&viewport, "Shader error", "Could not apply the point shader.\nPlease take a look at the Standard Output");
+    return;
+  }
 
 
   viewport.load_point_cloud(currentPointcloud);
