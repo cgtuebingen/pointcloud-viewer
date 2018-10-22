@@ -9,7 +9,7 @@
 namespace renderer {
 namespace gl450 {
 
-void remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
+bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
 {
   const uint invalid_binding = std::numeric_limits<uint>::max();
 
@@ -34,6 +34,7 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
 
     println_error("=================================================");
+    return false;
   }
 
   GLsizei num_points = GLsizei(pointCloud->num_points);
@@ -123,6 +124,8 @@ void remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
   }
   vertex_array_object.ResetBinding();
+
+  return true;
 }
 
 } //namespace gl450
