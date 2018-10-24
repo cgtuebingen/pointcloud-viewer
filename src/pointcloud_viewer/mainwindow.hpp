@@ -9,6 +9,7 @@
 #include <pointcloud_viewer/viewport.hpp>
 #include <pointcloud_viewer/kdtree_inspector.hpp>
 #include <pointcloud_viewer/pointcloud_inspector.hpp>
+#include <pointcloud_viewer/point_shader_editor.hpp>
 #include <pointcloud_viewer/flythrough/flythrough.hpp>
 #include <pointcloud_viewer/workers/offline_renderer.hpp>
 
@@ -33,6 +34,7 @@ private:
   Flythrough flythrough;
   KdTreeInspector kdTreeInspector;
   PointCloudInspector pointCloudInspector;
+  PointShaderEditor pointShaderEditor;
 
   RenderSettings renderSettings = RenderSettings::defaultSettings();
 
@@ -64,6 +66,7 @@ protected:
 
 private:
   QSharedPointer<PointCloud> pointcloud;
+  PointCloud::Shader loadedShader;
 
   void import_pointcloud(QString filepath);
   void export_pointcloud(QString filepath, QString selectedFilter);

@@ -9,7 +9,7 @@ public:
   PcvdExporter(const std::string& output_file, const PointCloud& pointcloud);
 
   bool save_kd_tree = true;
-  bool save_vertex_data = false;
+  bool save_vertex_data = true;
   bool save_shader = true;
 
 protected:

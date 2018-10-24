@@ -147,7 +147,7 @@ bool PcvdImporter::import_implementation()
 
   if(!load_vertex)
   {
-    // TODO: run the
+    // TODO: run the laoded shader instead!
     glm::ivec3 coord_src(-1);
     glm::ivec3 color_src(-1);
 
@@ -230,20 +230,20 @@ bool PcvdImporter::import_implementation()
       throw QString("Incomplete file!");
     handle_loaded_chunk(current_progress += sizeof(pcvd_format::shader_description_t));
 
-    text_data.resize(shader_description.name_length);
-    read(text_data.data(), shader_description.name_length);
-    pointcloud.shader.name = QString::fromUtf8(text_data);
+    text_data.resize(shader_description.used_properties_length);
+    read(text_data.data(), shader_description.used_properties_length);
+    pointcloud.shader.used_properties = QString::fromUtf8(text_data).split('\n').toSet();
 
     text_data.resize(shader_description.coordinate_expression_length);
-    read(text_data.data(), shader_description.name_length);
+    read(text_data.data(), shader_description.coordinate_expression_length);
     pointcloud.shader.coordinate_expression = QString::fromUtf8(text_data);
 
     text_data.resize(shader_description.color_expression_length);
-    read(text_data.data(), shader_description.name_length);
+    read(text_data.data(), shader_description.color_expression_length);
     pointcloud.shader.color_expression = QString::fromUtf8(text_data);
 
     text_data.resize(shader_description.node_data_length);
-    read(text_data.data(), shader_description.name_length);
+    read(text_data.data(), shader_description.node_data_length);
     pointcloud.shader.node_data = QString::fromUtf8(text_data);
   }
 

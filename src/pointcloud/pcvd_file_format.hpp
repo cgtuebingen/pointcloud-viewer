@@ -47,7 +47,7 @@ struct field_description_t
 
 struct shader_description_t
 {
-  uint16_t name_length; // number of bytes (utf8)
+  uint16_t used_properties_length; // number of bytes (utf8)
   uint16_t coordinate_expression_length; // number of bytes (utf8)
   uint16_t color_expression_length; // number of bytes (utf8)
   uint16_t node_data_length; // number of bytes (utf8)

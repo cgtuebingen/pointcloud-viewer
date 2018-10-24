@@ -87,13 +87,13 @@ bool PcvdExporter::export_implementation()
   }
 
   {
-    QByteArray name_bytes = pointcloud.shader.name.toUtf8();
+    QByteArray used_properies_bytes = pointcloud.shader.ordered_properties().join('\n').toUtf8();
     QByteArray coordinate_bytes = pointcloud.shader.coordinate_expression.toUtf8();
     QByteArray color_bytes = pointcloud.shader.color_expression.toUtf8();
     QByteArray node_bytes = pointcloud.shader.node_data.toUtf8();
     pcvd_format::shader_description_t shader_description;
 
-    if(name_bytes.length() > std::numeric_limits<decltype(shader_description.name_length)>::max())
+    if(used_properies_bytes.length() > std::numeric_limits<decltype(shader_description.used_properties_length)>::max())
       throw QString("Can't save point cloud (shader name too long)");
     if(coordinate_bytes.length() > std::numeric_limits<decltype(shader_description.coordinate_expression_length)>::max())
       throw QString("Can't save point cloud (shader coordinate expression too long)");
@@ -102,15 +102,15 @@ bool PcvdExporter::export_implementation()
     if(node_bytes.length() > std::numeric_limits<decltype(shader_description.node_data_length)>::max())
       throw QString("Can't save point cloud (shader node data string too long)");
 
-    shader_description.name_length = static_cast<decltype(shader_description.name_length)>(name_bytes.length());
+    shader_description.used_properties_length = static_cast<decltype(shader_description.used_properties_length)>(used_properies_bytes.length());
     shader_description.coordinate_expression_length = static_cast<decltype(shader_description.coordinate_expression_length)>(coordinate_bytes.length());
     shader_description.color_expression_length = static_cast<decltype(shader_description.color_expression_length)>(color_bytes.length());
     shader_description.node_data_length = static_cast<decltype(shader_description.node_data_length)>(node_bytes.length());
     stream.write(reinterpret_cast<const char*>(&shader_description), sizeof(shader_description));
-    stream.write(name_bytes.data(), name_bytes.length());
-    stream.write(coordinate_bytes.data(), name_bytes.length());
-    stream.write(color_bytes.data(), name_bytes.length());
-    stream.write(node_bytes.data(), name_bytes.length());
+    stream.write(used_properies_bytes.data(), used_properies_bytes.length());
+    stream.write(coordinate_bytes.data(), coordinate_bytes.length());
+    stream.write(color_bytes.data(), color_bytes.length());
+    stream.write(node_bytes.data(), node_bytes.length());
   }
 
   return true;

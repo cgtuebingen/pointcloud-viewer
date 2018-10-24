@@ -114,3 +114,29 @@ QDebug operator<<(QDebug debug, const PointCloud::UserData& userData)
 
   return debug;
 }
+
+// ==== PointCloud::Shader ====
+
+QStringList PointCloud::Shader::ordered_properties() const
+{
+  QStringList ordered_properties = used_properties.toList();
+  ordered_properties.sort();
+  return ordered_properties;
+}
+
+bool PointCloud::Shader::is_empty() const
+{
+  return coordinate_expression.isEmpty() || color_expression.isEmpty() || node_data.isEmpty();
+}
+
+void PointCloud::Shader::export_to_file(QString filename) const
+{
+  // TODO
+  throw "TODO: implement";
+}
+
+PointCloud::Shader PointCloud::Shader::import_from_file(QString filename)
+{
+  // TODO
+  throw "TODO: implement";
+}

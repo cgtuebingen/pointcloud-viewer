@@ -8,6 +8,7 @@
 #include <QVector>
 #include <QString>
 #include <QVariant>
+#include <QSet>
 
 /*
 Stores the whole point cloud consisting out of the
@@ -40,10 +41,16 @@ public:
 
   struct Shader
   {
-    QString name;
+    QSet<QString> used_properties;
     QString coordinate_expression;
     QString color_expression;
     QString node_data;
+
+    QStringList ordered_properties() const;
+    bool is_empty() const;
+
+    void export_to_file(QString filename) const;
+    static Shader import_from_file(QString filename);
   };
 
   Buffer coordinate_color, user_data;
@@ -77,5 +84,7 @@ public:
 };
 
 QDebug operator<<(QDebug debug, const PointCloud::UserData& userData);
+
+Q_DECLARE_METATYPE(PointCloud::Shader);
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_
