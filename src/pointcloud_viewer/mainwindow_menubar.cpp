@@ -144,7 +144,8 @@ void MainWindow::initMenuBar()
 
 }
 
-void MainWindow::dropEvent(QDropEvent *ev) {
+void MainWindow::dropEvent(QDropEvent *ev)
+{
   QList<QUrl> urls = ev->mimeData()->urls();
   foreach (QUrl url, urls) {
     const QString file_to_import = url.path();
@@ -155,7 +156,8 @@ void MainWindow::dropEvent(QDropEvent *ev) {
   }
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
+void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
+{
   ev->accept();
 }
 
