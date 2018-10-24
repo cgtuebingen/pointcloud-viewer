@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QMimeData>
 #include <QFileDialog>
+#include <QApplication>
 
 void MainWindow::initMenuBar()
 {
@@ -159,6 +160,11 @@ void MainWindow::dropEvent(QDropEvent *ev)
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
 {
   ev->accept();
+}
+
+void MainWindow::closeEvent(QCloseEvent*)
+{
+  QApplication::quit();
 }
 
 void MainWindow::import_pointcloud(QString filepath)

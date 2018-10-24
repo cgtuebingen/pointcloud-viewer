@@ -64,6 +64,8 @@ protected:
 
   void dragEnterEvent(QDragEnterEvent *ev);
 
+  void closeEvent(QCloseEvent* event);
+
 private:
   QSharedPointer<PointCloud> pointcloud;
   PointCloud::Shader loadedShader;
