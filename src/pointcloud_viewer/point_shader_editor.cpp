@@ -20,23 +20,65 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QVBoxLayout>
 
 PointShaderEditor::PointShaderEditor()
 {
+  setWindowTitle("Point Shader");
+
+  QVBoxLayout* vbox = new QVBoxLayout;
+
+  fallbackFlowScene = new QtNodes::FlowScene(qt_nodes_model_registry(QSharedPointer<PointCloud>()));
+
+  flowView = new QtNodes::FlowView(fallbackFlowScene);
+  flowView->setMinimumSize(1024, 768);
+  vbox->addWidget(flowView);
+
+  buttonGroup = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Close);
+  buttonGroup->setEnabled(false);
+  vbox->addWidget(buttonGroup);
+
+  this->setLayout(vbox);
+
+  QObject::connect(buttonGroup, &QDialogButtonBox::accepted, [this](){
+    if(_pointCloud!=nullptr && flowScene!=nullptr)
+      _pointCloud->shader.node_data = flowScene->saveToMemory();
+  });
+  QObject::connect(buttonGroup, &QDialogButtonBox::rejected, [this](){
+    hide();
+  });
 }
 
 PointShaderEditor::~PointShaderEditor()
 {
+  delete fallbackFlowScene;
+  delete flowScene;
 }
 
 void PointShaderEditor::unload_all_point_clouds()
 {
+  delete flowScene;
+  flowScene = nullptr;
+  flowView->setScene(fallbackFlowScene);
+
   _pointCloud.clear();
+  buttonGroup->setEnabled(false);
 }
 
 void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
 {
+  flowView->setScene(fallbackFlowScene);
+  delete flowScene;
+  flowScene = nullptr;
+
   _pointCloud = point_cloud;
+
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(_pointCloud);
+
+  flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(_pointCloud->shader.node_data.toUtf8());
+  flowView->setScene(flowScene);
+  buttonGroup->setEnabled(true);
 }
 
 PointCloud::Shader PointShaderEditor::autogenerate() const
@@ -150,44 +192,6 @@ QSharedPointer<PointShader::Implementation> PointShader::Implementation::clone()
   implementation->nodes = this->nodes;
 
   return implementation;
-}
-#endif
-
-// TODO
-#if 0
-bool PointShader::edit(QWidget* parent, const QSharedPointer<PointCloud>& currentPointcloud)
-{
-  QDialog dialog(parent);
-  dialog.setModal(true);
-
-  QVBoxLayout* vbox = new QVBoxLayout;
-
-  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(currentPointcloud);
-
-  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
-  flowScene->loadFromMemory(_implementation->nodes);
-
-  QtNodes::FlowView* flowView = new QtNodes::FlowView(flowScene);
-  flowView->setMinimumSize(1024, 768);
-  vbox->addWidget(flowView);
-
-  QDialogButtonBox* buttonGroup = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-  vbox->addWidget(buttonGroup);
-  QObject::connect(buttonGroup, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-  QObject::connect(buttonGroup, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-  dialog.setLayout(vbox);
-
-  bool accepted = false;
-
-  QObject::connect(&dialog, &QDialog::accepted, [flowScene, this, &accepted](){
-    _implementation->nodes = flowScene->saveToMemory();
-    accepted = true;
-  });
-
-  dialog.exec();
-
-  return accepted;
 }
 #endif
 
@@ -396,4 +400,9 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   });
 
   return registry;
+}
+
+void PointShaderEditor::apply_shader()
+{
+
 }

@@ -3,6 +3,7 @@
 
 #include <pointcloud/pointcloud.hpp>
 
+#include <QDialogButtonBox>
 #include <QSharedPointer>
 #include <QWidget>
 #include <memory>
@@ -11,6 +12,8 @@ namespace QtNodes
 {
 
 struct DataModelRegistry;
+struct FlowScene;
+struct FlowView;
 
 } // namespace QtNodes
 
@@ -29,8 +32,15 @@ public:
 
 private:
   QSharedPointer<PointCloud>  _pointCloud;
+  QtNodes::FlowView* flowView = nullptr;
+  QtNodes::FlowScene* flowScene = nullptr;
+  QtNodes::FlowScene* fallbackFlowScene = nullptr;
+  QDialogButtonBox* buttonGroup = nullptr;
 
   std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud) const;
+
+private slots:
+  void apply_shader();
 };
 
 #endif // POINT_SHADER_HPP
