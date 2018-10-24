@@ -140,3 +140,9 @@ PointCloud::Shader PointCloud::Shader::import_from_file(QString filename)
   // TODO
   throw "TODO: implement";
 }
+
+bool PointCloud::Shader::same_expression_as(const Shader& shader) const
+{
+  return this->coordinate_expression == shader.coordinate_expression
+      && this->color_expression == shader.color_expression;
+}

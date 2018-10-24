@@ -51,6 +51,8 @@ public:
 
     void export_to_file(QString filename) const;
     static Shader import_from_file(QString filename);
+
+    bool same_expression_as(const Shader& shader) const;
   };
 
   Buffer coordinate_color, user_data;
