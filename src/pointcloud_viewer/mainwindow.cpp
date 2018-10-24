@@ -22,15 +22,16 @@ MainWindow::MainWindow()
     pointcloud.clear();
     loadedShader = PointCloud::Shader();
   });
+  connect(this, &MainWindow::pointcloud_imported, [this](QSharedPointer<PointCloud> p){
+    pointcloud = p;
+    loadedShader = p->shader;
+  });
+
   connect(this, &MainWindow::pointcloud_unloaded, &pointShaderEditor, &PointShaderEditor::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &viewport, &Viewport::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &kdTreeInspector, &KdTreeInspector::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &pointCloudInspector, &PointCloudInspector::unload_all_point_clouds);
 
-  connect(this, &MainWindow::pointcloud_imported, [this](QSharedPointer<PointCloud> p){
-    pointcloud = p;
-    loadedShader = p->shader;
-  });
   connect(this, &MainWindow::pointcloud_imported, &pointShaderEditor, &PointShaderEditor::load_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &viewport, &Viewport::load_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &kdTreeInspector, &KdTreeInspector::handle_new_point_cloud);
