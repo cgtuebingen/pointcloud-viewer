@@ -54,6 +54,12 @@ PointCloud::UserData PointCloud::all_values_of_point(size_t point_index) const
   return UserData{user_data_names, values};
 }
 
+PointCloud::vertex_t PointCloud::vertex(size_t point_index) const
+{
+  vertex_t vertex = read_value_from_buffer<vertex_t>(coordinate_color.data() + point_index * stride);
+  return vertex;
+}
+
 void PointCloud::clear()
 {
   coordinate_color.clear();
@@ -139,10 +145,4 @@ PointCloud::Shader PointCloud::Shader::import_from_file(QString filename)
 {
   // TODO
   throw "TODO: implement";
-}
-
-bool PointCloud::Shader::same_expression_as(const Shader& shader) const
-{
-  return this->coordinate_expression == shader.coordinate_expression
-      && this->color_expression == shader.color_expression;
 }

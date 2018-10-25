@@ -1,6 +1,5 @@
 #include <pointcloud_viewer/point_shader_editor.hpp>
 #include <pointcloud_viewer/viewport.hpp>
-#include <renderer/gl450/point_remapper.hpp>
 #include <core_library/print.hpp>
 
 #include <nodes/FlowScene>
@@ -21,6 +20,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QVBoxLayout>
+#include <QQueue>
+#include <QDialogButtonBox>
 
 PointShaderEditor::PointShaderEditor()
 {
@@ -151,200 +152,13 @@ PointCloud::Shader PointShaderEditor::autogenerate() const
   return shader;
 }
 
-// TODO
-#if 0
-void PointShader::apply_shader(Viewport& viewport, const QSharedPointer<PointCloud>& currentPointcloud) const
+void PointShaderEditor::setShaderEditableEnabled(bool enabled)
 {
-  if(currentPointcloud == nullptr)
-    return;
-
-  viewport.makeCurrent();
-
-  QString shader_code_glsl450;
-  QVector<uint> bindings;
-  std::tie(shader_code_glsl450, bindings) = this->shader_code_glsl450(currentPointcloud);
-
-  if(!renderer::gl450::remap_points(shader_code_glsl450.toStdString(), bindings, currentPointcloud.data()))
-  {
-    QMessageBox::warning(&viewport, "Shader error", "Could not apply the point shader.\nPlease take a look at the Standard Output");
-    return;
-  }
-
-
-  viewport.load_point_cloud(currentPointcloud);
-  // TODO: rebuild the KD tree?
-  //TODO:  update selected point?
-
-  viewport.doneCurrent();
+  flowView->setEnabled(enabled);
+  buttonGroup->setEnabled(enabled);
 }
 
-PointShader::PointShader(const QSharedPointer<PointShader::Implementation>& implementation)
-  : _implementation(implementation)
-{
-}
-
-QSharedPointer<PointShader::Implementation> PointShader::Implementation::clone() const
-{
-  QSharedPointer<Implementation> implementation(new Implementation);
-
-  implementation->name = this->name + " (Copy)";
-  implementation->properties = this->properties;
-  implementation->nodes = this->nodes;
-
-  return implementation;
-}
-#endif
-
-// TODO
-#if 0
-std::tuple<QString, QVector<uint>> PointShader::shader_code_glsl450(const QSharedPointer<PointCloud>& currentPointcloud) const
-{
-  QString code;
-  code += "#version 450 core\n";
-  code += "\n";
-
-  // https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
-  // https://www.khronos.org/files/opengl45-quick-reference-card.pdf
-
-  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(currentPointcloud);
-
-  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
-  flowScene->loadFromMemory(_implementation->nodes);
-
-  QSet<QString> used_properties;
-
-  QString coordinate_code;
-  QString color_code;
-
-  // Lambda filling used_properties with all property names, which are actually used
-  auto collectProperties = [&used_properties, flowScene](QtNodes::Node* node){
-    QHash<QtNodes::Node*, QSet<QtNodes::Node*>> incoming_nodes;
-    for(auto _connection : flowScene->connections())
-    {
-      std::shared_ptr<QtNodes::Connection> connection = _connection.second;
-      incoming_nodes[connection->getNode(QtNodes::PortType::In)].insert(connection->getNode(QtNodes::PortType::Out));
-    }
-
-    QSet<QtNodes::Node*> done_nodes;
-    QQueue<QtNodes::Node*> queued_nodes;
-
-    queued_nodes.enqueue(node);
-
-    while(queued_nodes.isEmpty() == false)
-    {
-      node = queued_nodes.dequeue();
-
-      if(done_nodes.contains(node))
-        continue;
-
-      PropertyNode* property = dynamic_cast<PropertyNode*>(node->nodeDataModel());
-      VectorPropertyNode* vectorProperty = dynamic_cast<VectorPropertyNode*>(node->nodeDataModel());
-
-      if(property != nullptr)
-        used_properties << property->property_name();
-      if(vectorProperty != nullptr)
-        for(QString n : vectorProperty->vector_properties_names())
-          used_properties << n;
-
-      for(QtNodes::Node* n : incoming_nodes[node])
-        if(!done_nodes.contains(n) && !queued_nodes.contains(n))
-          queued_nodes.enqueue(n);
-    }
-  };
-
-  // Find the output nodes to
-  // a) collect all actually used attributes with collectProperties
-  // b) generate the actual expression
-  flowScene->iterateOverNodes([&coordinate_code, &color_code, &code, collectProperties](QtNodes::Node* node){
-    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
-
-    if(outputNode!=nullptr)
-    {
-      collectProperties(node);
-
-      if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
-      {
-        if(!coordinate_code.isEmpty())
-          code += "#error Multiple Output Nodes\n";
-        coordinate_code = outputNode->coordinate->expression;
-      }
-      if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
-      {
-        if(!color_code.isEmpty())
-          code += "#error Multiple Output Nodes\n";
-        color_code = outputNode->color->expression;
-      }
-    }
-
-  });
-
-  if(coordinate_code.isEmpty())
-    coordinate_code = "vec3(0) /* not set */";
-  if(color_code.isEmpty())
-    color_code = "uvec3(255) /* not set */";
-
-  code += "\n";
-  code += "// ==== Input Buffer ====\n";
-  uint binding_index = 0;
-  QVector<decltype(binding_index)> property_bindings;
-  for(int i=0; i<currentPointcloud->user_data_names.length(); ++i)
-  {
-    QString type = format(property_to_value_type(currentPointcloud->user_data_types[i]));
-    QString name = currentPointcloud->user_data_names[i];
-
-    if(used_properties.contains(name) == false)
-    {
-      property_bindings << std::numeric_limits<decltype(binding_index)>::max();
-      continue;
-    }
-
-    property_bindings << binding_index;
-
-    code += "layout(location = " + QString::number(binding_index)+ ")\n";
-    code += "in " + type + " " + name + ";\n";
-
-    binding_index++;
-  }
-  code += "\n";
-
-  code += "// ==== Output Buffer ====\n";
-  code += "struct vertex_t\n";
-  code += "{\n";
-  code += "  vec3 coordinate;\n";
-  code += "  uint color;\n";
-  code += "};\n";
-  code += "\n";
-  code += "layout(std430, binding=0)\n";
-  code += "buffer impl_output_buffer\n";
-  code += "{\n";
-  code += "  vertex_t impl_output_vertex[];\n";
-  code += "};\n";
-  code += "\n";
-
-  code += "// ==== Helper Functions ====\n";
-  code += "int    to_scalar(in ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "uint   to_scalar(in uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "float  to_scalar(in  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "double to_scalar(in dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  code += "\n";
-  code += "// ==== Actual execution ====\n";
-  code += "void main()\n";
-  code += "{\n";
-  code += "  impl_output_vertex[gl_VertexID].coordinate = \n\n"
-          "      // ==== COORDINATE ====\n"
-          "      " + coordinate_code + ";\n"
-          "      // ====================\n\n";
-  code += "  impl_output_vertex[gl_VertexID].color = packUnorm4x8(vec4(vec3(\n\n"
-          "      // ==== COLOR =========\n"
-          "      " + color_code + "\n      // ====================\n\n  ), 0) / 255.);\n";
-  code += "}\n";
-
-  return std::make_tuple(code, property_bindings);
-}
-#endif
-
-
-std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud) const
+std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud)
 {
   QStyle* style = QApplication::style();
 
@@ -402,7 +216,79 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   return registry;
 }
 
-void PointShaderEditor::apply_shader()
+QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud)
 {
+  if(pointcloud == nullptr)
+    return QSet<QString>();
 
+  QSet<QString> used_properties;
+
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = PointShaderEditor::qt_nodes_model_registry(pointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(pointcloud->shader.node_data.toUtf8());
+
+  // Lambda filling used_properties with all property names, which are actually used
+  auto collectProperties = [&used_properties, flowScene](QtNodes::Node* node){
+    QHash<QtNodes::Node*, QSet<QtNodes::Node*>> incoming_nodes;
+    for(auto _connection : flowScene->connections())
+    {
+      std::shared_ptr<QtNodes::Connection> connection = _connection.second;
+      incoming_nodes[connection->getNode(QtNodes::PortType::In)].insert(connection->getNode(QtNodes::PortType::Out));
+    }
+
+    QSet<QtNodes::Node*> done_nodes;
+    QQueue<QtNodes::Node*> queued_nodes;
+
+    queued_nodes.enqueue(node);
+
+    while(queued_nodes.isEmpty() == false)
+    {
+      node = queued_nodes.dequeue();
+
+      if(done_nodes.contains(node))
+        continue;
+
+      PropertyNode* property = dynamic_cast<PropertyNode*>(node->nodeDataModel());
+      VectorPropertyNode* vectorProperty = dynamic_cast<VectorPropertyNode*>(node->nodeDataModel());
+
+      if(property != nullptr)
+        used_properties << property->property_name();
+      if(vectorProperty != nullptr)
+        for(QString n : vectorProperty->vector_properties_names())
+          used_properties << n;
+
+      for(QtNodes::Node* n : incoming_nodes[node])
+        if(!done_nodes.contains(n) && !queued_nodes.contains(n))
+          queued_nodes.enqueue(n);
+    }
+  };
+
+  // Find the output nodes to
+  // a) collect all actually used attributes with collectProperties
+  // b) generate the actual expression
+  flowScene->iterateOverNodes([pointcloud, collectProperties](QtNodes::Node* node){
+    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
+
+    if(outputNode!=nullptr)
+    {
+      collectProperties(node);
+
+      if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
+      {
+        if(!pointcloud->shader.coordinate_expression.isEmpty())
+          println_error("#error Multiple Output Nodes");
+        pointcloud->shader.coordinate_expression = outputNode->coordinate->expression;
+      }
+      if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
+      {
+        if(!pointcloud->shader.color_expression.isEmpty())
+          println_error("#error Multiple Output Nodes");
+        pointcloud->shader.color_expression = outputNode->color->expression;
+      }
+    }
+
+  });
+
+  return used_properties;
 }

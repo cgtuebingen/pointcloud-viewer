@@ -3,10 +3,12 @@
 #include <core_library/color_palette.hpp>
 
 #include <renderer/gl450/uniforms.hpp>
+#include <renderer/gl450/point_remapper.hpp>
 
 #include <QElapsedTimer>
 #include <QSettings>
 #include <QPainter>
+#include <QMessageBox>
 
 Viewport::Viewport()
   : navigation(this)
@@ -69,6 +71,24 @@ void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
   point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
 
   this->update();
+}
+
+bool Viewport::reapply_point_shader()
+{
+  this->makeCurrent();
+
+  if(!renderer::gl450::remap_points(point_cloud))
+  {
+    this->doneCurrent();
+    QMessageBox::warning(this, "Shader error", "Could not apply the point shader.\nPlease take a look at the Standard Output");
+    return false;
+  }
+
+  point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
+
+  this->doneCurrent();
+
+  return true;
 }
 
 void Viewport::render_points(frame_t camera_frame, float aspect, std::function<void ()> additional_rendering) const

@@ -59,6 +59,8 @@ private:
   void offline_render_with_ui();
   bool offline_render();
 
+  bool apply_point_shader(PointCloud::Shader new_shader);
+
 protected:
   void dropEvent(QDropEvent *ev);
 

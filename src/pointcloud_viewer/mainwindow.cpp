@@ -24,6 +24,8 @@ MainWindow::MainWindow()
   });
   connect(this, &MainWindow::pointcloud_imported, [this](QSharedPointer<PointCloud> p){
     pointcloud = p;
+    if(glm::any(glm::isnan(p->vertex(0).coordinate)))
+      this->apply_point_shader(p->shader);
     loadedShader = p->shader;
   });
 
@@ -37,16 +39,37 @@ MainWindow::MainWindow()
   connect(this, &MainWindow::pointcloud_imported, &kdTreeInspector, &KdTreeInspector::handle_new_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &pointCloudInspector, &PointCloudInspector::handle_new_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &viewport.navigation, &Navigation::handle_new_point_cloud);
-
-  connect(&pointCloudInspector, &PointCloudInspector::hasSelectedPointChanged, [this](bool has) {
-    if(!has)
-      viewport.navigation.unsetSelectedPoint();
-  });
-  connect(&pointCloudInspector, &PointCloudInspector::selected_point, [this](glm::vec3 coordinate, glm::u8vec3, PointCloud::UserData) {
-    viewport.navigation.setSelectedPoint(coordinate);
-  });
 }
 
 MainWindow::~MainWindow()
 {
+}
+
+bool MainWindow::apply_point_shader(PointCloud::Shader new_shader)
+{
+  if(this->pointcloud==nullptr)
+    return false;
+
+  PointCloud::Shader old_shader = this->pointcloud->shader;
+  this->pointcloud->shader = new_shader;
+
+  const bool coordinates_changed = new_shader.coordinate_expression == new_shader.coordinate_expression;
+  const bool colors_changed = new_shader.color_expression == new_shader.color_expression;
+
+  const bool needs_being_rebuilt_for_the_first_time = glm::any(glm::isnan(this->pointcloud->vertex(0).coordinate));
+  const bool had_some_changes = !coordinates_changed || !colors_changed || new_shader.is_empty();
+
+  if(!needs_being_rebuilt_for_the_first_time && had_some_changes)
+    return false;
+
+  if(!viewport.reapply_point_shader())
+    return false;
+
+  // TODO: the called should update the aabb, if the coordinates where changed
+  // TODO: the called should rebuild the KD tree, if the coordinates where changed
+
+  // update the selected point
+  pointCloudInspector.update();
+
+  return true;
 }

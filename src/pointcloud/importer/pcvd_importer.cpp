@@ -147,41 +147,7 @@ bool PcvdImporter::import_implementation()
 
   if(!load_vertex)
   {
-    // TODO: run the laoded shader instead!
-    glm::ivec3 coord_src(-1);
-    glm::ivec3 color_src(-1);
-
-    for(int i=0; i<header.number_fields; ++i)
-    {
-      const QString& name = pointcloud.user_data_names[i];
-
-      if(name == "x")
-        coord_src.x = i;
-      else if(name == "y")
-        coord_src.y = i;
-      else if(name == "z")
-        coord_src.z = i;
-      else if(name == "red")
-        color_src.r = i;
-      else if(name == "green")
-        color_src.g = i;
-      else if(name == "blue")
-        color_src.b = i;
-    }
-
-    const uint8_t* user_data = pointcloud.user_data.data();
-
-    auto read_property_as_float = [this, &user_data](int source_index) -> float32_t {
-      if(source_index == -1)
-        return 0.f;
-      return data_type::read_value_from_buffer<float32_t>(pointcloud.user_data_types[source_index], user_data + pointcloud.user_data_offset[source_index]);
-    };
-
-    auto read_property_as_uint8 = [this, &user_data](int source_index) -> uint8_t {
-      if(source_index == -1)
-        return 255;
-      return data_type::read_value_from_buffer<uint8_t>(pointcloud.user_data_types[source_index], user_data + pointcloud.user_data_offset[source_index]);
-    };
+    // TODO: run the loaded shader instead!
 
     uint8_t* coordinates = pointcloud.coordinate_color.data();
 
@@ -190,23 +156,15 @@ bool PcvdImporter::import_implementation()
     {
       PointCloud::vertex_t vertex;
 
-      vertex.coordinate.x = read_property_as_float(coord_src.x);
-      vertex.coordinate.y = read_property_as_float(coord_src.y);
-      vertex.coordinate.z = read_property_as_float(coord_src.z);
-      vertex.color.r = read_property_as_uint8(color_src.x);
-      vertex.color.g = read_property_as_uint8(color_src.y);
-      vertex.color.b = read_property_as_uint8(color_src.z);
+      vertex.coordinate.x = std::numeric_limits<float>::quiet_NaN();
+      vertex.coordinate.y = std::numeric_limits<float>::quiet_NaN();
+      vertex.coordinate.z = std::numeric_limits<float>::quiet_NaN();
+      vertex.color.r = 255;
+      vertex.color.g = 0;
+      vertex.color.b = 255;
 
       write_value_to_buffer<PointCloud::vertex_t>(coordinates, vertex);
 
-      ui_update++;
-      if(Q_UNLIKELY(ui_update == 8192))
-      {
-        handle_loaded_chunk(current_progress += ui_update * PointCloud::stride);
-        ui_update = 0;
-      }
-
-      user_data += header.point_data_stride;
       coordinates += PointCloud::stride;
     }
     handle_loaded_chunk(current_progress += ui_update * PointCloud::stride);

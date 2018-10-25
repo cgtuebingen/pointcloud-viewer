@@ -36,6 +36,8 @@ public:
   void unload_all_point_clouds();
   void load_point_cloud(QSharedPointer<PointCloud> point_cloud);
 
+  bool reapply_point_shader();
+
   void render_points(frame_t camera_frame, float aspect, std::function<void()> additional_rendering) const;
 
   int backgroundColor() const;

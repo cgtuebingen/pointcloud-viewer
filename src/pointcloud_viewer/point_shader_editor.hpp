@@ -1,4 +1,4 @@
-#ifndef POINT_SHADER_HPP
+﻿#ifndef POINT_SHADER_HPP
 #define POINT_SHADER_HPP
 
 #include <pointcloud/pointcloud.hpp>
@@ -30,17 +30,21 @@ public:
 
   PointCloud::Shader autogenerate() const;
 
+  void setShaderEditableEnabled(bool enabled);
+
 private:
+  friend
+  QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
+
   QSharedPointer<PointCloud>  _pointCloud;
   QtNodes::FlowView* flowView = nullptr;
   QtNodes::FlowScene* flowScene = nullptr;
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
   QDialogButtonBox* buttonGroup = nullptr;
 
-  std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud) const;
-
-private slots:
-  void apply_shader();
+  static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud);
 };
+
+QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
 
 #endif // POINT_SHADER_HPP

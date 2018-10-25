@@ -439,14 +439,11 @@ QDockWidget* MainWindow::initRenderDock()
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
+    pointShaderEditor.setShaderEditableEnabled(enable_modifying_buttons);
 
     const PointCloud::Shader current_shader = current_selected_point_shader();
     if(pointcloud != nullptr)
-    {
-      pointcloud->shader = current_shader;
-      if(pointcloud->shader.same_expression_as(current_shader)==false)
-        pointcloud_imported(pointcloud);
-    }
+      apply_point_shader(current_shader);
   });
 
   shaderComboBox->addItem("<loaded>");

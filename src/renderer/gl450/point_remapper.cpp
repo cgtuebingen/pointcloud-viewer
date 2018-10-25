@@ -6,8 +6,32 @@
 #include <glhelper/vertexarrayobject.hpp>
 #include <glhelper/shaderobject.hpp>
 
+#include <QSharedPointer>
+
+
+QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
+
 namespace renderer {
 namespace gl450 {
+
+enum class value_type_t;
+
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<PointCloud>& pointcloud, QSet<QString> used_properties);
+bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud);
+
+bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
+{
+  if(pointCloud == nullptr)
+    return false;
+
+  const QSet<QString> used_properties = find_used_properties(pointCloud);
+  QString code;
+  QVector<uint> property_vao_bindings;
+
+  std::tie(code, property_vao_bindings) = shader_code_glsl450(pointCloud, used_properties);
+
+  return remap_points(code.toStdString(), property_vao_bindings, pointCloud.data());
+}
 
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
 {
@@ -126,6 +150,88 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
   vertex_array_object.ResetBinding();
 
   return true;
+}
+
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<PointCloud>& pointcloud, QSet<QString> used_properties)
+{
+  QString code;
+  code += "#version 450 core\n";
+  code += "\n";
+
+  if(pointcloud == nullptr)
+  {
+    code += "void main()\n{\n}\n";
+    return std::make_tuple(code, QVector<uint>());
+  }
+
+  // https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
+  // https://www.khronos.org/files/opengl45-quick-reference-card.pdf
+
+  QString coordinate_code;
+  QString color_code;
+
+  if(coordinate_code.isEmpty())
+    coordinate_code = "vec3(0) /* not set */";
+  if(color_code.isEmpty())
+    color_code = "uvec3(255) /* not set */";
+
+  code += "\n";
+  code += "// ==== Input Buffer ====\n";
+  uint binding_index = 0;
+  QVector<decltype(binding_index)> property_bindings;
+  for(int i=0; i<pointcloud->user_data_names.length(); ++i)
+  {
+    QString type = property_to_glsl_type(pointcloud->user_data_types[i]);
+    QString name = pointcloud->user_data_names[i];
+
+    if(used_properties.contains(name) == false)
+    {
+      property_bindings << std::numeric_limits<decltype(binding_index)>::max();
+      continue;
+    }
+
+    property_bindings << binding_index;
+
+    code += "layout(location = " + QString::number(binding_index)+ ")\n";
+    code += "in " + type + " " + name + ";\n";
+
+    binding_index++;
+  }
+  code += "\n";
+
+  code += "// ==== Output Buffer ====\n";
+  code += "struct vertex_t\n";
+  code += "{\n";
+  code += "  vec3 coordinate;\n";
+  code += "  uint color;\n";
+  code += "};\n";
+  code += "\n";
+  code += "layout(std430, binding=0)\n";
+  code += "buffer impl_output_buffer\n";
+  code += "{\n";
+  code += "  vertex_t impl_output_vertex[];\n";
+  code += "};\n";
+  code += "\n";
+
+  code += "// ==== Helper Functions ====\n";
+  code += "int    to_scalar(in ivec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "uint   to_scalar(in uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "float  to_scalar(in  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "double to_scalar(in dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
+  code += "\n";
+  code += "// ==== Actual execution ====\n";
+  code += "void main()\n";
+  code += "{\n";
+  code += "  impl_output_vertex[gl_VertexID].coordinate = \n\n"
+          "      // ==== COORDINATE ====\n"
+          "      " + coordinate_code + ";\n"
+          "      // ====================\n\n";
+  code += "  impl_output_vertex[gl_VertexID].color = packUnorm4x8(vec4(vec3(\n\n"
+          "      // ==== COLOR =========\n"
+          "      " + color_code + "\n      // ====================\n\n  ), 0) / 255.);\n";
+  code += "}\n";
+
+  return std::make_tuple(code, property_bindings);
 }
 
 } //namespace gl450

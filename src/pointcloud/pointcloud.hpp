@@ -30,7 +30,7 @@ public:
   {
     glm::vec3 coordinate;
     glm::u8vec3 color;
-    padding<uint8_t> _padding;
+    padding<uint8_t> _padding = padding<uint8_t>();
   };
 
   struct UserData
@@ -51,8 +51,6 @@ public:
 
     void export_to_file(QString filename) const;
     static Shader import_from_file(QString filename);
-
-    bool same_expression_as(const Shader& shader) const;
   };
 
   Buffer coordinate_color, user_data;
@@ -71,9 +69,11 @@ public:
   PointCloud(PointCloud&& other);
   PointCloud& operator=(PointCloud&& other);
 
-  constexpr static const size_t stride = 4*4;
+  constexpr static const size_t stride = sizeof(vertex_t);
+  static_assert(stride == sizeof(vertex_t), "size mismatch");
 
   UserData all_values_of_point(size_t point_index) const;
+  vertex_t vertex(size_t point_index) const;
 
   void clear();
   void resize(size_t num_points);
