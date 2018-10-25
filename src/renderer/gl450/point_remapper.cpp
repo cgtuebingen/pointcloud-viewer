@@ -21,8 +21,7 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
 
 bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
 {
-  if(pointCloud == nullptr)
-    return false;
+  Q_ASSERT(pointCloud != nullptr);
 
   const QSet<QString> used_properties = find_used_properties(pointCloud);
   QString code;

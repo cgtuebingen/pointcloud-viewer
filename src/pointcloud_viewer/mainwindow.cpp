@@ -20,22 +20,22 @@ MainWindow::MainWindow()
 
   connect(this, &MainWindow::pointcloud_unloaded, [this](){
     pointcloud.clear();
+    viewport.unload_all_point_clouds();
     loadedShader = PointCloud::Shader();
   });
   connect(this, &MainWindow::pointcloud_imported, [this](QSharedPointer<PointCloud> p){
     pointcloud = p;
+    viewport.load_point_cloud(p);
     if(glm::any(glm::isnan(p->vertex(0).coordinate)))
       this->apply_point_shader(p->shader);
     loadedShader = p->shader;
   });
 
   connect(this, &MainWindow::pointcloud_unloaded, &pointShaderEditor, &PointShaderEditor::unload_all_point_clouds);
-  connect(this, &MainWindow::pointcloud_unloaded, &viewport, &Viewport::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &kdTreeInspector, &KdTreeInspector::unload_all_point_clouds);
   connect(this, &MainWindow::pointcloud_unloaded, &pointCloudInspector, &PointCloudInspector::unload_all_point_clouds);
 
   connect(this, &MainWindow::pointcloud_imported, &pointShaderEditor, &PointShaderEditor::load_point_cloud);
-  connect(this, &MainWindow::pointcloud_imported, &viewport, &Viewport::load_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &kdTreeInspector, &KdTreeInspector::handle_new_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &pointCloudInspector, &PointCloudInspector::handle_new_point_cloud);
   connect(this, &MainWindow::pointcloud_imported, &viewport.navigation, &Navigation::handle_new_point_cloud);

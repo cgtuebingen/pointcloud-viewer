@@ -68,7 +68,9 @@ void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
 
   _aabb = point_cloud->aabb;
 
+  this->makeCurrent();
   point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
+  this->doneCurrent();
 
   this->update();
 }
