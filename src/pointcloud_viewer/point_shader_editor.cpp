@@ -149,6 +149,10 @@ PointCloud::Shader PointShaderEditor::autogenerate() const
     }
   }
 
+  shader.node_data = flowScene->saveToMemory();
+
+  shader = ::generate_code_from_shader(flowScene, shader);
+
   return shader;
 }
 
@@ -158,7 +162,7 @@ void PointShaderEditor::setShaderEditableEnabled(bool enabled)
   buttonGroup->setEnabled(enabled);
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<PointCloud>& currentPointcloud)
+std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<const PointCloud>& currentPointcloud)
 {
   QStyle* style = QApplication::style();
 
@@ -216,7 +220,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   return registry;
 }
 
-QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud)
+QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud)
 {
   if(pointcloud == nullptr)
     return QSet<QString>();
@@ -271,24 +275,57 @@ QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud)
     OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
 
     if(outputNode!=nullptr)
-    {
       collectProperties(node);
 
+  });
+
+  return used_properties;
+}
+
+PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud)
+{
+  if(pointcloud == nullptr)
+    return PointCloud::Shader();
+
+  if(pointcloud->shader.node_data.isEmpty())
+    return pointcloud->shader;
+
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = PointShaderEditor::qt_nodes_model_registry(pointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(pointcloud->shader.node_data.toUtf8());
+
+  return generate_code_from_shader(flowScene, pointcloud->shader);
+}
+
+PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader)
+{
+  QString fallback_coordinate_expression = shader.coordinate_expression;
+  QString fallback_color_expression = shader.color_expression;
+
+  shader.coordinate_expression.clear();
+  shader.color_expression.clear();
+
+  flowScene->iterateOverNodes([&shader](QtNodes::Node* node){
+    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
+
+    if(outputNode!=nullptr)
+    {
       if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
       {
-        if(!pointcloud->shader.coordinate_expression.isEmpty())
+        if(!shader.coordinate_expression.isEmpty())
           println_error("#error Multiple Output Nodes");
-        pointcloud->shader.coordinate_expression = outputNode->coordinate->expression;
+        shader.coordinate_expression = outputNode->coordinate->expression;
       }
       if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
       {
-        if(!pointcloud->shader.color_expression.isEmpty())
+        if(!shader.color_expression.isEmpty())
           println_error("#error Multiple Output Nodes");
-        pointcloud->shader.color_expression = outputNode->color->expression;
+        shader.color_expression = outputNode->color->expression;
       }
     }
 
   });
 
-  return used_properties;
+  return shader;
 }

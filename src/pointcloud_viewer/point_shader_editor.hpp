@@ -33,8 +33,8 @@ public:
   void setShaderEditableEnabled(bool enabled);
 
 private:
-  friend
-  QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
+  friend QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
+  friend PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
 
   QSharedPointer<PointCloud>  _pointCloud;
   QtNodes::FlowView* flowView = nullptr;
@@ -42,9 +42,12 @@ private:
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
   QDialogButtonBox* buttonGroup = nullptr;
 
-  static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<PointCloud>& pointcloud);
+  static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<const PointCloud>& pointcloud);
 };
 
-QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
+QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
+PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
+PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader);
+
 
 #endif // POINT_SHADER_HPP

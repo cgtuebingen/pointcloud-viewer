@@ -20,25 +20,23 @@ MainWindow::MainWindow()
 
   connect(this, &MainWindow::pointcloud_unloaded, [this](){
     pointcloud.clear();
-    viewport.unload_all_point_clouds();
     loadedShader = PointCloud::Shader();
+    viewport.unload_all_point_clouds();
+    pointShaderEditor.unload_all_point_clouds();
+    kdTreeInspector.unload_all_point_clouds();
+    pointCloudInspector.unload_all_point_clouds();
   });
   connect(this, &MainWindow::pointcloud_imported, [this](QSharedPointer<PointCloud> p){
     pointcloud = p;
     viewport.load_point_cloud(p);
+    pointShaderEditor.load_point_cloud(p);
+    kdTreeInspector.handle_new_point_cloud(p);
+    pointCloudInspector.handle_new_point_cloud(p);
+    viewport.navigation.handle_new_point_cloud();
     if(glm::any(glm::isnan(p->vertex(0).coordinate)))
       this->apply_point_shader(p->shader);
     loadedShader = p->shader;
   });
-
-  connect(this, &MainWindow::pointcloud_unloaded, &pointShaderEditor, &PointShaderEditor::unload_all_point_clouds);
-  connect(this, &MainWindow::pointcloud_unloaded, &kdTreeInspector, &KdTreeInspector::unload_all_point_clouds);
-  connect(this, &MainWindow::pointcloud_unloaded, &pointCloudInspector, &PointCloudInspector::unload_all_point_clouds);
-
-  connect(this, &MainWindow::pointcloud_imported, &pointShaderEditor, &PointShaderEditor::load_point_cloud);
-  connect(this, &MainWindow::pointcloud_imported, &kdTreeInspector, &KdTreeInspector::handle_new_point_cloud);
-  connect(this, &MainWindow::pointcloud_imported, &pointCloudInspector, &PointCloudInspector::handle_new_point_cloud);
-  connect(this, &MainWindow::pointcloud_imported, &viewport.navigation, &Navigation::handle_new_point_cloud);
 }
 
 MainWindow::~MainWindow()
@@ -57,12 +55,15 @@ bool MainWindow::apply_point_shader(PointCloud::Shader new_shader)
   const bool colors_changed = new_shader.color_expression == new_shader.color_expression;
 
   const bool needs_being_rebuilt_for_the_first_time = glm::any(glm::isnan(this->pointcloud->vertex(0).coordinate));
-  const bool had_some_changes = !coordinates_changed || !colors_changed || new_shader.is_empty();
+  const bool had_some_changes = coordinates_changed || colors_changed;
 
-  if(!needs_being_rebuilt_for_the_first_time && had_some_changes)
+  if(!needs_being_rebuilt_for_the_first_time && !had_some_changes)
     return false;
 
-  if(!viewport.reapply_point_shader())
+  if(this->pointcloud->shader.is_empty())
+    this->pointcloud->shader = pointShaderEditor.autogenerate();
+
+  if(!viewport.reapply_point_shader(coordinates_changed))
     return false;
 
   // TODO: the called should update the aabb, if the coordinates where changed

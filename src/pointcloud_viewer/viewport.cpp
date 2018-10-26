@@ -75,7 +75,7 @@ void Viewport::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
   this->update();
 }
 
-bool Viewport::reapply_point_shader()
+bool Viewport::reapply_point_shader(bool coordinates_were_changed)
 {
   this->makeCurrent();
 
@@ -88,7 +88,14 @@ bool Viewport::reapply_point_shader()
 
   point_renderer->load_points(point_cloud->coordinate_color.data(), GLsizei(point_cloud->num_points));
 
+  if(coordinates_were_changed)
+  {
+    // TODO: update aabb
+  }
+
   this->doneCurrent();
+
+  this->update();
 
   return true;
 }

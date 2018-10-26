@@ -9,14 +9,15 @@
 #include <QSharedPointer>
 
 
-QSet<QString> find_used_properties(const QSharedPointer<PointCloud>& pointcloud);
+extern QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
+extern PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
 
 namespace renderer {
 namespace gl450 {
 
 enum class value_type_t;
 
-std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<PointCloud>& pointcloud, QSet<QString> used_properties);
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<const PointCloud>& pointcloud, QSet<QString> used_properties);
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud);
 
 bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
@@ -151,7 +152,7 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
   return true;
 }
 
-std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<PointCloud>& pointcloud, QSet<QString> used_properties)
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<const PointCloud>& pointcloud, QSet<QString> used_properties)
 {
   QString code;
   code += "#version 450 core\n";
@@ -166,13 +167,12 @@ std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<Poin
   // https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
   // https://www.khronos.org/files/opengl45-quick-reference-card.pdf
 
-  QString coordinate_code;
-  QString color_code;
+  PointCloud::Shader shader = generate_code_from_shader(pointcloud);
 
-  if(coordinate_code.isEmpty())
-    coordinate_code = "vec3(0) /* not set */";
-  if(color_code.isEmpty())
-    color_code = "uvec3(255) /* not set */";
+  if(shader.coordinate_expression.isEmpty())
+    shader.coordinate_expression = "vec3(0) /* not set */";
+  if(shader.color_expression.isEmpty())
+    shader.color_expression = "uvec3(255) /* not set */";
 
   code += "\n";
   code += "// ==== Input Buffer ====\n";
@@ -221,13 +221,18 @@ std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<Poin
   code += "// ==== Actual execution ====\n";
   code += "void main()\n";
   code += "{\n";
-  code += "  impl_output_vertex[gl_VertexID].coordinate = \n\n"
+  code += "  impl_output_vertex[gl_VertexID].coordinate = \n";
+  code += "\n"
           "      // ==== COORDINATE ====\n"
-          "      " + coordinate_code + ";\n"
-          "      // ====================\n\n";
-  code += "  impl_output_vertex[gl_VertexID].color = packUnorm4x8(vec4(vec3(\n\n"
-          "      // ==== COLOR =========\n"
-          "      " + color_code + "\n      // ====================\n\n  ), 0) / 255.);\n";
+          "      " + shader.coordinate_expression + ";\n"
+          "      // ====================\n";
+  code += "\n";
+  code += "  impl_output_vertex[gl_VertexID].color = packUnorm4x8(vec4(vec3(\n";
+  code += "\n";
+  code += "      // ==== COLOR =========\n";
+  code += "      " + shader.color_expression + "\n";
+  code += "      // ====================\n";
+  code += "\n  ), 0) / 255.);\n";
   code += "}\n";
 
   return std::make_tuple(code, property_bindings);
