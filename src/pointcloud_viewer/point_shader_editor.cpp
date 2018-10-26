@@ -19,35 +19,77 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QMenuBar>
 #include <QVBoxLayout>
 #include <QQueue>
 #include <QDialogButtonBox>
+#include <QSettings>
+#include <QFileDialog>
+#include <QPushButton>
 
 PointShaderEditor::PointShaderEditor()
 {
   setWindowTitle("Point Shader");
 
-  QVBoxLayout* vbox = new QVBoxLayout;
+  QVBoxLayout* rootLayout = new QVBoxLayout;
+
+  this->setLayout(rootLayout);
+  rootLayout->setMargin(0);
+
+  QMenuBar* menuBar = new QMenuBar;
+  rootLayout->addWidget(menuBar);
+  QMenu* shader_menu = menuBar->addMenu("&Shader");
+  importShader_action = shader_menu->addAction("&Import Shader");
+  exportShader_action = shader_menu->addAction("&Export Shader");
+  shader_menu->addSeparator();
+  QAction* applyShaderEditor_action = shader_menu->addAction("Apply Shader");
+  shader_menu->addSeparator();
+  QAction* closeShaderEditor_action = shader_menu->addAction("Close Shader Editor");
+
+  QObject::connect(exportShader_action, &QAction::triggered, this, &PointShaderEditor::exportShader);
+  QObject::connect(importShader_action, &QAction::triggered, this, &PointShaderEditor::importShader);
+
+  QObject::connect(applyShaderEditor_action, &QAction::triggered, this, &PointShaderEditor::applyShader);
+  QObject::connect(closeShaderEditor_action, &QAction::triggered, this, &PointShaderEditor::closeEditor);
 
   fallbackFlowScene = new QtNodes::FlowScene(qt_nodes_model_registry(QSharedPointer<PointCloud>()));
+
+  QVBoxLayout* vbox = new QVBoxLayout;
+  rootLayout->addLayout(vbox);
 
   flowView = new QtNodes::FlowView(fallbackFlowScene);
   flowView->setMinimumSize(1024, 768);
   vbox->addWidget(flowView);
 
-  buttonGroup = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Close);
-  buttonGroup->setEnabled(false);
-  vbox->addWidget(buttonGroup);
+  QToolButton* apply_button = new QToolButton();
+  QToolButton* close_button = new QToolButton();
 
-  this->setLayout(vbox);
+  apply_button->setDefaultAction(applyShaderEditor_action);
+  close_button->setDefaultAction(closeShaderEditor_action);
 
-  QObject::connect(buttonGroup, &QDialogButtonBox::accepted, [this](){
-    if(_pointCloud!=nullptr && flowScene!=nullptr)
-      _pointCloud->shader.node_data = flowScene->saveToMemory();
-  });
-  QObject::connect(buttonGroup, &QDialogButtonBox::rejected, [this](){
-    hide();
-  });
+  QHBoxLayout* hbox = new QHBoxLayout;
+  hbox->setMargin(8);
+  hbox->addStretch(1);
+  hbox->addWidget(apply_button);
+  hbox->addWidget(close_button);
+  vbox->addLayout(hbox);
+
+  auto update_widget_sensitivity = [this]() {
+    const bool is_readonly = this->isReadOnly();
+    const bool is_pointcloud_loaded = this->isPointCloudLoaded();
+
+    const bool something_to_edit = !is_readonly && is_pointcloud_loaded;
+
+    flowView->setEnabled(something_to_edit);
+    importShader_action->setEnabled(something_to_edit);
+
+    exportShader_action->setEnabled(is_pointcloud_loaded);
+  };
+
+  connect(this, &PointShaderEditor::isPointCloudLoadedChanged, update_widget_sensitivity);
+  connect(this, &PointShaderEditor::isReadOnlyChanged, update_widget_sensitivity);
+
+  update_widget_sensitivity();
 }
 
 PointShaderEditor::~PointShaderEditor()
@@ -58,16 +100,26 @@ PointShaderEditor::~PointShaderEditor()
 
 void PointShaderEditor::unload_all_point_clouds()
 {
+  if(!isPointCloudLoaded())
+    return;
+
   delete flowScene;
   flowScene = nullptr;
   flowView->setScene(fallbackFlowScene);
 
   _pointCloud.clear();
-  buttonGroup->setEnabled(false);
+
+  isPointCloudLoadedChanged(isPointCloudLoaded());
 }
 
 void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
 {
+  if(point_cloud == nullptr)
+  {
+    unload_all_point_clouds();
+    return;
+  }
+
   flowView->setScene(fallbackFlowScene);
   delete flowScene;
   flowScene = nullptr;
@@ -79,7 +131,8 @@ void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
   flowScene = new QtNodes::FlowScene(registry);
   flowScene->loadFromMemory(_pointCloud->shader.node_data.toUtf8());
   flowView->setScene(flowScene);
-  buttonGroup->setEnabled(true);
+
+  isPointCloudLoadedChanged(isPointCloudLoaded());
 }
 
 PointCloud::Shader PointShaderEditor::autogenerate() const
@@ -156,10 +209,23 @@ PointCloud::Shader PointShaderEditor::autogenerate() const
   return shader;
 }
 
-void PointShaderEditor::setShaderEditableEnabled(bool enabled)
+bool PointShaderEditor::isPointCloudLoaded() const
 {
-  flowView->setEnabled(enabled);
-  buttonGroup->setEnabled(enabled);
+  return _pointCloud!=nullptr;
+}
+
+bool PointShaderEditor::isReadOnly() const
+{
+  return m_isReadOnly;
+}
+
+void PointShaderEditor::setIsReadOnly(bool isReadOnly)
+{
+  if (m_isReadOnly == isReadOnly)
+    return;
+
+  m_isReadOnly = isReadOnly;
+  emit isReadOnlyChanged(m_isReadOnly);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<const PointCloud>& currentPointcloud)
@@ -218,6 +284,91 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   });
 
   return registry;
+}
+
+void PointShaderEditor::applyShader()
+{
+  if(!isPointCloudLoaded() || !isReadOnly())
+  {
+    Q_UNREACHABLE();
+    return;
+  }
+
+  _pointCloud->shader.node_data = flowScene->saveToMemory();
+}
+
+void PointShaderEditor::closeEditor()
+{
+  hide();
+}
+
+void PointShaderEditor::importShader()
+{
+  if(!isPointCloudLoaded() || !isReadOnly())
+  {
+    Q_UNREACHABLE();
+    return;
+  }
+
+
+  QString dir;
+
+  {
+    QSettings settings;
+    dir = settings.value("VizualizationShaders/exportDir").toString();
+  }
+
+  QString filename = QFileDialog::getOpenFileName(this, "Import Visualization", dir, "Point Visualization (*.point-visualization)");
+  if(!filename.isEmpty())
+  {
+    {
+      QSettings settings;
+      settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
+    }
+
+    try
+    {
+      PointCloud::Shader pointShader = PointCloud::Shader::import_from_file(filename);
+    }catch(...)
+    {
+      QMessageBox::warning(this, "Import Error", "Couldn't import the Visualization");
+    }
+  }
+}
+
+void PointShaderEditor::exportShader()
+{
+  if(!isPointCloudLoaded())
+  {
+    Q_UNREACHABLE();
+    return;
+  }
+
+  QString dir;
+
+  {
+    QSettings settings;
+    dir = settings.value("VizualizationShaders/exportDir").toString();
+  }
+
+  QString filename = QFileDialog::getSaveFileName(this, "Export Visualization", dir, "Point Visualization (*.point-visualization)");
+  if(!filename.isEmpty())
+  {
+    {
+      QSettings settings;
+      settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
+    }
+
+    try
+    {
+      if(!filename.toLower().endsWith(".point-visualization"))
+        filename += ".point-visualization";
+      _pointCloud->shader.export_to_file(filename);
+    }catch(...)
+    {
+      QMessageBox::warning(this, "Export Error", "Couldn't export the Visualization");
+    }
+  }
 }
 
 QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud)

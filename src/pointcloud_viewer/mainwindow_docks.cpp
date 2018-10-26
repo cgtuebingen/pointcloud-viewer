@@ -399,12 +399,6 @@ QDockWidget* MainWindow::initRenderDock()
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
-  // ---- save shader ----
-  QPushButton* exportShaderButton = new QPushButton("&Export");
-
-  // ---- import shader ----
-  QPushButton* importShaderButton = new QPushButton("&Import");
-
   // ---- remove shader ----
   QPushButton* removeShaderButton = new QPushButton("&Remove");
 
@@ -439,9 +433,10 @@ QDockWidget* MainWindow::initRenderDock()
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
-    pointShaderEditor.setShaderEditableEnabled(enable_modifying_buttons);
+    pointShaderEditor.setIsReadOnly(enable_modifying_buttons);
 
     const PointCloud::Shader current_shader = current_selected_point_shader();
+    // pointShaderEditor.loadShader(current_shader);
     if(pointcloud != nullptr)
       apply_point_shader(current_shader);
   });
@@ -476,63 +471,6 @@ QDockWidget* MainWindow::initRenderDock()
       pointShaderEditor.show();
   });
 
-  connect(importShaderButton, &QPushButton::clicked, [shaderComboBox, this](){
-    QString dir;
-
-    {
-      QSettings settings;
-      dir = settings.value("VizualizationShaders/exportDir").toString();
-    }
-
-    QString filename = QFileDialog::getOpenFileName(this, "Import Visualization", dir, "Point Visualization (*.point-visualization)");
-    if(!filename.isEmpty())
-    {
-      {
-        QSettings settings;
-        settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
-      }
-
-      try
-      {
-        PointCloud::Shader pointShader = PointCloud::Shader::import_from_file(filename);
-        QString name = QFileInfo(filename).baseName();
-        shaderComboBox->addItem(name, QVariant::fromValue(pointShader));
-        shaderComboBox->setCurrentIndex(shaderComboBox->count()-1);
-      }catch(...)
-      {
-        QMessageBox::warning(this, "Import Error", "Couldn't import the Visualization");
-      }
-    }
-  });
-
-  connect(exportShaderButton, &QPushButton::clicked, [current_selected_point_shader, this]() {
-    QString dir;
-
-    {
-      QSettings settings;
-      dir = settings.value("VizualizationShaders/exportDir").toString();
-    }
-
-    QString filename = QFileDialog::getSaveFileName(this, "Export Visualization", dir, "Point Visualization (*.point-visualization)");
-    if(!filename.isEmpty())
-    {
-      {
-        QSettings settings;
-        settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
-      }
-
-      try
-      {
-        if(!filename.toLower().endsWith(".point-visualization"))
-          filename += ".point-visualization";
-        current_selected_point_shader().export_to_file(filename);
-      }catch(...)
-      {
-        QMessageBox::warning(this, "Export Error", "Couldn't export the Visualization");
-      }
-    }
-  });
-
   // -- render style --
   QGroupBox* styleGroup = new QGroupBox("Style");
   form = new QFormLayout;
@@ -551,11 +489,6 @@ QDockWidget* MainWindow::initRenderDock()
   hbox = new QHBoxLayout;
   form->addRow(hbox);
   hbox->addWidget(editShaderButton);
-
-  hbox = new QHBoxLayout;
-  form->addRow(hbox);
-  hbox->addWidget(exportShaderButton);
-  hbox->addWidget(importShaderButton);
 
   hbox = new QHBoxLayout;
   form->addRow(hbox);

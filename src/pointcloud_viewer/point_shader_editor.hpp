@@ -6,6 +6,7 @@
 #include <QDialogButtonBox>
 #include <QSharedPointer>
 #include <QWidget>
+#include <QToolButton>
 #include <memory>
 
 namespace QtNodes
@@ -21,6 +22,9 @@ class Viewport;
 
 class PointShaderEditor : public QWidget
 {
+  Q_OBJECT
+  Q_PROPERTY(bool isPointCloudLoaded READ isPointCloudLoaded NOTIFY isPointCloudLoadedChanged)
+  Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setIsReadOnly NOTIFY isReadOnlyChanged)
 public:
   PointShaderEditor();
   ~PointShaderEditor();
@@ -30,19 +34,38 @@ public:
 
   PointCloud::Shader autogenerate() const;
 
-  void setShaderEditableEnabled(bool enabled);
+  bool isPointCloudLoaded() const;
+  bool isReadOnly() const;
+
+public slots:
+  void setIsReadOnly(bool isReadOnly);
+
+signals:
+  void isPointCloudLoadedChanged(bool isPointCloudLoaded);
+
+  void isReadOnlyChanged(bool isReadOnly);
 
 private:
   friend QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
   friend PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
 
   QSharedPointer<PointCloud>  _pointCloud;
-  QtNodes::FlowView* flowView = nullptr;
   QtNodes::FlowScene* flowScene = nullptr;
+
+  QtNodes::FlowView* flowView = nullptr;
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
-  QDialogButtonBox* buttonGroup = nullptr;
+  QAction* importShader_action = nullptr;
+  QAction* exportShader_action = nullptr;
 
   static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<const PointCloud>& pointcloud);
+
+  bool m_isReadOnly = false;
+
+private slots:
+  void applyShader();
+  void closeEditor();
+  void importShader();
+  void exportShader();
 };
 
 QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
