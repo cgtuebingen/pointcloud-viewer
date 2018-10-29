@@ -46,6 +46,13 @@ VectorPropertyNode::VectorPropertyNode(QStringList supportedPropertyNames, QStri
   add_row(x_combobox, x_warning_widget, &VectorPropertyNode::changedXProperty);
   add_row(y_combobox, y_warning_widget, &VectorPropertyNode::changedYProperty);
   add_row(z_combobox, z_warning_widget, &VectorPropertyNode::changedZProperty);
+
+  if(supportedPropertyNames.contains("x"))
+    x_combobox->setCurrentText("x");
+  if(supportedPropertyNames.contains("y"))
+    y_combobox->setCurrentText("y");
+  if(supportedPropertyNames.contains("z"))
+    z_combobox->setCurrentText("z");
 }
 
 QJsonObject VectorPropertyNode::save() const
