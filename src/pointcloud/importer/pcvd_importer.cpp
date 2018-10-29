@@ -72,6 +72,7 @@ bool PcvdImporter::import_implementation()
   std::streamsize point_data_size = std::streamsize(header.number_points * header.point_data_stride);
   std::streamsize kd_tree_size = load_kd_tree ? std::streamsize(header.number_points * sizeof(size_t)) : 0;
   total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size;
+  // TODO:: the shader is missing out of the total progress. Use the reserved number to add the shader size
 
   handle_loaded_chunk(current_progress += header_size);
 
