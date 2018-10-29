@@ -131,12 +131,19 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
   }
 
-  output_buffer.BindShaderStorageBuffer(0);
+  auto remap_block = [&output_buffer, &shader_object](GLintptr first_index, GLsizeiptr num_vertices) {
+    const GLsizeiptr output_size = num_vertices * GLsizeiptr(sizeof(PointCloud::vertex_t));
+    const GLsizeiptr output_offset = first_index * GLsizeiptr(sizeof(PointCloud::vertex_t));
 
-  shader_object.Activate();
+    output_buffer.BindShaderStorageBuffer(0, output_offset, output_size);
+    shader_object.Activate();
 
-  GL_CALL(glDrawArrays, GL_POINTS, 0, num_points);
-  shader_object.Deactivate();
+    GL_CALL(glDrawArrays, GL_POINTS, first_index, num_vertices);
+    shader_object.Deactivate();
+
+  };
+
+  remap_block(0, GLsizeiptr(pointCloud->num_points));
 
   output_buffer.Get(pointCloud->coordinate_color.data(), 0, output_buffer.GetSize());
 
