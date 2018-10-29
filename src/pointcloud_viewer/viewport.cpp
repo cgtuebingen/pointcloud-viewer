@@ -96,9 +96,7 @@ bool Viewport::reapply_point_shader(bool coordinates_were_changed)
       aabb |= vertex.coordinate;
 
     point_cloud->aabb = aabb;
-
-    if(point_cloud->has_build_kdtree())
-      point_cloud->kdtree_index.clear();
+    point_cloud->kdtree_index.clear();
   }
 
   this->doneCurrent();
