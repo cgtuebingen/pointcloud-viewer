@@ -436,7 +436,6 @@ QDockWidget* MainWindow::initRenderDock()
     pointShaderEditor.setIsReadOnly(!enable_modifying_buttons);
 
     const PointCloud::Shader current_shader = current_selected_point_shader();
-    // pointShaderEditor.loadShader(current_shader);
     if(pointcloud != nullptr)
       apply_point_shader(current_shader);
   });

@@ -2,7 +2,8 @@
 
 MainWindow::MainWindow()
   : kdTreeInspector(this),
-    pointCloudInspector(&viewport)
+    pointCloudInspector(&viewport),
+    pointShaderEditor(this)
 {
   setWindowTitle("Pointcloud Viewer");
 

@@ -18,7 +18,7 @@ struct FlowView;
 
 } // namespace QtNodes
 
-class Viewport;
+class MainWindow;
 
 class PointShaderEditor : public QWidget
 {
@@ -26,7 +26,7 @@ class PointShaderEditor : public QWidget
   Q_PROPERTY(bool isPointCloudLoaded READ isPointCloudLoaded NOTIFY isPointCloudLoadedChanged)
   Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setIsReadOnly NOTIFY isReadOnlyChanged)
 public:
-  PointShaderEditor();
+  PointShaderEditor(MainWindow* mainWindow);
   ~PointShaderEditor();
 
   void unload_all_point_clouds();
@@ -48,6 +48,8 @@ signals:
 private:
   friend QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
   friend PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
+
+  MainWindow& mainWindow;
 
   QSharedPointer<PointCloud>  _pointCloud;
   QtNodes::FlowScene* flowScene = nullptr;

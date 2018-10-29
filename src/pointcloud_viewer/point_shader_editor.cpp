@@ -1,6 +1,8 @@
+#include <core_library/print.hpp>
+
 #include <pointcloud_viewer/point_shader_editor.hpp>
 #include <pointcloud_viewer/viewport.hpp>
-#include <core_library/print.hpp>
+#include <pointcloud_viewer/mainwindow.hpp>
 
 #include <nodes/FlowScene>
 #include <nodes/FlowView>
@@ -27,7 +29,8 @@
 #include <QFileDialog>
 #include <QPushButton>
 
-PointShaderEditor::PointShaderEditor()
+PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
+  : mainWindow(*mainWindow)
 {
   setWindowTitle("Point Shader");
 
@@ -289,13 +292,14 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
 
 void PointShaderEditor::applyShader()
 {
-  if(!isPointCloudLoaded() || !isReadOnly())
+  if(!isPointCloudLoaded() || isReadOnly())
   {
     Q_UNREACHABLE();
     return;
   }
 
   _pointCloud->shader.node_data = flowScene->saveToMemory();
+  mainWindow.apply_point_shader(_pointCloud->shader);
 }
 
 void PointShaderEditor::closeEditor()
@@ -305,7 +309,7 @@ void PointShaderEditor::closeEditor()
 
 void PointShaderEditor::importShader()
 {
-  if(!isPointCloudLoaded() || !isReadOnly())
+  if(!isPointCloudLoaded() || isReadOnly())
   {
     Q_UNREACHABLE();
     return;
