@@ -107,11 +107,7 @@ void PointShaderEditor::unload_all_point_clouds()
   if(!isPointCloudLoaded())
     return;
 
-  delete flowScene;
-  flowScene = nullptr;
-  flowView->setScene(fallbackFlowScene);
-
-  _pointCloud.clear();
+  unload_shader();
 
   isPointCloudLoadedChanged(isPointCloudLoaded());
 }
@@ -124,19 +120,36 @@ void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
     return;
   }
 
+  _pointCloud = point_cloud;
+
+  load_shader(_pointCloud->shader);
+
+  isPointCloudLoadedChanged(isPointCloudLoaded());
+}
+
+void PointShaderEditor::unload_shader()
+{
+  if(flowScene == nullptr)
+    return;
+
+  delete flowScene;
+  flowScene = nullptr;
+  flowView->setScene(fallbackFlowScene);
+
+  _pointCloud.clear();
+}
+
+void PointShaderEditor::load_shader(PointCloud::Shader shader)
+{
   flowView->setScene(fallbackFlowScene);
   delete flowScene;
   flowScene = nullptr;
 
-  _pointCloud = point_cloud;
-
   std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(_pointCloud);
 
   flowScene = new QtNodes::FlowScene(registry);
-  flowScene->loadFromMemory(_pointCloud->shader.node_data.toUtf8());
+  flowScene->loadFromMemory(shader.node_data.toUtf8());
   flowView->setScene(flowScene);
-
-  isPointCloudLoadedChanged(isPointCloudLoaded());
 }
 
 PointCloud::Shader PointShaderEditor::autogenerate() const

@@ -32,6 +32,9 @@ public:
   void unload_all_point_clouds();
   void load_point_cloud(QSharedPointer<PointCloud> point_cloud);
 
+  void unload_shader();
+  void load_shader(PointCloud::Shader shader);
+
   PointCloud::Shader autogenerate() const;
 
   bool isPointCloudLoaded() const;

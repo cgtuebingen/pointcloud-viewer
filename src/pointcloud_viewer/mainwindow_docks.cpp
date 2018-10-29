@@ -438,6 +438,7 @@ QDockWidget* MainWindow::initRenderDock()
     const PointCloud::Shader current_shader = current_selected_point_shader();
     if(pointcloud != nullptr)
       apply_point_shader(current_shader);
+    pointShaderEditor.load_shader(current_shader);
   });
 
   shaderComboBox->addItem("<loaded>");
