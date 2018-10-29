@@ -74,7 +74,7 @@ PointShaderEditor::PointShaderEditor()
   hbox->addWidget(close_button);
   vbox->addLayout(hbox);
 
-  auto update_widget_sensitivity = [this]() {
+  auto update_widget_sensitivity = [this, applyShaderEditor_action]() {
     const bool is_readonly = this->isReadOnly();
     const bool is_pointcloud_loaded = this->isPointCloudLoaded();
 
@@ -82,6 +82,7 @@ PointShaderEditor::PointShaderEditor()
 
     flowView->setEnabled(something_to_edit);
     importShader_action->setEnabled(something_to_edit);
+    applyShaderEditor_action->setEnabled(something_to_edit);
 
     exportShader_action->setEnabled(is_pointcloud_loaded);
   };

@@ -433,7 +433,7 @@ QDockWidget* MainWindow::initRenderDock()
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
-    pointShaderEditor.setIsReadOnly(enable_modifying_buttons);
+    pointShaderEditor.setIsReadOnly(!enable_modifying_buttons);
 
     const PointCloud::Shader current_shader = current_selected_point_shader();
     // pointShaderEditor.loadShader(current_shader);
