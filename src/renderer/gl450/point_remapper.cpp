@@ -115,10 +115,11 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
 
   // TODO do this blockwise for huge pointclouds?
 
-  gl::Buffer input_buffer(num_points * attribute_stride,
-                          gl::Buffer::UsageFlag(gl::Buffer::MAP_WRITE | gl::Buffer::MAP_PERSISTENT | gl::Buffer::MAP_COHERENT),
-                          pointCloud->user_data.data());
-  gl::Buffer output_buffer(num_points * vertex_stride,
+  const GLsizei points_per_block = glm::min(65536, num_points);
+
+  gl::Buffer input_buffer(points_per_block * attribute_stride,
+                          gl::Buffer::UsageFlag(gl::Buffer::MAP_WRITE | gl::Buffer::SUB_DATA_UPDATE));
+  gl::Buffer output_buffer(points_per_block * vertex_stride,
                           gl::Buffer::UsageFlag(gl::Buffer::MAP_READ | gl::Buffer::SUB_DATA_UPDATE));
 
   vertex_array_object.Bind();
@@ -131,21 +132,33 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
   }
 
-  auto remap_block = [&output_buffer, &shader_object](GLintptr first_index, GLsizeiptr num_vertices) {
-    const GLsizeiptr output_size = num_vertices * GLsizeiptr(sizeof(PointCloud::vertex_t));
-    const GLsizeiptr output_offset = first_index * GLsizeiptr(sizeof(PointCloud::vertex_t));
+  auto remap_block = [&output_buffer, &shader_object, &input_buffer, &pointCloud, attribute_stride](GLintptr first_index, GLintptr num_vertices)
+  {
+    input_buffer.Set(pointCloud->user_data.data() + first_index * attribute_stride, 0, num_vertices * attribute_stride);
 
-    output_buffer.BindShaderStorageBuffer(0, output_offset, output_size);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    output_buffer.BindShaderStorageBuffer(0, 0, num_vertices * vertex_stride);
+
+
     shader_object.Activate();
 
-    GL_CALL(glDrawArrays, GL_POINTS, first_index, num_vertices);
+    GL_CALL(glDrawArrays, GL_POINTS, 0, num_vertices);
+
     shader_object.Deactivate();
 
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    output_buffer.Get(pointCloud->coordinate_color.data() + first_index * vertex_stride, 0, num_vertices * vertex_stride);
+
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
   };
 
-  remap_block(0, GLsizeiptr(pointCloud->num_points));
+  for(GLintptr i=0; i<num_points; i+=points_per_block)
+  {
+    remap_block(i, glm::min<GLintptr>(i+points_per_block, num_points) - i);
+  }
 
-  output_buffer.Get(pointCloud->coordinate_color.data(), 0, output_buffer.GetSize());
 
   for(int i=0; i<bindings.length(); ++i)
   {
