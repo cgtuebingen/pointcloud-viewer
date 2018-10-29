@@ -6,6 +6,7 @@
 
 #include <QtGlobal>
 #include <QDebug>
+#include <QSettings>
 
 typedef data_type::BASE_TYPE BASE_TYPE;
 
@@ -147,12 +148,23 @@ bool PointCloud::Shader::is_empty() const
 
 void PointCloud::Shader::export_to_file(QString filename) const
 {
-  // TODO
-  throw "TODO: implement";
+  QSettings iniFile(filename, QSettings::IniFormat);
+
+  iniFile.setValue("used_properties", ordered_properties());
+  iniFile.setValue("coordinate_expression", coordinate_expression);
+  iniFile.setValue("color_expression", color_expression);
+  iniFile.setValue("node_data", node_data);
 }
 
 PointCloud::Shader PointCloud::Shader::import_from_file(QString filename)
 {
-  // TODO
-  throw "TODO: implement";
+  QSettings iniFile(filename, QSettings::IniFormat);
+  Shader shader;
+
+  shader.used_properties = iniFile.value("used_properties", QStringList()).toStringList().toSet();
+  shader.coordinate_expression = iniFile.value("coordinate_expression", QString()).toString();
+  shader.color_expression = iniFile.value("color_expression", QString()).toString();
+  shader.node_data = iniFile.value("node_data", QString()).toString();
+
+  return shader;
 }
