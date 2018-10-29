@@ -148,8 +148,6 @@ bool PcvdImporter::import_implementation()
 
   if(!load_vertex)
   {
-    // TODO: run the loaded shader instead!
-
     uint8_t* coordinates = pointcloud.coordinate_color.data();
 
     size_t ui_update = 0;

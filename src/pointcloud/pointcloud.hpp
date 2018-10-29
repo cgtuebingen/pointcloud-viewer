@@ -75,6 +75,9 @@ public:
   UserData all_values_of_point(size_t point_index) const;
   vertex_t vertex(size_t point_index) const;
 
+  const vertex_t* begin() const;
+  const vertex_t* end() const;
+
   void clear();
   void resize(size_t num_points);
 

@@ -90,7 +90,15 @@ bool Viewport::reapply_point_shader(bool coordinates_were_changed)
 
   if(coordinates_were_changed)
   {
-    // TODO: update aabb
+    aabb_t aabb = aabb_t::invalid();
+
+    for(const PointCloud::vertex_t& vertex : *point_cloud)
+      aabb |= vertex.coordinate;
+
+    point_cloud->aabb = aabb;
+
+    if(point_cloud->has_build_kdtree())
+      point_cloud->kdtree_index.clear();
   }
 
   this->doneCurrent();

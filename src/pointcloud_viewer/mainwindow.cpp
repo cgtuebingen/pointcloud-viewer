@@ -67,9 +67,6 @@ bool MainWindow::apply_point_shader(PointCloud::Shader new_shader)
   if(!viewport.reapply_point_shader(coordinates_changed))
     return false;
 
-  // TODO: the called should update the aabb, if the coordinates where changed
-  // TODO: the called should rebuild the KD tree, if the coordinates where changed
-
   // update the selected point
   pointCloudInspector.update();
 

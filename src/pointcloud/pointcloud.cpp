@@ -60,6 +60,16 @@ PointCloud::vertex_t PointCloud::vertex(size_t point_index) const
   return vertex;
 }
 
+const PointCloud::vertex_t* PointCloud::begin() const
+{
+  return reinterpret_cast<const vertex_t*>(coordinate_color.data());
+}
+
+const PointCloud::vertex_t* PointCloud::end() const
+{
+  return begin() + num_points;
+}
+
 void PointCloud::clear()
 {
   coordinate_color.clear();
