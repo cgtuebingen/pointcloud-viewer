@@ -36,7 +36,9 @@ struct header_t
 
   aabb_t aabb;
 
-  uint64_t reserved; // ignored. Must be zero, if file_version_number==0
+  uint32_t shader_data_size;
+
+  uint32_t reserved; // ignored. Must be zero, if file_version_number<=1
 };
 
 struct field_description_t

@@ -55,13 +55,39 @@ bool PcvdExporter::export_implementation()
 
   header.reserved = 0;
 
+  pcvd_format::shader_description_t shader_description;
+  QByteArray shader_used_properies_bytes = pointcloud.shader.ordered_properties().join('\n').toUtf8();
+  QByteArray shader_coordinate_bytes = pointcloud.shader.coordinate_expression.toUtf8();
+  QByteArray shader_color_bytes = pointcloud.shader.color_expression.toUtf8();
+  QByteArray shader_node_bytes = pointcloud.shader.node_data.toUtf8();
+
+  {
+
+    if(shader_used_properies_bytes.length() > std::numeric_limits<decltype(shader_description.used_properties_length)>::max())
+      throw QString("Can't save point cloud (shader name too long)");
+    if(shader_coordinate_bytes.length() > std::numeric_limits<decltype(shader_description.coordinate_expression_length)>::max())
+      throw QString("Can't save point cloud (shader coordinate expression too long)");
+    if(shader_color_bytes.length() > std::numeric_limits<decltype(shader_description.color_expression_length)>::max())
+      throw QString("Can't save point cloud (shader color expression too long)");
+    if(shader_node_bytes.length() > std::numeric_limits<decltype(shader_description.node_data_length)>::max())
+      throw QString("Can't save point cloud (shader node data string too long)");
+
+    shader_description.used_properties_length = static_cast<decltype(shader_description.used_properties_length)>(shader_used_properies_bytes.length());
+    shader_description.coordinate_expression_length = static_cast<decltype(shader_description.coordinate_expression_length)>(shader_coordinate_bytes.length());
+    shader_description.color_expression_length = static_cast<decltype(shader_description.color_expression_length)>(shader_color_bytes.length());
+    shader_description.node_data_length = static_cast<decltype(shader_description.node_data_length)>(shader_node_bytes.length());
+
+    header.shader_data_size = uint32_t(shader_description.color_expression_length) + uint32_t(shader_description.coordinate_expression_length) + uint32_t(shader_description.node_data_length) + uint32_t(shader_description.used_properties_length);
+  }
+
   std::streamsize header_size = sizeof(pcvd_format::header_t);
   std::streamsize field_headers_size = sizeof(pcvd_format::field_description_t) * header.number_fields;
   std::streamsize field_names_size = header.field_names_total_size;
   std::streamsize vertex_data_size = save_vertex_data ? std::streamsize(pointcloud.num_points * sizeof(PointCloud::vertex_t)) : 0;
   std::streamsize point_data_size = std::streamsize(pointcloud.num_points * header.point_data_stride);
   std::streamsize kd_tree_size = save_kd_tree ? std::streamsize(pointcloud.num_points * sizeof(size_t)) : 0;
-  total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size;
+  std::streamsize shader_data_size = save_shader ? std::streamsize(sizeof(pcvd_format::shader_description_t) + header.shader_data_size) : 0;
+  total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size + shader_data_size;
   int64_t current_progress = 0;
 
   stream.write(reinterpret_cast<const char*>(&header), header_size);
@@ -86,32 +112,11 @@ bool PcvdExporter::export_implementation()
     handle_written_chunk(current_progress += kd_tree_size);
   }
 
-  {
-    QByteArray used_properies_bytes = pointcloud.shader.ordered_properties().join('\n').toUtf8();
-    QByteArray coordinate_bytes = pointcloud.shader.coordinate_expression.toUtf8();
-    QByteArray color_bytes = pointcloud.shader.color_expression.toUtf8();
-    QByteArray node_bytes = pointcloud.shader.node_data.toUtf8();
-    pcvd_format::shader_description_t shader_description;
-
-    if(used_properies_bytes.length() > std::numeric_limits<decltype(shader_description.used_properties_length)>::max())
-      throw QString("Can't save point cloud (shader name too long)");
-    if(coordinate_bytes.length() > std::numeric_limits<decltype(shader_description.coordinate_expression_length)>::max())
-      throw QString("Can't save point cloud (shader coordinate expression too long)");
-    if(color_bytes.length() > std::numeric_limits<decltype(shader_description.color_expression_length)>::max())
-      throw QString("Can't save point cloud (shader color expression too long)");
-    if(node_bytes.length() > std::numeric_limits<decltype(shader_description.node_data_length)>::max())
-      throw QString("Can't save point cloud (shader node data string too long)");
-
-    shader_description.used_properties_length = static_cast<decltype(shader_description.used_properties_length)>(used_properies_bytes.length());
-    shader_description.coordinate_expression_length = static_cast<decltype(shader_description.coordinate_expression_length)>(coordinate_bytes.length());
-    shader_description.color_expression_length = static_cast<decltype(shader_description.color_expression_length)>(color_bytes.length());
-    shader_description.node_data_length = static_cast<decltype(shader_description.node_data_length)>(node_bytes.length());
-    stream.write(reinterpret_cast<const char*>(&shader_description), sizeof(shader_description));
-    stream.write(used_properies_bytes.data(), used_properies_bytes.length());
-    stream.write(coordinate_bytes.data(), coordinate_bytes.length());
-    stream.write(color_bytes.data(), color_bytes.length());
-    stream.write(node_bytes.data(), node_bytes.length());
-  }
+  stream.write(reinterpret_cast<const char*>(&shader_description), sizeof(shader_description));
+  stream.write(shader_used_properies_bytes.data(), shader_used_properies_bytes.length());
+  stream.write(shader_coordinate_bytes.data(), shader_coordinate_bytes.length());
+  stream.write(shader_color_bytes.data(), shader_color_bytes.length());
+  stream.write(shader_node_bytes.data(), shader_node_bytes.length());
 
   return true;
 }

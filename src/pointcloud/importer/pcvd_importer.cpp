@@ -50,7 +50,9 @@ bool PcvdImporter::import_implementation()
     throw QString("corrupt header (invalid flags)");
   if(header.file_version_number == 1 && (header.flags&0xfff8)!=0)
     throw QString("corrupt header (invalid flags)");
-  if(header.file_version_number <= 1 && header.reserved!=0)
+  if(header.file_version_number < 1 && header.shader_data_size!=0)
+    throw QString("corrupt header (invalid padding)");
+  if(header.reserved!=0)
     throw QString("corrupt header (invalid padding)");
   if(glm::any(glm::isnan(header.aabb.min_point)))
     throw QString("corrupt header (invalid aabb)");
@@ -71,8 +73,8 @@ bool PcvdImporter::import_implementation()
   std::streamsize vertex_data_size = std::streamsize(header.number_points * sizeof(PointCloud::vertex_t));
   std::streamsize point_data_size = std::streamsize(header.number_points * header.point_data_stride);
   std::streamsize kd_tree_size = load_kd_tree ? std::streamsize(header.number_points * sizeof(size_t)) : 0;
-  total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size;
-  // TODO:: the shader is missing out of the total progress. Use the reserved number to add the shader size
+  std::streamsize shader_size = load_shader ? std::streamsize(sizeof(pcvd_format::shader_description_t) + header.shader_data_size) : 0;
+  total_progress = header_size + field_headers_size + field_names_size + vertex_data_size + point_data_size + kd_tree_size + shader_size;
 
   handle_loaded_chunk(current_progress += header_size);
 
