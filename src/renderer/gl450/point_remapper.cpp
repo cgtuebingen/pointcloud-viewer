@@ -17,6 +17,8 @@ namespace gl450 {
 
 enum class value_type_t;
 
+constexpr const uint invalid_binding = std::numeric_limits<uint>::max();
+
 std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<const PointCloud>& pointcloud, QSet<QString> used_properties);
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud);
 
@@ -35,8 +37,6 @@ bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
 
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
 {
-  const uint invalid_binding = std::numeric_limits<uint>::max();
-
   gl::ShaderObject shader_object("point_remapper");
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX, vertex_shader,"generated vertex shader");
   if(gl::Result::FAILURE == shader_object.CreateProgram())
@@ -185,7 +185,7 @@ std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<cons
 
     if(used_properties.contains(name) == false)
     {
-      property_bindings << std::numeric_limits<decltype(binding_index)>::max();
+      property_bindings << invalid_binding;
       continue;
     }
 
