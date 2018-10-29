@@ -122,12 +122,12 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
                           gl::Buffer::UsageFlag(gl::Buffer::MAP_READ | gl::Buffer::SUB_DATA_UPDATE));
 
   vertex_array_object.Bind();
-  for(int i=0; i<bindings.length(); ++i)
+  for(int i=0, binding_index=0; i<bindings.length(); ++i)
   {
     if(bindings[i] != invalid_binding)
     {
       size_t property_offset = pointCloud->user_data_offset[i];
-      input_buffer.BindVertexBuffer(uint(i), GLsizeiptr(property_offset), attribute_stride);
+      input_buffer.BindVertexBuffer(uint(binding_index++), GLsizeiptr(property_offset), attribute_stride);
     }
   }
 
