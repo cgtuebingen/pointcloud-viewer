@@ -49,7 +49,7 @@ bool OutputNode::portCaptionVisible(QtNodes::PortType portType, QtNodes::PortInd
   return true;
 }
 
-QtNodes::NodeDataType OutputNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataType OutputNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
 {
   return Value().type();
 }

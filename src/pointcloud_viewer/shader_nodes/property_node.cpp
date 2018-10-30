@@ -82,7 +82,7 @@ uint PropertyNode::nPorts(QtNodes::PortType portType) const
   return 0;
 }
 
-QtNodes::NodeDataType PropertyNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataType PropertyNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
 {
   return Value().type();
 }

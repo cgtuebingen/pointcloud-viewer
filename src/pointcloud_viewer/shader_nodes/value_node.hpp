@@ -23,7 +23,7 @@ public:
   uint nPorts(QtNodes::PortType portType) const override;
   QString portCaption(QtNodes::PortType, QtNodes::PortIndex) const override;
   bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
-  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType, QtNodes::PortIndex) const override;
 
   void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port) override;
 

@@ -37,7 +37,7 @@ uint SpyNode::nPorts(QtNodes::PortType portType) const
   return 0;
 }
 
-QtNodes::NodeDataType SpyNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataType SpyNode::dataType(QtNodes::PortType, QtNodes::PortIndex) const
 {
   return Value().type();
 }

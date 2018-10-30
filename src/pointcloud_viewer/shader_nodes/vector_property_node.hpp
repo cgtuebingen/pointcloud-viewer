@@ -20,7 +20,7 @@ public:
   QString caption() const override;
   QString name() const override;
   uint nPorts(QtNodes::PortType portType) const override;
-  QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+  QtNodes::NodeDataType dataType(QtNodes::PortType, QtNodes::PortIndex) const override;
 
   QVector<QString> vector_properties_names() const {return QVector<QString>({x_combobox->currentText(), y_combobox->currentText(), z_combobox->currentText()});}
 
