@@ -348,7 +348,7 @@ void PointShaderEditor::importShader()
 
     try
     {
-      PointCloud::Shader pointShader = PointCloud::Shader::import_from_file(filename);
+      load_shader(PointCloud::Shader::import_from_file(filename));
     }catch(...)
     {
       QMessageBox::warning(this, "Import Error", "Couldn't import the Visualization");
