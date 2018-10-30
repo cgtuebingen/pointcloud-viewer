@@ -6,6 +6,7 @@
 #include <QDialogButtonBox>
 #include <QSharedPointer>
 #include <QWidget>
+#include <QLabel>
 #include <QToolButton>
 #include <memory>
 
@@ -63,6 +64,8 @@ private:
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
   QAction* importShader_action = nullptr;
   QAction* exportShader_action = nullptr;
+
+  QLabel* readonlyNotificationBar;
 
   static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const PointCloud* pointcloud);
 

@@ -1,4 +1,5 @@
 #include <core_library/print.hpp>
+#include <core_library/color_palette.hpp>
 
 #include <pointcloud_viewer/point_shader_editor.hpp>
 #include <pointcloud_viewer/viewport.hpp>
@@ -38,6 +39,7 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
 
   this->setLayout(rootLayout);
   rootLayout->setMargin(0);
+  rootLayout->setSpacing(0);
 
   QMenuBar* menuBar = new QMenuBar;
   rootLayout->addWidget(menuBar);
@@ -56,6 +58,18 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
   QObject::connect(closeShaderEditor_action, &QAction::triggered, this, &PointShaderEditor::closeEditor);
 
   fallbackFlowScene = new QtNodes::FlowScene(qt_nodes_model_registry(nullptr));
+
+  {
+    readonlyNotificationBar = new QLabel;
+    readonlyNotificationBar->setVisible(false);
+    readonlyNotificationBar->setStyleSheet(QString("QLabel{background: " + color_palette::orange[0].hexcode() + "; color: " + color_palette::aluminium[5].hexcode() + "}"));
+    readonlyNotificationBar->setAlignment(Qt::AlignCenter|Qt::AlignVCenter);
+    QFont font = readonlyNotificationBar->font();
+    font.setPixelSize(32);
+    font.setBold(true);
+    readonlyNotificationBar->setFont(font);
+    rootLayout->addWidget(readonlyNotificationBar);
+  }
 
   QVBoxLayout* vbox = new QVBoxLayout;
   rootLayout->addLayout(vbox);
@@ -88,6 +102,14 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
     applyShaderEditor_action->setEnabled(something_to_edit);
 
     exportShader_action->setEnabled(is_pointcloud_loaded);
+
+    if(is_readonly)
+      readonlyNotificationBar->setText("Can't edit the current point-shader");
+    else if(!is_pointcloud_loaded)
+      readonlyNotificationBar->setText("No point cloud loaded");
+    else
+      readonlyNotificationBar->setText("Can't edit the shader");
+    readonlyNotificationBar->setVisible(!something_to_edit);
   };
 
   connect(this, &PointShaderEditor::isPointCloudLoadedChanged, update_widget_sensitivity);
