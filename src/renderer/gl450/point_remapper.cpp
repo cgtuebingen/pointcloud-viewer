@@ -39,11 +39,16 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
 {
   gl::ShaderObject shader_object("point_remapper");
   shader_object.AddShaderFromSource(gl::ShaderObject::ShaderType::VERTEX, vertex_shader,"generated vertex shader");
-  if(gl::Result::FAILURE == shader_object.CreateProgram())
+
+  const bool failed = gl::Result::FAILURE == shader_object.CreateProgram();
+
+  constexpr const bool always_print_shader = false;
+  constexpr const bool with_linenumbers = true;
+
+  if(failed || always_print_shader)
   {
     println_error("==== Shader Code ================================");
 
-    const bool with_linenumbers = true;
     if(with_linenumbers)
     {
       int line_number = 1;
@@ -58,7 +63,9 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
     }
 
     println_error("=================================================");
-    return false;
+
+    if(failed)
+      return false;
   }
 
   GLsizei num_points = GLsizei(pointCloud->num_points);
