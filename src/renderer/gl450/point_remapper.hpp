@@ -15,7 +15,7 @@ namespace gl450 {
 /**
 Remaps the point coordinates and colors osed for rendering
 */
-bool remap_points(const QSharedPointer<PointCloud>& pointCloud);
+bool remap_points(PointCloud* pointCloud);
 
 } //namespace gl450
 } //namespace renderer

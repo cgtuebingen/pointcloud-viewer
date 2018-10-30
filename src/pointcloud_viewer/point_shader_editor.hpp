@@ -35,7 +35,7 @@ public:
   void unload_shader();
   void load_shader(PointCloud::Shader shader);
 
-  PointCloud::Shader autogenerate() const;
+  static PointCloud::Shader autogenerate(const PointCloud* pointcloud);
 
   bool isPointCloudLoaded() const;
   bool isReadOnly() const;
@@ -51,8 +51,8 @@ signals:
   void shader_applied();
 
 private:
-  friend QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
-  friend PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
+  friend QSet<QString> find_used_properties(const PointCloud* pointcloud);
+  friend PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud);
 
   MainWindow& mainWindow;
 
@@ -64,7 +64,7 @@ private:
   QAction* importShader_action = nullptr;
   QAction* exportShader_action = nullptr;
 
-  static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const QSharedPointer<const PointCloud>& pointcloud);
+  static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const PointCloud* pointcloud);
 
   bool m_isReadOnly = false;
 
@@ -75,8 +75,8 @@ private slots:
   void exportShader();
 };
 
-QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
-PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
+QSet<QString> find_used_properties(const PointCloud* pointcloud);
+PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud);
 PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader);
 
 

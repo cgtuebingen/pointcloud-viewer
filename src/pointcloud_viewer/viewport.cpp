@@ -79,7 +79,7 @@ bool Viewport::reapply_point_shader(bool coordinates_were_changed)
 {
   this->makeCurrent();
 
-  if(!renderer::gl450::remap_points(point_cloud))
+  if(!renderer::gl450::remap_points(point_cloud.data()))
   {
     this->doneCurrent();
     QMessageBox::warning(this, "Shader error", "Could not apply the point shader.\nPlease take a look at the Standard Output");

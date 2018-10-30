@@ -9,8 +9,8 @@
 #include <QSharedPointer>
 
 
-extern QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
-extern PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);
+extern QSet<QString> find_used_properties(const PointCloud* pointcloud);
+extern PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud);
 
 namespace renderer {
 namespace gl450 {
@@ -19,10 +19,10 @@ enum class value_type_t;
 
 constexpr const uint invalid_binding = std::numeric_limits<uint>::max();
 
-std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<const PointCloud>& pointcloud, QSet<QString> used_properties);
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const PointCloud* pointcloud, QSet<QString> used_properties);
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud);
 
-bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
+bool remap_points(PointCloud* pointCloud)
 {
   Q_ASSERT(pointCloud != nullptr);
 
@@ -32,7 +32,7 @@ bool remap_points(const QSharedPointer<PointCloud>& pointCloud)
 
   std::tie(code, property_vao_bindings) = shader_code_glsl450(pointCloud, used_properties);
 
-  return remap_points(code.toStdString(), property_vao_bindings, pointCloud.data());
+  return remap_points(code.toStdString(), property_vao_bindings, pointCloud);
 }
 
 bool remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud)
@@ -177,7 +177,7 @@ bool remap_points(const std::string& vertex_shader, const QVector<uint>& binding
   return true;
 }
 
-std::tuple<QString, QVector<uint>> shader_code_glsl450(const QSharedPointer<const PointCloud>& pointcloud, QSet<QString> used_properties)
+std::tuple<QString, QVector<uint>> shader_code_glsl450(const PointCloud* pointcloud, QSet<QString> used_properties)
 {
   QString code;
   code += "#version 450 core\n";

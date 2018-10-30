@@ -418,11 +418,11 @@ QDockWidget* MainWindow::initRenderDock()
     {
     case 0:
       if(loadedShader.coordinate_expression.isEmpty())
-        return pointShaderEditor.autogenerate();
+        return pointShaderEditor.autogenerate(pointcloud.data());
       else
         return loadedShader;
     case 1:
-      return pointShaderEditor.autogenerate();
+      return pointShaderEditor.autogenerate(pointcloud.data());
     default:
       return shaderComboBox->currentData().value<PointCloud::Shader>();
     }
@@ -450,7 +450,10 @@ QDockWidget* MainWindow::initRenderDock()
     apply_current_shader();
   });
 
-  connect(this, &MainWindow::pointcloud_imported, switch_to_loaded_shader);
+  connect(this, &MainWindow::pointcloud_imported, [switch_to_loaded_shader,apply_current_shader](){
+    switch_to_loaded_shader();
+    apply_current_shader();
+  });
   connect(this, &MainWindow::pointcloud_unloaded, switch_to_loaded_shader);
 
   connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](){

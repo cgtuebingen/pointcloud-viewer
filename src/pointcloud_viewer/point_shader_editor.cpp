@@ -55,7 +55,7 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
   QObject::connect(applyShaderEditor_action, &QAction::triggered, this, &PointShaderEditor::applyShader);
   QObject::connect(closeShaderEditor_action, &QAction::triggered, this, &PointShaderEditor::closeEditor);
 
-  fallbackFlowScene = new QtNodes::FlowScene(qt_nodes_model_registry(QSharedPointer<PointCloud>()));
+  fallbackFlowScene = new QtNodes::FlowScene(qt_nodes_model_registry(nullptr));
 
   QVBoxLayout* vbox = new QVBoxLayout;
   rootLayout->addLayout(vbox);
@@ -145,30 +145,30 @@ void PointShaderEditor::load_shader(PointCloud::Shader shader)
   delete flowScene;
   flowScene = nullptr;
 
-  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(_pointCloud);
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(_pointCloud.data());
 
   flowScene = new QtNodes::FlowScene(registry);
   flowScene->loadFromMemory(shader.node_data.toUtf8());
   flowView->setScene(flowScene);
 }
 
-PointCloud::Shader PointShaderEditor::autogenerate() const
+PointCloud::Shader PointShaderEditor::autogenerate(const PointCloud* pointcloud)
 {
   static const QSet<QString> xyz_names = {"x", "y", "z"};
   static const QSet<QString> red_green_blue_names = {"red", "green", "blue"};
 
   PointCloud::Shader shader;
 
-  if(_pointCloud != nullptr)
+  if(pointcloud != nullptr)
   {
-    const QSet<QString> properties_contained_within_the_point_cloud = _pointCloud->user_data_names.toList().toSet();
+    const QSet<QString> properties_contained_within_the_point_cloud = pointcloud->user_data_names.toList().toSet();
     if(properties_contained_within_the_point_cloud.contains(xyz_names))
       shader.used_properties.unite(xyz_names);
     if(properties_contained_within_the_point_cloud.contains(red_green_blue_names))
       shader.used_properties.unite(red_green_blue_names);
   }
 
-  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(_pointCloud);
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = qt_nodes_model_registry(pointcloud);
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
 
@@ -245,7 +245,7 @@ void PointShaderEditor::setIsReadOnly(bool isReadOnly)
   emit isReadOnlyChanged(m_isReadOnly);
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const QSharedPointer<const PointCloud>& currentPointcloud)
+std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const PointCloud* currentPointcloud)
 {
   QStyle* style = QApplication::style();
 
@@ -391,7 +391,7 @@ void PointShaderEditor::exportShader()
   }
 }
 
-QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud)
+QSet<QString> find_used_properties(const PointCloud* pointcloud)
 {
   if(pointcloud == nullptr)
     return QSet<QString>();
@@ -442,18 +442,17 @@ QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& point
   // Find the output nodes to
   // a) collect all actually used attributes with collectProperties
   // b) generate the actual expression
-  flowScene->iterateOverNodes([pointcloud, collectProperties](QtNodes::Node* node){
+  flowScene->iterateOverNodes([collectProperties](QtNodes::Node* node){
     OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
 
     if(outputNode!=nullptr)
       collectProperties(node);
-
   });
 
   return used_properties;
 }
 
-PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud)
+PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud)
 {
   if(pointcloud == nullptr)
     return PointCloud::Shader();
