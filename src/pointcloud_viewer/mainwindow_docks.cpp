@@ -428,17 +428,35 @@ QDockWidget* MainWindow::initRenderDock()
     }
   };
 
-  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, is_builtin_visualization,removeShaderButton,editShaderButton,current_selected_point_shader](int index){
+  auto apply_current_shader = [this, current_selected_point_shader](){
+    const PointCloud::Shader current_shader = current_selected_point_shader();
+
+    if(pointcloud != nullptr)
+      apply_point_shader(current_shader);
+    pointShaderEditor.load_shader(current_shader);
+  };
+
+  auto switch_to_loaded_shader = [shaderComboBox](){
+    shaderComboBox->setCurrentIndex(0);
+  };
+
+  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, is_builtin_visualization,removeShaderButton,editShaderButton,apply_current_shader](int index){
     const bool enable_modifying_buttons = !is_builtin_visualization(index);
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
     pointShaderEditor.setIsReadOnly(!enable_modifying_buttons);
 
-    const PointCloud::Shader current_shader = current_selected_point_shader();
-    if(pointcloud != nullptr)
-      apply_point_shader(current_shader);
-    pointShaderEditor.load_shader(current_shader);
+    apply_current_shader();
+  });
+
+  connect(this, &MainWindow::pointcloud_imported, switch_to_loaded_shader);
+  connect(this, &MainWindow::pointcloud_unloaded, switch_to_loaded_shader);
+
+  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](){
+    apply_point_shader(pointcloud->shader);
+    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
+      shaderComboBox->setItemData(shaderComboBox->currentIndex(), QVariant::fromValue<PointCloud::Shader>(pointcloud->shader));
   });
 
   shaderComboBox->addItem("<loaded>");

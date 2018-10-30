@@ -48,6 +48,8 @@ signals:
 
   void isReadOnlyChanged(bool isReadOnly);
 
+  void shader_applied();
+
 private:
   friend QSet<QString> find_used_properties(const QSharedPointer<const PointCloud>& pointcloud);
   friend PointCloud::Shader generate_code_from_shader(const QSharedPointer<const PointCloud>& pointcloud);

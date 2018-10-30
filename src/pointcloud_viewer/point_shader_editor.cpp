@@ -122,8 +122,6 @@ void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
 
   _pointCloud = point_cloud;
 
-  load_shader(_pointCloud->shader);
-
   isPointCloudLoadedChanged(isPointCloudLoaded());
 }
 
@@ -312,7 +310,8 @@ void PointShaderEditor::applyShader()
   }
 
   _pointCloud->shader.node_data = flowScene->saveToMemory();
-  mainWindow.apply_point_shader(_pointCloud->shader);
+
+  shader_applied();
 }
 
 void PointShaderEditor::closeEditor()
