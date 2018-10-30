@@ -11,9 +11,6 @@ MainWindow::MainWindow()
 
   setCentralWidget(&viewport);
 
-  initMenuBar();
-  initDocks();
-
   connect(&flythrough, &Flythrough::set_new_camera_frame, &viewport, &Viewport::set_camera_frame);
   connect(&viewport, &Viewport::frame_rendered, &flythrough.playback, &Playback::previous_frame_finished);
   connect(&viewport, &Viewport::openGlContextCreated, this, &MainWindow::handleApplicationArguments);
@@ -40,6 +37,9 @@ MainWindow::MainWindow()
       this->apply_point_shader(p->shader);
     loadedShader = p->shader;
   });
+
+  initMenuBar();
+  initDocks();
 }
 
 MainWindow::~MainWindow()
