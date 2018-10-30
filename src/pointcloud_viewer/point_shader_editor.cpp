@@ -84,8 +84,13 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
   apply_button->setDefaultAction(applyShaderEditor_action);
   close_button->setDefaultAction(closeShaderEditor_action);
 
+  shaderName_Editor = new QLineEdit;
+  connect(shaderName_Editor, &QLineEdit::textChanged, this, &PointShaderEditor::setShaderName);
+  connect(this, &PointShaderEditor::shaderNameChanged, shaderName_Editor, &QLineEdit::setText);
+
   QHBoxLayout* hbox = new QHBoxLayout;
   hbox->setMargin(8);
+  hbox->addWidget(shaderName_Editor);
   hbox->addStretch(1);
   hbox->addWidget(apply_button);
   hbox->addWidget(close_button);
@@ -100,6 +105,7 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
     flowView->setEnabled(something_to_edit);
     importShader_action->setEnabled(something_to_edit);
     applyShaderEditor_action->setEnabled(something_to_edit);
+    shaderName_Editor->setEnabled(something_to_edit);
 
     exportShader_action->setEnabled(is_pointcloud_loaded);
 
@@ -258,6 +264,11 @@ bool PointShaderEditor::isReadOnly() const
   return m_isReadOnly;
 }
 
+QString PointShaderEditor::shaderName() const
+{
+  return m_shaderName;
+}
+
 void PointShaderEditor::setIsReadOnly(bool isReadOnly)
 {
   if (m_isReadOnly == isReadOnly)
@@ -265,6 +276,15 @@ void PointShaderEditor::setIsReadOnly(bool isReadOnly)
 
   m_isReadOnly = isReadOnly;
   emit isReadOnlyChanged(m_isReadOnly);
+}
+
+void PointShaderEditor::setShaderName(QString shaderName)
+{
+  if (m_shaderName == shaderName)
+    return;
+
+  m_shaderName = shaderName;
+  emit shaderNameChanged(m_shaderName);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_registry(const PointCloud* currentPointcloud)

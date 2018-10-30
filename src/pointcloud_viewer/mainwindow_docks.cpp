@@ -440,14 +440,21 @@ QDockWidget* MainWindow::initRenderDock()
     shaderComboBox->setCurrentIndex(0);
   };
 
-  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, is_builtin_visualization,removeShaderButton,editShaderButton,apply_current_shader](int index){
+  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, shaderComboBox, is_builtin_visualization,removeShaderButton,editShaderButton,apply_current_shader](int index){
     const bool enable_modifying_buttons = !is_builtin_visualization(index);
 
     removeShaderButton->setEnabled(enable_modifying_buttons);
     editShaderButton->setEnabled(enable_modifying_buttons);
     pointShaderEditor.setIsReadOnly(!enable_modifying_buttons);
+    pointShaderEditor.setShaderName(shaderComboBox->currentText());
 
     apply_current_shader();
+  });
+
+  connect(&pointShaderEditor, &PointShaderEditor::shaderNameChanged, [shaderComboBox, is_builtin_visualization](QString text){
+    const int index = shaderComboBox->currentIndex();
+    if(!is_builtin_visualization(index))
+      shaderComboBox->setItemText(index, text);
   });
 
   connect(this, &MainWindow::pointcloud_imported, [switch_to_loaded_shader,apply_current_shader](){

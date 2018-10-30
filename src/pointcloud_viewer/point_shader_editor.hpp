@@ -8,6 +8,8 @@
 #include <QWidget>
 #include <QLabel>
 #include <QToolButton>
+#include <QLineEdit>
+
 #include <memory>
 
 namespace QtNodes
@@ -26,6 +28,7 @@ class PointShaderEditor : public QWidget
   Q_OBJECT
   Q_PROPERTY(bool isPointCloudLoaded READ isPointCloudLoaded NOTIFY isPointCloudLoadedChanged)
   Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setIsReadOnly NOTIFY isReadOnlyChanged)
+  Q_PROPERTY(QString shaderName READ shaderName WRITE setShaderName NOTIFY shaderNameChanged)
 public:
   PointShaderEditor(MainWindow* mainWindow);
   ~PointShaderEditor();
@@ -41,8 +44,11 @@ public:
   bool isPointCloudLoaded() const;
   bool isReadOnly() const;
 
+  QString shaderName() const;
+
 public slots:
   void setIsReadOnly(bool isReadOnly);
+  void setShaderName(QString shaderName);
 
 signals:
   void isPointCloudLoadedChanged(bool isPointCloudLoaded);
@@ -50,6 +56,8 @@ signals:
   void isReadOnlyChanged(bool isReadOnly);
 
   void shader_applied();
+
+  void shaderNameChanged(QString shaderName);
 
 private:
   friend QSet<QString> find_used_properties(const PointCloud* pointcloud);
@@ -66,10 +74,13 @@ private:
   QAction* exportShader_action = nullptr;
 
   QLabel* readonlyNotificationBar;
+  QLineEdit* shaderName_Editor;
 
   static std::shared_ptr<QtNodes::DataModelRegistry> qt_nodes_model_registry(const PointCloud* pointcloud);
 
   bool m_isReadOnly = false;
+
+  QString m_shaderName;
 
 private slots:
   void applyShader();
