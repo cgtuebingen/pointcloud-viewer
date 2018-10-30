@@ -1,5 +1,7 @@
 #include <pointcloud_viewer/mainwindow.hpp>
 
+#include <QMessageBox>
+
 MainWindow::MainWindow()
   : kdTreeInspector(this),
     pointCloudInspector(&viewport),
@@ -61,7 +63,19 @@ bool MainWindow::apply_point_shader(PointCloud::Shader new_shader)
   if(!needs_being_rebuilt_for_the_first_time && !had_some_changes)
     return false;
 
-  if(this->pointcloud->shader.is_empty())
+  const QSet<QString> properties_provided_by_pointcloud = this->pointcloud->user_data_names.toList().toSet();
+  const QSet<QString> properties_requested_by_shader = new_shader.used_properties;
+  QStringList properties_requested_by_shader_but_not_provided_by_pointcloud = (properties_requested_by_shader - properties_provided_by_pointcloud).toList();
+  properties_requested_by_shader_but_not_provided_by_pointcloud.sort();
+
+  const bool shader_contains_unexpected_values = properties_requested_by_shader_but_not_provided_by_pointcloud.isEmpty() == false;
+
+  if(shader_contains_unexpected_values)
+    QMessageBox::warning(this,
+                         "Incompatible Shader",
+                         "Can't apply the shader to the pointcloud, as the pointcloud doesn't provide the following properties requested by the shader:\n* " + properties_requested_by_shader_but_not_provided_by_pointcloud.join("\n* "));
+
+  if(this->pointcloud->shader.is_empty() || shader_contains_unexpected_values)
     this->pointcloud->shader = pointShaderEditor.autogenerate();
 
   if(!viewport.reapply_point_shader(coordinates_changed))
