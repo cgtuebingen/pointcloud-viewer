@@ -122,6 +122,8 @@ void PointShaderEditor::load_point_cloud(QSharedPointer<PointCloud> point_cloud)
 
   _pointCloud = point_cloud;
 
+  load_shader(point_cloud->shader);
+
   isPointCloudLoadedChanged(isPointCloudLoaded());
 }
 
