@@ -141,11 +141,6 @@ QStringList PointCloud::Shader::ordered_properties() const
   return ordered_properties;
 }
 
-bool PointCloud::Shader::is_empty() const
-{
-  return coordinate_expression.isEmpty() || color_expression.isEmpty() || node_data.isEmpty();
-}
-
 void PointCloud::Shader::export_to_file(QString filename) const
 {
   QSettings iniFile(filename, QSettings::IniFormat);

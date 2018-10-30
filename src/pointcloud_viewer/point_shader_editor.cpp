@@ -312,6 +312,7 @@ void PointShaderEditor::applyShader()
   }
 
   _pointCloud->shader.node_data = flowScene->saveToMemory();
+  _pointCloud->shader = generate_code_from_shader(flowScene, _pointCloud->shader);
 
   shader_applied();
 }

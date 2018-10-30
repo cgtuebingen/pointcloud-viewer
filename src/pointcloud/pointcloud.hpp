@@ -47,7 +47,6 @@ public:
     QString node_data;
 
     QStringList ordered_properties() const;
-    bool is_empty() const;
 
     void export_to_file(QString filename) const;
     static Shader import_from_file(QString filename);

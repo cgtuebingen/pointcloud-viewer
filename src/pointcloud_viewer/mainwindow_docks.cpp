@@ -417,7 +417,7 @@ QDockWidget* MainWindow::initRenderDock()
     switch(shaderComboBox->currentIndex())
     {
     case 0:
-      if(loadedShader.is_empty())
+      if(loadedShader.coordinate_expression.isEmpty())
         return pointShaderEditor.autogenerate();
       else
         return loadedShader;
