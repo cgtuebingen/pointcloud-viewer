@@ -39,8 +39,6 @@ uint SpyNode::nPorts(QtNodes::PortType portType) const
 
 QtNodes::NodeDataType SpyNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-  Q_ASSERT(portType == QtNodes::PortType::In);
-  Q_ASSERT(portIndex == 0);
   return Value().type();
 }
 

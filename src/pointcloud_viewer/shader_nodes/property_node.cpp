@@ -84,8 +84,6 @@ uint PropertyNode::nPorts(QtNodes::PortType portType) const
 
 QtNodes::NodeDataType PropertyNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-  Q_ASSERT(portType == QtNodes::PortType::Out);
-  Q_ASSERT(portIndex == 0);
   return Value().type();
 }
 

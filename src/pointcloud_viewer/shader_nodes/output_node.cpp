@@ -51,8 +51,6 @@ bool OutputNode::portCaptionVisible(QtNodes::PortType portType, QtNodes::PortInd
 
 QtNodes::NodeDataType OutputNode::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-  Q_ASSERT(portType == QtNodes::PortType::In);
-  Q_ASSERT(portIndex == 0 || portIndex == 1);
   return Value().type();
 }
 
