@@ -11,9 +11,6 @@ MathOperatorNode::MathOperatorNode()
   _combobox_op->addItem("subtract (x - y)", "-");
   _combobox_op->addItem("multiplicate (x * y)", "*");
   _combobox_op->addItem("divide (x / y)", "/");
-  _combobox_op->addItem("bitwise and (x & y)", "&");
-  _combobox_op->addItem("bitwise or (x | y)", "|");
-  _combobox_op->addItem("bitwise xor (x ^ y)", "^");
 
   connect(_combobox_op, &QComboBox::currentTextChanged, this, &MathOperatorNode::update_operator);
   update_operator();

@@ -36,6 +36,8 @@ add_executable(pointcloud_viewer
   shader_nodes/split_vector_node.hpp
   shader_nodes/spy_node.cpp
   shader_nodes/spy_node.hpp
+  shader_nodes/switch_node.cpp
+  shader_nodes/switch_node.hpp
   shader_nodes/output_node.cpp
   shader_nodes/output_node.hpp
   shader_nodes/value.cpp
