@@ -431,7 +431,12 @@ void PointShaderEditor::exportShader()
     {
       if(!filename.toLower().endsWith(".point-visualization"))
         filename += ".point-visualization";
-      _pointCloud->shader.export_to_file(filename);
+
+      PointCloud::Shader shader;
+      shader.node_data = flowScene->saveToMemory();
+
+      shader = generate_code_from_shader(flowScene, shader);
+      shader.export_to_file(filename);
     }catch(...)
     {
       QMessageBox::warning(this, "Export Error", "Couldn't export the Visualization");
