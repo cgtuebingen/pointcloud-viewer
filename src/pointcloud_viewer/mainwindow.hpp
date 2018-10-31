@@ -25,7 +25,7 @@ public:
   MainWindow();
   ~MainWindow();
 
-  bool apply_point_shader(PointCloud::Shader new_shader);
+  bool apply_point_shader(PointCloud::Shader new_shader, bool coordinates_changed, bool colors_changed);
 
 signals:
   void pointcloud_imported(QSharedPointer<PointCloud> point_cloud);

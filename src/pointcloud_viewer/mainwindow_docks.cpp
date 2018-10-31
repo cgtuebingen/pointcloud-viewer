@@ -431,9 +431,8 @@ QDockWidget* MainWindow::initRenderDock()
   auto apply_current_shader = [this, current_selected_point_shader](){
     const PointCloud::Shader current_shader = current_selected_point_shader();
 
-    if(pointcloud != nullptr)
-      apply_point_shader(current_shader);
     pointShaderEditor.load_shader(current_shader);
+    pointShaderEditor.applyShader();
   };
 
   auto switch_to_loaded_shader = [shaderComboBox](){
@@ -463,8 +462,8 @@ QDockWidget* MainWindow::initRenderDock()
   });
   connect(this, &MainWindow::pointcloud_unloaded, switch_to_loaded_shader);
 
-  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](){
-    apply_point_shader(pointcloud->shader);
+  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](bool coordinates_changed, bool colors_changed){
+    apply_point_shader(pointcloud->shader, coordinates_changed, colors_changed);
     if(!is_builtin_visualization(shaderComboBox->currentIndex()))
       shaderComboBox->setItemData(shaderComboBox->currentIndex(), QVariant::fromValue<PointCloud::Shader>(pointcloud->shader));
   });

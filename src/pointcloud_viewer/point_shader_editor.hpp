@@ -50,12 +50,14 @@ public slots:
   void setIsReadOnly(bool isReadOnly);
   void setShaderName(QString shaderName);
 
+  void applyShader();
+
 signals:
   void isPointCloudLoadedChanged(bool isPointCloudLoaded);
 
   void isReadOnlyChanged(bool isReadOnly);
 
-  void shader_applied();
+  void shader_applied(bool coordinates_changed, bool colors_changed);
 
   void shaderNameChanged(QString shaderName);
 
@@ -83,7 +85,6 @@ private:
   QString m_shaderName;
 
 private slots:
-  void applyShader();
   void closeEditor();
   void importShader();
   void exportShader();

@@ -347,16 +347,20 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
 
 void PointShaderEditor::applyShader()
 {
-  if(!isPointCloudLoaded() || isReadOnly())
-  {
-    Q_UNREACHABLE();
+  if(!isPointCloudLoaded())
     return;
-  }
 
   _pointCloud->shader.node_data = flowScene->saveToMemory();
-  _pointCloud->shader = generate_code_from_shader(flowScene, _pointCloud->shader);
 
-  shader_applied();
+  PointCloud::Shader old_shader = _pointCloud->shader;
+  PointCloud::Shader new_shader = generate_code_from_shader(flowScene, _pointCloud->shader);
+
+  _pointCloud->shader = new_shader;
+
+  const bool coordinates_changed = old_shader.coordinate_expression != new_shader.coordinate_expression;
+  const bool colors_changed = old_shader.color_expression != new_shader.color_expression;
+
+  shader_applied(coordinates_changed, colors_changed);
 }
 
 void PointShaderEditor::closeEditor()
