@@ -6,6 +6,7 @@
 
 #include <QtGlobal>
 #include <QDebug>
+#include <QSettings>
 
 typedef data_type::BASE_TYPE BASE_TYPE;
 
@@ -52,6 +53,22 @@ PointCloud::UserData PointCloud::all_values_of_point(size_t point_index) const
   }
 
   return UserData{user_data_names, values};
+}
+
+PointCloud::vertex_t PointCloud::vertex(size_t point_index) const
+{
+  vertex_t vertex = read_value_from_buffer<vertex_t>(coordinate_color.data() + point_index * stride);
+  return vertex;
+}
+
+const PointCloud::vertex_t* PointCloud::begin() const
+{
+  return reinterpret_cast<const vertex_t*>(coordinate_color.data());
+}
+
+const PointCloud::vertex_t* PointCloud::end() const
+{
+  return begin() + num_points;
 }
 
 void PointCloud::clear()
@@ -113,4 +130,36 @@ QDebug operator<<(QDebug debug, const PointCloud::UserData& userData)
   debug.nospace() << "\\==================/\n";
 
   return debug;
+}
+
+// ==== PointCloud::Shader ====
+
+QStringList PointCloud::Shader::ordered_properties() const
+{
+  QStringList ordered_properties = used_properties.toList();
+  ordered_properties.sort();
+  return ordered_properties;
+}
+
+void PointCloud::Shader::export_to_file(QString filename) const
+{
+  QSettings iniFile(filename, QSettings::IniFormat);
+
+  iniFile.setValue("used_properties", ordered_properties());
+  iniFile.setValue("coordinate_expression", coordinate_expression);
+  iniFile.setValue("color_expression", color_expression);
+  iniFile.setValue("node_data", node_data);
+}
+
+PointCloud::Shader PointCloud::Shader::import_from_file(QString filename)
+{
+  QSettings iniFile(filename, QSettings::IniFormat);
+  Shader shader;
+
+  shader.used_properties = iniFile.value("used_properties", QStringList()).toStringList().toSet();
+  shader.coordinate_expression = iniFile.value("coordinate_expression", QString()).toString();
+  shader.color_expression = iniFile.value("color_expression", QString()).toString();
+  shader.node_data = iniFile.value("node_data", QString()).toString();
+
+  return shader;
 }

@@ -11,10 +11,11 @@
 namespace renderer {
 namespace gl450 {
 
+
 /**
 Remaps the point coordinates and colors osed for rendering
 */
-void remap_points(const std::string& vertex_shader, const QVector<uint>& bindings, PointCloud* pointCloud);
+bool remap_points(PointCloud* pointCloud);
 
 } //namespace gl450
 } //namespace renderer
