@@ -3,6 +3,8 @@
 #include <QFormLayout>
 #include <QSpinBox>
 
+void remove_focus_after_enter(QAbstractSpinBox* w);
+
 SwitchNode::SwitchNode()
 {
   _root_widget = new QWidget;
@@ -21,6 +23,7 @@ SwitchNode::SwitchNode()
     connect(case_value, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [i, this](int new_value){
       all_classes[i] = new_value;
     });
+    remove_focus_after_enter(case_value);
   }
 
 

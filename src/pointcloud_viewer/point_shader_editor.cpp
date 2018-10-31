@@ -17,6 +17,7 @@
 #include <pointcloud_viewer/shader_nodes/split_vector_node.hpp>
 #include <pointcloud_viewer/shader_nodes/spy_node.hpp>
 #include <pointcloud_viewer/shader_nodes/output_node.hpp>
+#include <pointcloud_viewer/shader_nodes/switch_node.hpp>
 #include <pointcloud_viewer/shader_nodes/value_node.hpp>
 #include <pointcloud_viewer/shader_nodes/vector_property_node.hpp>
 
@@ -326,6 +327,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
 
   std::shared_ptr<QtNodes::DataModelRegistry> registry(new QtNodes::DataModelRegistry);
 
+  registry->registerModel<SwitchNode>("Conditional");
   registry->registerModel<MathOperatorNode>("Math");
   registry->registerModel<ValueNode>("Math");
   registry->registerModel<MakeVectorNode>("Vector");
