@@ -27,11 +27,16 @@ public:
 
 private:
   constexpr static const int N = 10;
+  constexpr static const int index_condition = 0;
+  constexpr static const int index_values[N] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  constexpr static const int index_default = 11;
+
   std::shared_ptr<Value> conditionInput;
   std::shared_ptr<Value> valuesInput[N];
+  std::shared_ptr<Value> defaultValue;
   std::shared_ptr<Value> output;
 
-  uint32_t all_classes[N];
+  int all_classes[N];
 
   QWidget* _root_widget;
 
