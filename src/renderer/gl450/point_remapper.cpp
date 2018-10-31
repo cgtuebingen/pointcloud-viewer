@@ -242,20 +242,6 @@ std::tuple<QString, QVector<uint>> shader_code_glsl450(const PointCloud* pointcl
   code += "uint   to_scalar(in uvec3 v){return (v.x + v.y + v.z) / 3;}\n";
   code += "float  to_scalar(in  vec3 v){return (v.x + v.y + v.z) / 3;}\n";
   code += "double to_scalar(in dvec3 v){return (v.x + v.y + v.z) / 3;}\n";
-  for(const char* t : {"int", "uint", "float", "double", "ivec3", "uvec3", "vec3", "dvec3"})
-  {
-    QString expression;
-    QString fn = "${type} handle_switch(int condition";
-    for(int i=0; i<10; ++i)
-    {
-      fn += QString(", int case%0, ${type} value%0").arg(i);
-
-      expression += QString("condition == case%0 ? value%0 : ").arg(i);
-    }
-    expression += "default_value";
-    fn += ", ${type} default_value){return " + expression + ";}\n";
-    code += fn.replace("${type}", t);
-  }
   code += "\n";
   code += "// ==== Actual execution ====\n";
   code += "void main()\n";

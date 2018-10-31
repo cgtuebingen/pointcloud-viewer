@@ -6,11 +6,15 @@
 #include <nodes/NodeDataModel>
 
 #include <QMap>
+#include <QSpinBox>
 
 class SwitchNode final : public QtNodes::NodeDataModel
 {
 public:
   SwitchNode();
+
+  QJsonObject save() const override;
+  void restore(const QJsonObject& jsonObject) override;
 
   QString caption() const override;
   QString name() const override;
@@ -37,6 +41,7 @@ private:
   std::shared_ptr<Value> output;
 
   int all_classes[N];
+  QSpinBox* case_widget[N];
 
   QWidget* _root_widget;
 

@@ -1,7 +1,6 @@
 #include <pointcloud_viewer/shader_nodes/switch_node.hpp>
 
 #include <QFormLayout>
-#include <QSpinBox>
 
 void remove_focus_after_enter(QAbstractSpinBox* w);
 
@@ -15,17 +14,38 @@ SwitchNode::SwitchNode()
   {
     all_classes[i] = i;
 
-    QSpinBox* case_value = new QSpinBox;
-    case_value->setValue(i);
+    case_widget[i] = new QSpinBox;
+    case_widget[i]->setValue(i);
 
-    form->addRow(QString("case %0:").arg(i), case_value);
+    form->addRow(QString("case %0:").arg(i), case_widget[i]);
 
-    connect(case_value, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [i, this](int new_value){
+    connect(case_widget[i], static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [i, this](int new_value){
       all_classes[i] = new_value;
     });
-    remove_focus_after_enter(case_value);
+    remove_focus_after_enter(case_widget[i]);
   }
 
+  update_result();
+}
+
+QJsonObject SwitchNode::save() const
+{
+  QJsonObject jsonObject = QtNodes::NodeDataModel::save();
+
+  for(int i=0; i<N; ++i)
+    jsonObject[QString("case%0").arg(i)] = all_classes[i];
+
+  return jsonObject;
+}
+
+void SwitchNode::restore(const QJsonObject& jsonObject)
+{
+  QtNodes::NodeDataModel::restore(jsonObject);
+
+  for(int i=0; i<N; ++i)
+  {
+    all_classes[i] = jsonObject[QString("case%0").arg(i)].toInt();
+  }
 
   update_result();
 }
@@ -149,41 +169,30 @@ void SwitchNode::update_result()
       }
   }
 
-  QString expression = "handle_switch(";
-
-  expression += Value::cast(conditionInput, VALUE_TYPE::INT)->expression;
-  expression += ", ";
+  QString condition = Value::cast(conditionInput, VALUE_TYPE::INT)->expression;
+  QString expression = "(";
 
   QString dummy_expression;
-  int dummy_case;
   value_type_t value_type = output->value_type;
 
   int current_case = 0;
+  bool is_first = true;
   for(int i=0; i<N; ++i)
   {
     if(valuesInput[i] != nullptr)
     {
-      expression += QString("%0, %1, ").arg(all_classes[i]).arg(valuesInput[i]->expression);
-
-      if(defaultValue == nullptr)
-        output = valuesInput[i];
-      if(current_case == 0)
-      {
-        if(defaultValue != nullptr)
-          output = Value::cast(output, valuesInput[i]->value_type);
-        dummy_case = i;
+      if(is_first)
         value_type = valuesInput[i]->value_type;
-        dummy_expression = Value::cast(std::make_shared<Value>("0", VALUE_TYPE::INT), valuesInput[i]->value_type)->expression;
-      }
+      expression += QString("%0==%1 ? ").arg(condition).arg(all_classes[i]);
+      expression += Value::cast(valuesInput[i], value_type)->expression;
+      expression += " : ";
 
       ++current_case;
     }
   }
 
-  for(; current_case<N; ++current_case)
-    expression += QString("%0, %1, ").arg(std::numeric_limits<int>::min()).arg(dummy_expression);
-
-  expression += output->expression;
+  expression += " : ";
+  expression += Value::cast(output, value_type)->expression;;
   expression += ")";
 
   output = std::make_shared<Value>(expression, value_type);
