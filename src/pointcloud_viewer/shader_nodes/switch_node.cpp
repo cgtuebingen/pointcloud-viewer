@@ -46,6 +46,7 @@ void SwitchNode::restore(const QJsonObject& jsonObject)
   for(int i=0; i<N; ++i)
   {
     all_classes[i] = jsonObject[QString("case%0").arg(i)].toInt();
+    case_widget[i]->setValue(all_classes[i]);
   }
 
   update_result();
