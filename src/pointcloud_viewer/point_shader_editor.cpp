@@ -21,6 +21,7 @@
 #include <pointcloud_viewer/shader_nodes/value_node.hpp>
 #include <pointcloud_viewer/shader_nodes/vector_property_node.hpp>
 #include <pointcloud_viewer/shader_nodes/rgb_node.hpp>
+#include <pointcloud_viewer/shader_nodes/mix_node.hpp>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -334,6 +335,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   registry->registerModel<MakeVectorNode>("Vector");
   registry->registerModel<SplitVectorNode>("Vector");
   registry->registerModel<RotateQuicklyNode>("Transform");
+  registry->registerModel<MixNode>("GLSL Functions");
   registry->registerModel<OutputNode>("Output");
   registry->registerModel<SpyNode>("Output");
   registry->registerModel<RgbNode>("Input");

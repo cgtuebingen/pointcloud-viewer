@@ -28,6 +28,8 @@ add_executable(pointcloud_viewer
   shader_nodes/make_vector_node.hpp
   shader_nodes/math_operator_node.cpp
   shader_nodes/math_operator_node.hpp
+  shader_nodes/mix_node.cpp
+  shader_nodes/mix_node.hpp
   shader_nodes/property_node.cpp
   shader_nodes/property_node.hpp
   shader_nodes/rotate_quickly_node.cpp

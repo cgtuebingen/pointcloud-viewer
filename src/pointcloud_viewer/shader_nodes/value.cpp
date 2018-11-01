@@ -1,6 +1,7 @@
 #include <pointcloud_viewer/shader_nodes/value.hpp>
 
 Value::Value()
+  : Value("0", VALUE_TYPE::INT)
 {
 }
 

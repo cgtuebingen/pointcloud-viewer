@@ -1,3 +1,6 @@
+#ifndef POINTCLOUDVIEWER_WIDGETS_RGBEDIT_HPP_
+#define POINTCLOUDVIEWER_WIDGETS_RGBEDIT_HPP_
+
 #include <QLineEdit>
 
 #include <glm/glm.hpp>
@@ -20,3 +23,5 @@ signals:
 private slots:
   void handle_changed();
 };
+
+#endif // POINTCLOUDVIEWER_WIDGETS_RGBEDIT_HPP_
