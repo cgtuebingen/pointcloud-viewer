@@ -47,6 +47,8 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
   QMenuBar* menuBar = new QMenuBar;
   rootLayout->addWidget(menuBar);
   QMenu* shader_menu = menuBar->addMenu("&Shader");
+  appendShader_action = shader_menu->addAction("&Append Shader");
+  shader_menu->addSeparator();
   importShader_action = shader_menu->addAction("&Import Shader");
   exportShader_action = shader_menu->addAction("&Export Shader");
   shader_menu->addSeparator();
@@ -54,6 +56,7 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
   shader_menu->addSeparator();
   QAction* closeShaderEditor_action = shader_menu->addAction("Close Shader Editor");
 
+  QObject::connect(appendShader_action, &QAction::triggered, this, &PointShaderEditor::appendShader);
   QObject::connect(exportShader_action, &QAction::triggered, this, &PointShaderEditor::exportShader);
   QObject::connect(importShader_action, &QAction::triggered, this, &PointShaderEditor::importShader);
 
@@ -108,6 +111,7 @@ PointShaderEditor::PointShaderEditor(MainWindow* mainWindow)
     flowView->setEnabled(something_to_edit);
     importShader_action->setEnabled(something_to_edit);
     applyShaderEditor_action->setEnabled(something_to_edit);
+    appendShader_action->setEnabled(something_to_edit);
     shaderName_Editor->setEnabled(something_to_edit);
 
     exportShader_action->setEnabled(is_pointcloud_loaded);
@@ -181,6 +185,17 @@ void PointShaderEditor::load_shader(PointCloud::Shader shader)
   flowScene = new QtNodes::FlowScene(registry);
   flowScene->loadFromMemory(shader.node_data.toUtf8());
   flowView->setScene(flowScene);
+}
+
+void PointShaderEditor::append_shader(PointCloud::Shader shader)
+{
+  if(flowScene == nullptr)
+  {
+    load_shader(shader);
+    return;
+  }
+
+  flowScene->loadFromMemory(shader.node_data.toUtf8());
 }
 
 PointCloud::Shader PointShaderEditor::autogenerate(const PointCloud* pointcloud)
@@ -374,7 +389,7 @@ void PointShaderEditor::closeEditor()
   hide();
 }
 
-void PointShaderEditor::importShader()
+void PointShaderEditor::appendShader()
 {
   if(!isPointCloudLoaded() || isReadOnly())
   {
@@ -382,6 +397,39 @@ void PointShaderEditor::importShader()
     return;
   }
 
+  QString dir;
+
+  {
+    QSettings settings;
+    dir = settings.value("VizualizationShaders/exportDir").toString();
+  }
+
+  QString filename = QFileDialog::getOpenFileName(this, "Import Visualization", dir, "Point Visualization (*.point-visualization)");
+  if(!filename.isEmpty())
+  {
+    {
+      QSettings settings;
+      settings.setValue("VizualizationShaders/exportDir", QFileInfo(filename).dir().absolutePath());
+    }
+
+    try
+    {
+      append_shader(PointCloud::Shader::import_from_file(filename));
+    }catch(...)
+    {
+      QMessageBox::warning(this, "Import Error", "Couldn't import the Visualization");
+    }
+  }
+
+}
+
+void PointShaderEditor::importShader()
+{
+  if(!isPointCloudLoaded() || isReadOnly())
+  {
+    Q_UNREACHABLE();
+    return;
+  }
 
   QString dir;
 

@@ -38,6 +38,7 @@ public:
 
   void unload_shader();
   void load_shader(PointCloud::Shader shader);
+  void append_shader(PointCloud::Shader shader);
 
   static PointCloud::Shader autogenerate(const PointCloud* pointcloud);
 
@@ -72,6 +73,7 @@ private:
 
   QtNodes::FlowView* flowView = nullptr;
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
+  QAction* appendShader_action = nullptr;
   QAction* importShader_action = nullptr;
   QAction* exportShader_action = nullptr;
 
@@ -86,6 +88,7 @@ private:
 
 private slots:
   void closeEditor();
+  void appendShader();
   void importShader();
   void exportShader();
 };
