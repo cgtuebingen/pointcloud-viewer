@@ -4,6 +4,8 @@
 
 This tool allows viewing huge point clouds.
 
+Beta version, not recommended for usage in commercial productions!!
+
 ## Build on Ubuntu
 
 Install dependencies

@@ -2,5 +2,5 @@
 
 QString version_text()
 {
-  return "1 (alpha 2)";
+  return "1 (beta 1)";
 }
