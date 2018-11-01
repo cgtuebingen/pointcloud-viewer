@@ -21,6 +21,7 @@ SwitchNode::SwitchNode()
 
     connect(case_widget[i], static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [i, this](int new_value){
       all_classes[i] = new_value;
+      update_result();
     });
     remove_focus_after_enter(case_widget[i]);
   }
@@ -85,7 +86,7 @@ QString SwitchNode::portCaption(QtNodes::PortType portType, QtNodes::PortIndex p
     if(portIndex == index_default)
       return "Default";
     else
-      return QString("Case %0:").arg(portIndex - index_condition);
+      return QString("Case %0:").arg(portIndex - index_condition - 1);
   case QtNodes::PortType::Out:
     return "Value";
   case QtNodes::PortType::None:
@@ -112,7 +113,7 @@ void SwitchNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes:
   else if(port == index_default)
     defaultValue = std::dynamic_pointer_cast<Value>(nodeData);
   else
-    valuesInput[port-index_condition] = std::dynamic_pointer_cast<Value>(nodeData);
+    valuesInput[port-index_condition - 1] = std::dynamic_pointer_cast<Value>(nodeData);
   update_result();
 }
 
@@ -128,11 +129,6 @@ QWidget* SwitchNode::embeddedWidget()
 
 void SwitchNode::update_result()
 {
-  output = std::make_shared<Value>("0", VALUE_TYPE::INT);
-
-  if(defaultValue != nullptr)
-    output = defaultValue;
-
   if(conditionInput == nullptr)
   {
     output.reset();
@@ -140,6 +136,7 @@ void SwitchNode::update_result()
     return;
   }
 
+  bool has_default_value = defaultValue!=nullptr;
   int num_used_cases = 0;
   for(int i=0; i<N; ++i)
     num_used_cases += valuesInput[i] != nullptr;
@@ -158,41 +155,40 @@ void SwitchNode::update_result()
     return;
   }
 
-  if(defaultValue==nullptr && num_used_cases == 1)
-  {
-    for(int i=0; i<N; ++i)
-      if(valuesInput[i] != nullptr)
-      {
-        output = valuesInput[i];
-        dataUpdated(0);
-        return;
-      }
-  }
-
   QString condition = Value::cast(conditionInput, VALUE_TYPE::INT)->expression;
   QString expression = "(";
 
   QString dummy_expression;
-  value_type_t value_type = output->value_type;
+  value_type_t value_type = defaultValue==nullptr ? VALUE_TYPE::INT : defaultValue->value_type;
 
   int current_case = 0;
-  bool is_first = true;
   for(int i=0; i<N; ++i)
   {
     if(valuesInput[i] != nullptr)
     {
-      if(is_first)
+      if(current_case==0)
         value_type = valuesInput[i]->value_type;
-      expression += QString("%0==%1 ? ").arg(condition).arg(all_classes[i]);
-      expression += Value::cast(valuesInput[i], value_type)->expression;
-      expression += " : ";
+
+      QString current_expression = Value::cast(valuesInput[i], value_type)->expression;
+
+      bool is_last = num_used_cases+has_default_value == current_case+1;
+
+      if(is_last)
+      {
+        expression += current_expression;
+      }else
+      {
+        expression += QString("%0==%1 ? ").arg(condition).arg(all_classes[i]);
+        expression += current_expression;
+        expression += " : ";
+      }
 
       ++current_case;
     }
   }
 
-  expression += " : ";
-  expression += Value::cast(output, value_type)->expression;;
+  if(defaultValue != nullptr)
+    expression += Value::cast(defaultValue, value_type)->expression;
   expression += ")";
 
   output = std::make_shared<Value>(expression, value_type);
