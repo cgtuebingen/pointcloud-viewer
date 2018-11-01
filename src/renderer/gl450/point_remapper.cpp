@@ -182,6 +182,8 @@ std::tuple<QString, QVector<uint>> shader_code_glsl450(const PointCloud* pointcl
   QString code;
   code += "#version 450 core\n";
   code += "\n";
+  code += "#define class class_property\n";
+  code += "\n";
 
   if(pointcloud == nullptr)
   {
