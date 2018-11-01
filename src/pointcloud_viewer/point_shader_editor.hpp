@@ -38,6 +38,7 @@ public:
 
   void unload_shader();
   void load_shader(PointCloud::Shader shader);
+  void append_shader(PointCloud::Shader shader);
 
   static PointCloud::Shader autogenerate(const PointCloud* pointcloud);
 
@@ -50,12 +51,14 @@ public slots:
   void setIsReadOnly(bool isReadOnly);
   void setShaderName(QString shaderName);
 
+  void applyShader();
+
 signals:
   void isPointCloudLoadedChanged(bool isPointCloudLoaded);
 
   void isReadOnlyChanged(bool isReadOnly);
 
-  void shader_applied();
+  void shader_applied(bool coordinates_changed, bool colors_changed);
 
   void shaderNameChanged(QString shaderName);
 
@@ -70,6 +73,7 @@ private:
 
   QtNodes::FlowView* flowView = nullptr;
   QtNodes::FlowScene* fallbackFlowScene = nullptr;
+  QAction* appendShader_action = nullptr;
   QAction* importShader_action = nullptr;
   QAction* exportShader_action = nullptr;
 
@@ -83,13 +87,14 @@ private:
   QString m_shaderName;
 
 private slots:
-  void applyShader();
   void closeEditor();
+  void appendShader();
   void importShader();
   void exportShader();
 };
 
 QSet<QString> find_used_properties(const PointCloud* pointcloud);
+QSet<QString> find_used_properties(QtNodes::FlowScene* flowScene);
 PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud);
 PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader);
 

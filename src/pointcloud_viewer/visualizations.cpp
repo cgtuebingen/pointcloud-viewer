@@ -87,6 +87,9 @@ void Visualization::draw_overlay(QPainter& painter, const Camera& camera, int po
     const glm::mat4 view_perspective_matrix = camera.view_perspective_matrix();
     const glm::vec3 selected_point = transform_point(view_perspective_matrix, this->selected_point_coordinate);
 
+    if(selected_point.z > 1.f)
+      return;
+
     glm::ivec2 selected_point_pixel = glm::ivec2(glm::round(Camera::screenspace_to_pixel(Camera::clipspace_screenspace(selected_point), viewport_size)));
 
     const bool is_bright_color = (selected_point_color.x + selected_point_color.y + selected_point_color.z) / 2 > 196;

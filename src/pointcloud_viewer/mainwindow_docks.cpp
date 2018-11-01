@@ -2,6 +2,7 @@
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/keypoint_list.hpp>
+#include <pointcloud_viewer/widgets/rgb_edit.hpp>
 #include <core_library/color_palette.hpp>
 #include <core_library/print.hpp>
 
@@ -296,10 +297,49 @@ QDockWidget* MainWindow::initDataInspectionDock()
     });
   }
 
+  // -- count points --
+  QGroupBox* count_points_groupbox = new QGroupBox("Count Points");
+  vbox->addWidget(count_points_groupbox);
+  {
+    QVBoxLayout* vbox = new QVBoxLayout(count_points_groupbox);
+    QHBoxLayout* hbox = new QHBoxLayout;
+
+    RgbEdit* rgbEdit = new RgbEdit;
+    QLabel* result = new QLabel;
+    QPushButton* searchButton = new QPushButton;
+
+    hbox->addWidget(rgbEdit);
+    hbox->addWidget(searchButton);
+
+    vbox->addLayout(hbox);
+    vbox->addWidget(result);
+
+    connect(rgbEdit, &RgbEdit::editingFinished, searchButton, &QPushButton::click);
+
+    searchButton->setText("Count &Color");
+    searchButton->setToolTip("Count the number of points with the givwn color");
+    connect(searchButton, &QPushButton::clicked, [rgbEdit, result, this](){
+      int n=0;
+      glm::u8vec3 rgb = rgbEdit->rgb();
+      if(pointcloud != nullptr)
+        for(PointCloud::vertex_t v : *pointcloud)
+          n += v.color == rgb;
+
+      result->setText(QString("Found <b>%0</b> points with the color %1").arg(n).arg(Color(rgb).hexcode()));
+    });
+
+    auto reset_result = [result](){result->setText("--");};
+    reset_result();
+    result->setAlignment(Qt::AlignCenter);
+
+    connect(this, &MainWindow::pointcloud_unloaded, reset_result);
+    connect(this, &MainWindow::pointcloud_imported, reset_result);
+  }
+
+  // -- debug Kd-Tree --
 #ifndef NDEBUG
   Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
 
-  // -- debug Kd-Tree --
   QGroupBox* debug_kd_groupbox = new QGroupBox("Debug Kd-Tree");
   debug_kd_groupbox->setEnabled(kdTreeInspector.hasKdTreeAvailable());
   QObject::connect(&kdTreeInspector, &KdTreeInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
@@ -431,9 +471,8 @@ QDockWidget* MainWindow::initRenderDock()
   auto apply_current_shader = [this, current_selected_point_shader](){
     const PointCloud::Shader current_shader = current_selected_point_shader();
 
-    if(pointcloud != nullptr)
-      apply_point_shader(current_shader);
     pointShaderEditor.load_shader(current_shader);
+    pointShaderEditor.applyShader();
   };
 
   auto switch_to_loaded_shader = [shaderComboBox](){
@@ -463,8 +502,8 @@ QDockWidget* MainWindow::initRenderDock()
   });
   connect(this, &MainWindow::pointcloud_unloaded, switch_to_loaded_shader);
 
-  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](){
-    apply_point_shader(pointcloud->shader);
+  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](bool coordinates_changed, bool colors_changed){
+    apply_point_shader(pointcloud->shader, coordinates_changed, colors_changed);
     if(!is_builtin_visualization(shaderComboBox->currentIndex()))
       shaderComboBox->setItemData(shaderComboBox->currentIndex(), QVariant::fromValue<PointCloud::Shader>(pointcloud->shader));
   });
@@ -508,11 +547,11 @@ QDockWidget* MainWindow::initRenderDock()
   form->addRow("Point Size:", pointSize);
 
   // -- property visualization --
-  QGroupBox* propertyVisualizationGroup = new QGroupBox("Property Visualization");
+  QGroupBox* propertyVisualizationGroup = new QGroupBox("Vertex Shader");
   form = new QFormLayout;
   propertyVisualizationGroup->setLayout((form));
 
-  form->addRow("Visualization:", shaderComboBox);
+  form->addRow("Shader:", shaderComboBox);
 
   hbox = new QHBoxLayout;
   form->addRow(hbox);

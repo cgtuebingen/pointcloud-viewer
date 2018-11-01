@@ -8,12 +8,9 @@ MathOperatorNode::MathOperatorNode()
 
   _combobox_op = new QComboBox;
   _combobox_op->addItem("add (x + y)", "+");
-  _combobox_op->addItem("subtract (x - z)", "-");
-  _combobox_op->addItem("multiplicate (x * z)", "*");
-  _combobox_op->addItem("divide (x / z)", "/");
-  _combobox_op->addItem("bitwise and (x & z)", "&");
-  _combobox_op->addItem("bitwise or (x | z)", "|");
-  _combobox_op->addItem("bitwise xor (x ^ z)", "^");
+  _combobox_op->addItem("subtract (x - y)", "-");
+  _combobox_op->addItem("multiplicate (x * y)", "*");
+  _combobox_op->addItem("divide (x / y)", "/");
 
   connect(_combobox_op, &QComboBox::currentTextChanged, this, &MathOperatorNode::update_operator);
   update_operator();
