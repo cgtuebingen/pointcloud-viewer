@@ -20,6 +20,7 @@
 #include <pointcloud_viewer/shader_nodes/switch_node.hpp>
 #include <pointcloud_viewer/shader_nodes/value_node.hpp>
 #include <pointcloud_viewer/shader_nodes/vector_property_node.hpp>
+#include <pointcloud_viewer/shader_nodes/rgb_node.hpp>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -335,6 +336,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> PointShaderEditor::qt_nodes_model_re
   registry->registerModel<RotateQuicklyNode>("Transform");
   registry->registerModel<OutputNode>("Output");
   registry->registerModel<SpyNode>("Output");
+  registry->registerModel<RgbNode>("Input");
   registry->registerModel<PropertyNode>("Input",
                                         [supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon]() {
     return std::make_unique<PropertyNode>(supportedPropertyNames, missingPropertyNames, base_type_for_name, warning_icon);

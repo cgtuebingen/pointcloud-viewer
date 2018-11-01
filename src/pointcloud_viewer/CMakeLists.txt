@@ -32,6 +32,8 @@ add_executable(pointcloud_viewer
   shader_nodes/property_node.hpp
   shader_nodes/rotate_quickly_node.cpp
   shader_nodes/rotate_quickly_node.hpp
+  shader_nodes/rgb_node.cpp
+  shader_nodes/rgb_node.hpp
   shader_nodes/split_vector_node.cpp
   shader_nodes/split_vector_node.hpp
   shader_nodes/spy_node.cpp
@@ -46,6 +48,8 @@ add_executable(pointcloud_viewer
   shader_nodes/value_node.hpp
   shader_nodes/vector_property_node.cpp
   shader_nodes/vector_property_node.hpp
+  widgets/rgb_edit.cpp
+  widgets/rgb_edit.hpp
   camera.cpp
   camera.hpp
   declarations.hpp
