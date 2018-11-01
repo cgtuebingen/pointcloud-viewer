@@ -91,6 +91,7 @@ private slots:
 };
 
 QSet<QString> find_used_properties(const PointCloud* pointcloud);
+QSet<QString> find_used_properties(QtNodes::FlowScene* flowScene);
 PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud);
 PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader);
 

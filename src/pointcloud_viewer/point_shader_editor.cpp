@@ -449,12 +449,67 @@ QSet<QString> find_used_properties(const PointCloud* pointcloud)
   if(pointcloud == nullptr)
     return QSet<QString>();
 
-  QSet<QString> used_properties;
+  std::shared_ptr<QtNodes::DataModelRegistry> registry = PointShaderEditor::qt_nodes_model_registry(pointcloud);
+
+  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
+  flowScene->loadFromMemory(pointcloud->shader.node_data.toUtf8());
+
+  return find_used_properties(flowScene);
+}
+
+PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud)
+{
+  if(pointcloud == nullptr)
+    return PointCloud::Shader();
+
+  if(pointcloud->shader.node_data.isEmpty())
+    return pointcloud->shader;
 
   std::shared_ptr<QtNodes::DataModelRegistry> registry = PointShaderEditor::qt_nodes_model_registry(pointcloud);
 
   QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
   flowScene->loadFromMemory(pointcloud->shader.node_data.toUtf8());
+
+  return generate_code_from_shader(flowScene, pointcloud->shader);
+}
+
+PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader)
+{
+  QString fallback_coordinate_expression = shader.coordinate_expression;
+  QString fallback_color_expression = shader.color_expression;
+
+  shader.coordinate_expression.clear();
+  shader.color_expression.clear();
+
+  flowScene->iterateOverNodes([&shader](QtNodes::Node* node){
+    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
+
+    if(outputNode!=nullptr)
+    {
+      if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
+      {
+        if(!shader.coordinate_expression.isEmpty())
+          println_error("#error Multiple Output Nodes");
+        shader.coordinate_expression = outputNode->coordinate->expression;
+      }
+      if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
+      {
+        if(!shader.color_expression.isEmpty())
+          println_error("#error Multiple Output Nodes");
+        shader.color_expression = outputNode->color->expression;
+      }
+    }
+
+  });
+
+  shader.used_properties = find_used_properties(flowScene);
+
+  return shader;
+}
+
+QSet<QString> find_used_properties(QtNodes::FlowScene* flowScene)
+{
+  QSet<QString> used_properties;
 
   // Lambda filling used_properties with all property names, which are actually used
   auto collectProperties = [&used_properties, flowScene](QtNodes::Node* node){
@@ -503,52 +558,4 @@ QSet<QString> find_used_properties(const PointCloud* pointcloud)
   });
 
   return used_properties;
-}
-
-PointCloud::Shader generate_code_from_shader(const PointCloud* pointcloud)
-{
-  if(pointcloud == nullptr)
-    return PointCloud::Shader();
-
-  if(pointcloud->shader.node_data.isEmpty())
-    return pointcloud->shader;
-
-  std::shared_ptr<QtNodes::DataModelRegistry> registry = PointShaderEditor::qt_nodes_model_registry(pointcloud);
-
-  QtNodes::FlowScene* flowScene = new QtNodes::FlowScene(registry);
-  flowScene->loadFromMemory(pointcloud->shader.node_data.toUtf8());
-
-  return generate_code_from_shader(flowScene, pointcloud->shader);
-}
-
-PointCloud::Shader generate_code_from_shader(QtNodes::FlowScene* flowScene, PointCloud::Shader shader)
-{
-  QString fallback_coordinate_expression = shader.coordinate_expression;
-  QString fallback_color_expression = shader.color_expression;
-
-  shader.coordinate_expression.clear();
-  shader.color_expression.clear();
-
-  flowScene->iterateOverNodes([&shader](QtNodes::Node* node){
-    OutputNode* outputNode = dynamic_cast<OutputNode*>(node->nodeDataModel());
-
-    if(outputNode!=nullptr)
-    {
-      if(outputNode->coordinate != nullptr && outputNode->coordinate->expression.length() != 0)
-      {
-        if(!shader.coordinate_expression.isEmpty())
-          println_error("#error Multiple Output Nodes");
-        shader.coordinate_expression = outputNode->coordinate->expression;
-      }
-      if(outputNode->color != nullptr && outputNode->color->expression.length() != 0)
-      {
-        if(!shader.color_expression.isEmpty())
-          println_error("#error Multiple Output Nodes");
-        shader.color_expression = outputNode->color->expression;
-      }
-    }
-
-  });
-
-  return shader;
 }
