@@ -547,11 +547,11 @@ QDockWidget* MainWindow::initRenderDock()
   form->addRow("Point Size:", pointSize);
 
   // -- property visualization --
-  QGroupBox* propertyVisualizationGroup = new QGroupBox("Property Visualization");
+  QGroupBox* propertyVisualizationGroup = new QGroupBox("Vertex Shader");
   form = new QFormLayout;
   propertyVisualizationGroup->setLayout((form));
 
-  form->addRow("Visualization:", shaderComboBox);
+  form->addRow("Shader:", shaderComboBox);
 
   hbox = new QHBoxLayout;
   form->addRow(hbox);
