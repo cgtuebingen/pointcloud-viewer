@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QMimeData>
 #include <QFileDialog>
+#include <QApplication>
 
 void MainWindow::initMenuBar()
 {
@@ -144,7 +145,8 @@ void MainWindow::initMenuBar()
 
 }
 
-void MainWindow::dropEvent(QDropEvent *ev) {
+void MainWindow::dropEvent(QDropEvent *ev)
+{
   QList<QUrl> urls = ev->mimeData()->urls();
   foreach (QUrl url, urls) {
     const QString file_to_import = url.path();
@@ -155,8 +157,14 @@ void MainWindow::dropEvent(QDropEvent *ev) {
   }
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *ev) {
+void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
+{
   ev->accept();
+}
+
+void MainWindow::closeEvent(QCloseEvent*)
+{
+  QApplication::quit();
 }
 
 void MainWindow::import_pointcloud(QString filepath)

@@ -601,13 +601,20 @@ glm::vec3 Navigation::Controller::_shift(glm::vec2 mouse_force)
 
 void Navigation::Controller::_zoom(glm::vec3 origin, float mouse_force_y)
 {
+  const float lower_limit = 1.e-4f;
   const float factor = 0.5f;
   frame_t& view = navigation.camera.frame;
   const glm::vec3 previous_zoom = view.position - origin;
 
   float zoom_factor = glm::clamp(0.5f, 1.5f, glm::exp2(factor * mouse_force_y));
 
-  if(zoom_factor * length(previous_zoom) > 1.e-2f)
+  if(length(previous_zoom)>0.f)
+  {
+    zoom_factor = glm::max(zoom_factor, lower_limit / length(previous_zoom));
     view.position = origin + zoom_factor * previous_zoom;
+  }else
+  {
+    view.position = origin + lower_limit * -forward_vector();
+  }
   navigation.viewport->update();
 }

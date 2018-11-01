@@ -4,6 +4,8 @@ add_library(gl450 STATIC
  declarations.hpp
  locate_shaders.cpp
  locate_shaders.hpp
+ point_remapper.cpp
+ point_remapper.hpp
  point_renderer.cpp
  point_renderer.hpp
  uniforms.cpp

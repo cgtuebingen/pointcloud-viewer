@@ -2,7 +2,9 @@
 #include <pointcloud_viewer/workers/offline_renderer_dialogs.hpp>
 #include <pointcloud_viewer/visualizations.hpp>
 #include <pointcloud_viewer/keypoint_list.hpp>
+#include <pointcloud_viewer/widgets/rgb_edit.hpp>
 #include <core_library/color_palette.hpp>
+#include <core_library/print.hpp>
 
 #include <QGridLayout>
 #include <QApplication>
@@ -22,6 +24,8 @@
 #include <QLabel>
 #include <QDebug>
 #include <QClipboard>
+#include <QMessageBox>
+#include <QFileDialog>
 
 void MainWindow::initDocks()
 {
@@ -293,10 +297,49 @@ QDockWidget* MainWindow::initDataInspectionDock()
     });
   }
 
+  // -- count points --
+  QGroupBox* count_points_groupbox = new QGroupBox("Count Points");
+  vbox->addWidget(count_points_groupbox);
+  {
+    QVBoxLayout* vbox = new QVBoxLayout(count_points_groupbox);
+    QHBoxLayout* hbox = new QHBoxLayout;
+
+    RgbEdit* rgbEdit = new RgbEdit;
+    QLabel* result = new QLabel;
+    QPushButton* searchButton = new QPushButton;
+
+    hbox->addWidget(rgbEdit);
+    hbox->addWidget(searchButton);
+
+    vbox->addLayout(hbox);
+    vbox->addWidget(result);
+
+    connect(rgbEdit, &RgbEdit::editingFinished, searchButton, &QPushButton::click);
+
+    searchButton->setText("Count &Color");
+    searchButton->setToolTip("Count the number of points with the givwn color");
+    connect(searchButton, &QPushButton::clicked, [rgbEdit, result, this](){
+      int n=0;
+      glm::u8vec3 rgb = rgbEdit->rgb();
+      if(pointcloud != nullptr)
+        for(PointCloud::vertex_t v : *pointcloud)
+          n += v.color == rgb;
+
+      result->setText(QString("Found <b>%0</b> points with the color %1").arg(n).arg(Color(rgb).hexcode()));
+    });
+
+    auto reset_result = [result](){result->setText("--");};
+    reset_result();
+    result->setAlignment(Qt::AlignCenter);
+
+    connect(this, &MainWindow::pointcloud_unloaded, reset_result);
+    connect(this, &MainWindow::pointcloud_imported, reset_result);
+  }
+
+  // -- debug Kd-Tree --
 #ifndef NDEBUG
   Visualization::settings_t current_settings = Visualization::settings_t::default_settings();
 
-  // -- debug Kd-Tree --
   QGroupBox* debug_kd_groupbox = new QGroupBox("Debug Kd-Tree");
   debug_kd_groupbox->setEnabled(kdTreeInspector.hasKdTreeAvailable());
   QObject::connect(&kdTreeInspector, &KdTreeInspector::hasKdTreeAvailableChanged, debug_kd_groupbox, &QWidget::setEnabled);
@@ -363,6 +406,8 @@ QDockWidget* MainWindow::initRenderDock()
   QDockWidget* dock = new QDockWidget("Render", this);
   dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, dock);
+  QFormLayout* form;
+  QHBoxLayout* hbox;
 
   // ==== Render ====
   QWidget* root = new QWidget;
@@ -394,19 +439,136 @@ QDockWidget* MainWindow::initRenderDock()
   connect(&viewport, &Viewport::pointSizeChanged, pointSize, &QSpinBox::setValue);
   connect(pointSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), &viewport, &Viewport::setPointSize);
 
+  // ---- remove shader ----
+  QPushButton* removeShaderButton = new QPushButton("&Remove");
+
+  // ---- clone shader ----
+  QPushButton* cloneShaderButton = new QPushButton("&Clone");
+
+  // ---- edit shader ----
+  QPushButton* editShaderButton = new QPushButton("&Edit");
+
+  // ---- shader choice ----
+  auto is_builtin_visualization=[](int index){return index<=1;};
+
+  QComboBox* shaderComboBox = new QComboBox;
+
+  auto current_selected_point_shader = [shaderComboBox, this]() -> PointCloud::Shader {
+    switch(shaderComboBox->currentIndex())
+    {
+    case 0:
+      if(loadedShader.coordinate_expression.isEmpty())
+        return pointShaderEditor.autogenerate(pointcloud.data());
+      else
+        return loadedShader;
+    case 1:
+      return pointShaderEditor.autogenerate(pointcloud.data());
+    default:
+      return shaderComboBox->currentData().value<PointCloud::Shader>();
+    }
+  };
+
+  auto apply_current_shader = [this, current_selected_point_shader](){
+    const PointCloud::Shader current_shader = current_selected_point_shader();
+
+    pointShaderEditor.load_shader(current_shader);
+    pointShaderEditor.applyShader();
+  };
+
+  auto switch_to_loaded_shader = [shaderComboBox](){
+    shaderComboBox->setCurrentIndex(0);
+  };
+
+  connect(shaderComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, shaderComboBox, is_builtin_visualization,removeShaderButton,editShaderButton,apply_current_shader](int index){
+    const bool enable_modifying_buttons = !is_builtin_visualization(index);
+
+    removeShaderButton->setEnabled(enable_modifying_buttons);
+    editShaderButton->setEnabled(enable_modifying_buttons);
+    pointShaderEditor.setIsReadOnly(!enable_modifying_buttons);
+    pointShaderEditor.setShaderName(shaderComboBox->currentText());
+
+    apply_current_shader();
+  });
+
+  connect(&pointShaderEditor, &PointShaderEditor::shaderNameChanged, [shaderComboBox, is_builtin_visualization](QString text){
+    const int index = shaderComboBox->currentIndex();
+    if(!is_builtin_visualization(index))
+      shaderComboBox->setItemText(index, text);
+  });
+
+  connect(this, &MainWindow::pointcloud_imported, [switch_to_loaded_shader,apply_current_shader](){
+    switch_to_loaded_shader();
+    apply_current_shader();
+  });
+  connect(this, &MainWindow::pointcloud_unloaded, switch_to_loaded_shader);
+
+  connect(&pointShaderEditor, &PointShaderEditor::shader_applied, [this, is_builtin_visualization, shaderComboBox](bool coordinates_changed, bool colors_changed){
+    apply_point_shader(pointcloud->shader, coordinates_changed, colors_changed);
+    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
+      shaderComboBox->setItemData(shaderComboBox->currentIndex(), QVariant::fromValue<PointCloud::Shader>(pointcloud->shader));
+  });
+
+  shaderComboBox->addItem("<loaded>");
+  shaderComboBox->addItem("<autogenerated>");
+
+  connect(cloneShaderButton, &QPushButton::clicked, [shaderComboBox, current_selected_point_shader](){
+    PointCloud::Shader pointShader = current_selected_point_shader();
+    QString name = shaderComboBox->currentText();
+    name = name.trimmed();
+    if(name.startsWith("<"))
+      name = name.mid(1);
+    if(name.endsWith(">"))
+      name.chop(1);
+    name += "_cloned";
+
+    shaderComboBox->addItem(name, QVariant::fromValue(pointShader));
+    shaderComboBox->setCurrentIndex(shaderComboBox->count()-1);
+  });
+
+  connect(removeShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization](){
+    if(!is_builtin_visualization(shaderComboBox->currentIndex()))
+      shaderComboBox->removeItem(shaderComboBox->currentIndex());
+  });
+
+  connect(editShaderButton, &QPushButton::clicked, [shaderComboBox, is_builtin_visualization, this](){
+    if(is_builtin_visualization(shaderComboBox->currentIndex()))
+      return;
+
+    if(!pointShaderEditor.isVisible())
+      pointShaderEditor.show();
+  });
+
   // -- render style --
   QGroupBox* styleGroup = new QGroupBox("Style");
-  QFormLayout* form = new QFormLayout;
+  form = new QFormLayout;
   styleGroup->setLayout((form));
 
   form->addRow("Background:", backgroundBrightness);
   form->addRow("Point Size:", pointSize);
+
+  // -- property visualization --
+  QGroupBox* propertyVisualizationGroup = new QGroupBox("Vertex Shader");
+  form = new QFormLayout;
+  propertyVisualizationGroup->setLayout((form));
+
+  form->addRow("Shader:", shaderComboBox);
+
+  hbox = new QHBoxLayout;
+  form->addRow(hbox);
+  hbox->addWidget(editShaderButton);
+
+  hbox = new QHBoxLayout;
+  form->addRow(hbox);
+  hbox->addWidget(cloneShaderButton);
+  hbox->addWidget(removeShaderButton);
 
   // -- vbox --
   QVBoxLayout* vbox = new QVBoxLayout(root);
 
   vbox->addWidget(renderButton);
   vbox->addWidget(styleGroup);
+  vbox->addWidget(propertyVisualizationGroup);
+  vbox->addStretch(1);
 
   return dock;
 }

@@ -37,3 +37,56 @@ void Buffer::memset(uint32_t value)
 {
   std::memset(bytes.data(), int(value), bytes.size());
 }
+
+namespace data_type
+{
+
+QString toString(data_type::base_type_t base_type)
+{
+  switch(base_type)
+  {
+  case BASE_TYPE::INT8:
+    return "int8_t";
+  case BASE_TYPE::INT16:
+    return "int16_t";
+  case BASE_TYPE::INT32:
+    return "int32_t";
+  case BASE_TYPE::UINT8:
+    return "uint8_t";
+  case BASE_TYPE::UINT16:
+    return "uint16_t";
+  case BASE_TYPE::UINT32:
+    return "uint32_t";
+  case BASE_TYPE::FLOAT32:
+    return "float32_t";
+  case BASE_TYPE::FLOAT64:
+    return "float64_t";
+  }
+
+  Q_UNREACHABLE();
+  return "<unknown type>";
+}
+
+const char*property_to_glsl_type(base_type_t base_type)
+{
+  switch(base_type)
+  {
+  case BASE_TYPE::INT8:
+  case BASE_TYPE::INT16:
+  case BASE_TYPE::INT32:
+    return "int";
+  case BASE_TYPE::UINT8:
+  case BASE_TYPE::UINT16:
+  case BASE_TYPE::UINT32:
+    return "uint";
+  case BASE_TYPE::FLOAT32:
+    return "float";
+  case BASE_TYPE::FLOAT64:
+    return "double";
+  }
+
+  Q_UNREACHABLE();
+  return "<unknown type>";
+}
+
+} // namespace data_type

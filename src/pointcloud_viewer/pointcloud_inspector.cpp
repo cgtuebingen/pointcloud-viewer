@@ -30,7 +30,7 @@ double PointCloudInspector::pointSelectionHighlightRadius() const
 
 bool PointCloudInspector::hasSelectedPoint() const
 {
-  return m_hasSelectedPoint;
+  return _selected_point != KDTreeIndex::point_index_t::INVALID;
 }
 
 int PointCloudInspector::pickRadius() const
@@ -41,9 +41,7 @@ int PointCloudInspector::pickRadius() const
 // Called when athe point-cloud was unloaded
 void PointCloudInspector::unload_all_point_clouds()
 {
-  viewport.visualization().deselect_picked_point();
-  deselect_picked_point();
-  setHasSelectedPoint(false);
+  setSelectedPoint(KDTreeIndex::point_index_t::INVALID);
 
   this->point_cloud.clear();
 }
@@ -91,21 +89,24 @@ void PointCloudInspector::pick_point(glm::ivec2 pixel)
 
   KDTreeIndex::point_index_t point = point_cloud->kdtree_index.pick_point(cone, point_cloud->coordinate_color.data(), PointCloud::stride);
 
-  if(point == KDTreeIndex::point_index_t::INVALID)
+  setSelectedPoint(point);
+}
+
+void PointCloudInspector::update()
+{
+  if(hasSelectedPoint())
   {
-    viewport.visualization().deselect_picked_point();
-    deselect_picked_point();
-    setHasSelectedPoint(false);
+    PointCloud::vertex_t vertex = get_selected_point();
+    viewport.visualization().select_picked_point(vertex.coordinate, vertex.color);
+    viewport.navigation.setSelectedPoint(vertex.coordinate);
+    this->selected_point(vertex.coordinate,
+                         vertex.color,
+                         point_cloud->all_values_of_point(size_t(_selected_point)));
   }else
   {
-    size_t index = size_t(point);
-
-    glm::vec3 coordinate = read_value_from_buffer<glm::vec3>(point_cloud->coordinate_color.data() + index * PointCloud::stride);
-    glm::u8vec3 color = read_value_from_buffer<glm::u8vec3>(point_cloud->coordinate_color.data() + index * PointCloud::stride + sizeof(glm::vec3));
-
-    viewport.visualization().select_picked_point(coordinate, color);
-    selected_point(coordinate, color, point_cloud->all_values_of_point(index));
-    setHasSelectedPoint(true);
+    viewport.visualization().deselect_picked_point();
+    viewport.navigation.unsetSelectedPoint();
+    this->deselect_picked_point();
   }
   viewport.update();
 }
@@ -120,13 +121,15 @@ void PointCloudInspector::setPointSelectionHighlightRadius(double pointSelection
   emit pointSelectionHighlightRadiusChanged(m_pointSelectionHighlightRadius);
 }
 
-void PointCloudInspector::setHasSelectedPoint(bool hasSelectedPoint)
+void PointCloudInspector::setSelectedPoint(KDTreeIndex::point_index_t selected_point)
 {
-  if (m_hasSelectedPoint == hasSelectedPoint)
+  if (_selected_point == selected_point)
     return;
 
-  m_hasSelectedPoint = hasSelectedPoint;
-  emit hasSelectedPointChanged(m_hasSelectedPoint);
+  _selected_point = selected_point;
+
+  emit hasSelectedPointChanged(hasSelectedPoint());
+  this->update();
 }
 
 void PointCloudInspector::setPickRadius(int pickRadius)
@@ -136,4 +139,12 @@ void PointCloudInspector::setPickRadius(int pickRadius)
 
   m_pickRadius = pickRadius;
   emit pickRadiusChanged(m_pickRadius);
+}
+
+PointCloud::vertex_t PointCloudInspector::get_selected_point(PointCloud::vertex_t fallback) const
+{
+  if(hasSelectedPoint())
+    return point_cloud->vertex(size_t(_selected_point));
+  else
+    return fallback;
 }

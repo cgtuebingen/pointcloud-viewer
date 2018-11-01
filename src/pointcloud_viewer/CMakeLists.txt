@@ -24,6 +24,34 @@ add_executable(pointcloud_viewer
   workers/offline_renderer.hpp
   workers/offline_renderer_dialogs.cpp
   workers/offline_renderer_dialogs.hpp
+  shader_nodes/make_vector_node.cpp
+  shader_nodes/make_vector_node.hpp
+  shader_nodes/math_operator_node.cpp
+  shader_nodes/math_operator_node.hpp
+  shader_nodes/mix_node.cpp
+  shader_nodes/mix_node.hpp
+  shader_nodes/property_node.cpp
+  shader_nodes/property_node.hpp
+  shader_nodes/rotate_quickly_node.cpp
+  shader_nodes/rotate_quickly_node.hpp
+  shader_nodes/rgb_node.cpp
+  shader_nodes/rgb_node.hpp
+  shader_nodes/split_vector_node.cpp
+  shader_nodes/split_vector_node.hpp
+  shader_nodes/spy_node.cpp
+  shader_nodes/spy_node.hpp
+  shader_nodes/switch_node.cpp
+  shader_nodes/switch_node.hpp
+  shader_nodes/output_node.cpp
+  shader_nodes/output_node.hpp
+  shader_nodes/value.cpp
+  shader_nodes/value.hpp
+  shader_nodes/value_node.cpp
+  shader_nodes/value_node.hpp
+  shader_nodes/vector_property_node.cpp
+  shader_nodes/vector_property_node.hpp
+  widgets/rgb_edit.cpp
+  widgets/rgb_edit.hpp
   camera.cpp
   camera.hpp
   declarations.hpp
@@ -41,6 +69,8 @@ add_executable(pointcloud_viewer
   navigation.hpp
   pointcloud_inspector.cpp
   pointcloud_inspector.hpp
+  point_shader_editor.cpp
+  point_shader_editor.hpp
   usability_scheme.cpp
   usability_scheme.hpp
   version_text.cpp
@@ -51,4 +81,4 @@ add_executable(pointcloud_viewer
   visualizations.hpp
 )
 
-target_link_libraries(pointcloud_viewer Qt5::Widgets glm renderer geometry pointcloud)
+target_link_libraries(pointcloud_viewer Qt5::Widgets NodeEditor::nodes glm renderer geometry pointcloud)

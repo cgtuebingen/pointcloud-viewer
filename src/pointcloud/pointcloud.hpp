@@ -8,9 +8,12 @@
 #include <QVector>
 #include <QString>
 #include <QVariant>
+#include <QSet>
 
 /*
-Stores the whole point cloud.
+Stores the whole point cloud consisting out of the
+- coordinate_color -- coordinates and colors
+- user_data -- all property data
 */
 class PointCloud final
 {
@@ -27,7 +30,7 @@ public:
   {
     glm::vec3 coordinate;
     glm::u8vec3 color;
-    padding<uint8_t> _padding;
+    padding<uint8_t> _padding = padding<uint8_t>();
   };
 
   struct UserData
@@ -36,8 +39,22 @@ public:
     QVector<QVariant> values;
   };
 
+  struct Shader
+  {
+    QSet<QString> used_properties;
+    QString coordinate_expression;
+    QString color_expression;
+    QString node_data;
+
+    QStringList ordered_properties() const;
+
+    void export_to_file(QString filename) const;
+    static Shader import_from_file(QString filename);
+  };
+
   Buffer coordinate_color, user_data;
   KDTreeIndex kdtree_index;
+  Shader shader;
   aabb_t aabb;
   size_t num_points;
   bool is_valid;
@@ -51,9 +68,14 @@ public:
   PointCloud(PointCloud&& other);
   PointCloud& operator=(PointCloud&& other);
 
-  constexpr static const size_t stride = 4*4;
+  constexpr static const size_t stride = sizeof(vertex_t);
+  static_assert(stride == sizeof(vertex_t), "size mismatch");
 
   UserData all_values_of_point(size_t point_index) const;
+  vertex_t vertex(size_t point_index) const;
+
+  const vertex_t* begin() const;
+  const vertex_t* end() const;
 
   void clear();
   void resize(size_t num_points);
@@ -66,5 +88,7 @@ public:
 };
 
 QDebug operator<<(QDebug debug, const PointCloud::UserData& userData);
+
+Q_DECLARE_METATYPE(PointCloud::Shader);
 
 #endif // POINTCLOUDVIEWER_POINTCLOUD_HPP_
