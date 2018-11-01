@@ -47,7 +47,8 @@ void ValueNode::set_value(QString value, value_type_t value_type)
   int index = _combobox_type->findData(QVariant::fromValue(value_type));
   if(index >= 0)
     _combobox_type->setCurrentIndex(index);
-  _content_box->setText(value);
+  if(value != _content_box->text())
+    _content_box->setText(value);
   dataUpdated(0);
 }
 
