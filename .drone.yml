@@ -5,6 +5,7 @@ clone:
     submodule_override:
       glm: https://github.com/g-truc/glm.git
       glhelper: https://github.com/Robert42/glhelper.git
+      src/external/nodeeditor: https://github.com/paceholder/nodeeditor.git
 pipeline:
   build:
     image: pcl_viewer-qt5.9
