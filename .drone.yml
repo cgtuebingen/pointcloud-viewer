@@ -8,7 +8,7 @@ clone:
       src/external/nodeeditor: https://github.com/paceholder/nodeeditor.git
 pipeline:
   build:
-    image: patwie/pcl_viewer-qt5.9
+    image: patwie/pcl_viewer-qt5.9 
     commands:
       - mkdir build && cd build
       - cmake ../src/
