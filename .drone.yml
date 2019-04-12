@@ -1,15 +1,35 @@
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
 clone:
-  default:
-    image: plugins/git
+  disable: true
+
+steps:
+- name: default
+  pull: default
+  image: plugins/git
+  settings:
     recursive: true
     submodule_override:
-      glm: https://github.com/g-truc/glm.git
       glhelper: https://github.com/Robert42/glhelper.git
+      glm: https://github.com/g-truc/glm.git
       src/external/nodeeditor: https://github.com/paceholder/nodeeditor.git
-pipeline:
-  build:
-    image: patwie/pcl_viewer-qt5.9 
-    commands:
-      - mkdir build && cd build
-      - cmake ../src/
-      - make
+
+- name: build
+  pull: never
+  image: patwie/pcl_viewer-qt5.9
+  commands:
+  - "mkdir build && cd build"
+  - cmake ../src/
+  - make
+
+---
+kind: signature
+hmac: a722d74d0f6c7d4d8355d0e90a7777666c7051b79b4a2b9695453c682c1d896c
+
+...

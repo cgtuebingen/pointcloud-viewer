@@ -2,7 +2,7 @@
 
 [![Build Status TensorFlow](https://ci.patwie.com/api/badges/cgtuebingen/pointcloud-viewer/status.svg)](http://ci.patwie.com/cgtuebingen/pointcloud-viewer)
 
-This tool allows viewing huge point clouds.
+This tool allows viewing huge point clouds and export a flight through ([as used in this video](https://youtu.be/5ftWmuQXU_s?t=46)).
 
 Beta version, not recommended for usage in commercial productions!!
 
