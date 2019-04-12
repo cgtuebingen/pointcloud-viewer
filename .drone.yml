@@ -28,4 +28,8 @@ steps:
   - cmake ../src/
   - make
 
+---
+kind: signature
+hmac: a722d74d0f6c7d4d8355d0e90a7777666c7051b79b4a2b9695453c682c1d896c
+
 ...
