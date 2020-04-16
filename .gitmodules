@@ -1,12 +1,12 @@
 [submodule "glm"]
 	path = src/external/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git
 [submodule "glhelper"]
 	path = src/external/glhelper
-	url = git@github.com:Robert42/glhelper.git
+	url = https://github.com/Robert42/glhelper.git
 [submodule "boost_sort"]
 	path = src/external/boost_sort
 	url = https://github.com/boostorg/sort.git
 [submodule "src/external/nodeeditor"]
 	path = src/external/nodeeditor
-	url = git@github.com:paceholder/nodeeditor.git
+	url = https://github.com/paceholder/nodeeditor.git
